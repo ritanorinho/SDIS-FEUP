@@ -1,24 +1,17 @@
 package project;
 
+import java.net.InetAddress;
 import java.util.Scanner;
 
-public class MCListener extends Listener implements Runnable{
+public class MCListener extends Listener {
 
-	 public void produce()throws InterruptedException 
-	    { 
-	        // synchronized block ensures only one thread 
-	        // running at a time. 
-	        synchronized(this) 
-	        { 
-	            System.out.println("producer thread running"); 
-
-	            // releases the lock on shared resource 
-	            wait(); 
-
-	            // and waits till some other method invokes notify(). 
-	            System.out.println("Resumed"); 
-	        } 
-	    } 
+	 public MCListener(InetAddress mcAddress, Integer mcPort) {
+			super(mcAddress,mcPort);
+		
+	}
+	 public MCListener() {
+		// TODO Auto-generated constructor stub
+	}
 
 	    // Sleeps for some time and waits for a key press. After key 
 	    // is pressed, it notifies produce(). 
@@ -45,9 +38,5 @@ public class MCListener extends Listener implements Runnable{
 	        } 
 	    }
 
-		@Override
-		public void run() {
-			// TODO Auto-generated method stub
-			
-		}
+	
 }
