@@ -1,4 +1,5 @@
 package project;
+import java.io.File;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -6,9 +7,14 @@ import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.rmi.AlreadyBoundException;
+import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
+import java.rmi.server.UnicastRemoteObject;
 import java.util.Scanner;
 import java.util.concurrent.ScheduledThreadPoolExecutor;  
-public class Peer {
+public class Peer implements RMIInterface {
 
 	private static double protocolVersion;
 	private static int serverID;
@@ -18,19 +24,15 @@ public class Peer {
 	private static volatile MDRListener mdrListener;
 	private static MulticastSocket socket;
 	private static ScheduledThreadPoolExecutor executor;
+	
 
 	
 
 	 public Peer(InetAddress mcAddress, Integer mcPort, InetAddress mdbAddress, Integer mdbPort, InetAddress mdrAddress,
-			Integer mdrPort) throws InterruptedException, IOException{
+			Integer mdrPort) throws IOException {
 		 mcListener= new MCListener(mcAddress,mcPort);
 		 mdbListener = new MDBListener(mdbAddress,mdbPort);
 		 mdrListener = new MDRListener(mdrAddress, mdrPort);
-		 
-		 new Thread(mcListener).start();
-		 new Thread(mdbListener).start();
-		 new Thread(mdrListener).start();
-		 
 		 MulticastSocket mcSocket = new MulticastSocket();
 		 mcSocket.setTimeToLive(1);
 		 DatagramPacket packet;
@@ -43,11 +45,7 @@ public class Peer {
 			mcSocket.close();
 		 mcSocket = new MulticastSocket();
 		 mcSocket.setTimeToLive(1);
-		 test = "mdb test";
-		 packet = new DatagramPacket(test.getBytes(), test.getBytes().length,
-					mdbAddress, mdbPort);
-			mcSocket.send(packet);
-			mcSocket.close();
+		
 		 mcSocket = new MulticastSocket();
 		 mcSocket.setTimeToLive(1);
 		 test = "mdr test";
@@ -56,10 +54,16 @@ public class Peer {
 		
 			mcSocket.send(packet);
 		mcSocket.close();
+		 
+		 new Thread(mcListener).start();
+		 new Thread(mdbListener).start();
+		 new Thread(mdrListener).start();
+		 
+		
 		}
 		 
 		   
-	public static void main(String args[])throws InterruptedException, IOException  {
+	public static void main(String args[])throws InterruptedException, IOException, AlreadyBoundException  {
                        
 		 {
 			 if (args.length != 9) {
@@ -70,12 +74,12 @@ public class Peer {
 				 validateArgs(args);
 			 		
 		   socket = new MulticastSocket();
-		 
+		   
 
 		 }
 		 }
 
-	private static void validateArgs(String[] args) throws InterruptedException, IOException {
+	private static void validateArgs(String[] args) throws InterruptedException, IOException, AlreadyBoundException {
 		InetAddress MCAddress= InetAddress.getByName(args[0]);
 		Integer MCPort = Integer.parseInt(args[1]);
 		InetAddress MDBAddress= InetAddress.getByName(args[2]);
@@ -87,7 +91,63 @@ public class Peer {
 		accessPoint=args[8];
 		
 		Peer peer = new Peer(MCAddress,MCPort,MDBAddress,MDBPort,MDRAddress,MDRPort);
+		RMIInterface stub = (RMIInterface) UnicastRemoteObject.exportObject(peer, 0);
+		Registry registry = LocateRegistry.createRegistry(1099);
+        registry.bind(accessPoint, stub);
 		
+	}
+
+
+	@Override
+	public void backup(String filename, int repDegree) throws RemoteException {
+		File file = new File(filename);
+		double fileLength = file.length();
+	
+		/*int numberChunks = (int) Math.ceil(fileLength / MAX_SIZE);		
+		for (int i = 0; i < numberChunks;i++) {
+			String header = "PUTCHUNK "+ protocolVersion + " "+ serverID + " " +  filename+ " "+ i + " "+repDegree + "\n\r\n\r";
+			
+			
+		}*/
+		
+		String test = "mdb test";
+		try {
+			mdbListener.message(test);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		// TODO Auto-generated method stub
+		
+		
+	}
+
+
+	@Override
+	public void restore(String file) throws RemoteException {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+	@Override
+	public void delete(String file) throws RemoteException {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+	@Override
+	public void reclaim(int space) throws RemoteException {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+	@Override
+	public void state() throws RemoteException {
+		// TODO Auto-generated method stub
+		System.out.println("ABC");
 	}
 	
 	}

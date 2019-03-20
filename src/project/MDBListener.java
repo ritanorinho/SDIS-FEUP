@@ -29,11 +29,21 @@ public class MDBListener implements Runnable {
 	         
 	         String msg = new String(buf, 0, buf.length);
 	         
-	         System.out.println("aaaa"+msg);
+	         System.out.println(msg);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}     
 	}
+	 
+	 public int message(String message) throws IOException {
+		 MulticastSocket mcSocket = new MulticastSocket();
+		 
+		 DatagramPacket packet = new DatagramPacket(message.getBytes(), message.getBytes().length,
+					mdbAddress, mdbPort);
+			mcSocket.send(packet);
+			mcSocket.close();
+		 return 0;
+	 }
 
 }

@@ -1,7 +1,7 @@
 package project;
 
 public  class Chunk {
-	private static int MAX_SIZE = 64000;
+	
 	private int fileId;
 	private int chunkNo;
 	private byte[] data;
