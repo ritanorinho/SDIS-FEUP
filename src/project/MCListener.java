@@ -1,42 +1,45 @@
 package project;
 
+import java.io.IOException;
+import java.net.DatagramPacket;
 import java.net.InetAddress;
+import java.net.MulticastSocket;
 import java.util.Scanner;
 
-public class MCListener extends Listener {
+public class MCListener implements Runnable {
+		InetAddress mcAddress;
+		Integer mcPort;
 
 	 public MCListener(InetAddress mcAddress, Integer mcPort) {
-			super(mcAddress,mcPort);
 		
+			this.mcAddress=mcAddress;
+			this.mcPort=mcPort;
+			
 	}
 	 public MCListener() {
 		// TODO Auto-generated constructor stub
 	}
 
-	    // Sleeps for some time and waits for a key press. After key 
-	    // is pressed, it notifies produce(). 
-	    public void consume()throws InterruptedException 
-	    { 
-	        // this makes the produce thread to run first. 
-	        Thread.sleep(1000); 
-	        Scanner s = new Scanner(System.in); 
-
-	        // synchronized block ensures only one thread 
-	        // running at a time. 
-	        synchronized(this) 
-	        { 
-	            System.out.println("Waiting for return key."); 
-	            s.nextLine(); 
-	            System.out.println("Return key pressed"); 
-
-	            // notifies the produce thread that it 
-	            // can wake up. 
-	            notify(); 
-
-	            // Sleep 
-	            Thread.sleep(2000); 
-	        } 
-	    }
-
+	 @Override
+		public void run() {
+		 byte[] buf = new byte[256];
+		 MulticastSocket clientSocket;
+		try {
+			
+			clientSocket = new MulticastSocket(this.mcPort);
+			 clientSocket.joinGroup(this.mcAddress);
+			 
+			 DatagramPacket msgPacket = new DatagramPacket(buf, buf.length);
+			 System.out.println(this.mcPort+"-"+this.mcAddress);
+	         clientSocket.receive(msgPacket);
+	         
+	         String msg = new String(buf, 0, buf.length);
+	         
+	         System.out.println("aaaa"+msg);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}     
+	}
 	
 }
