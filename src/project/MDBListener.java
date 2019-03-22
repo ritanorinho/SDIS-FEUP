@@ -36,10 +36,10 @@ public class MDBListener implements Runnable {
 		}     
 	}
 	 
-	 public int message(String message) throws IOException {
+	 public int message(byte[] message) throws IOException {
 		 MulticastSocket mcSocket = new MulticastSocket();
-		 
-		 DatagramPacket packet = new DatagramPacket(message.getBytes(), message.getBytes().length,
+		 System.out.println("aaa"+message);
+		 DatagramPacket packet = new DatagramPacket(message, message.length,
 					mdbAddress, mdbPort);
 			mcSocket.send(packet);
 			mcSocket.close();

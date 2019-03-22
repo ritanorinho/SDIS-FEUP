@@ -1,5 +1,7 @@
 package project;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -12,6 +14,7 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.concurrent.ScheduledThreadPoolExecutor;  
 public class Peer implements RMIInterface {
@@ -24,6 +27,7 @@ public class Peer implements RMIInterface {
 	private static volatile MDRListener mdrListener;
 	private static MulticastSocket socket;
 	private static ScheduledThreadPoolExecutor executor;
+	private static Memory memory;
 	
 
 	
@@ -101,23 +105,30 @@ public class Peer implements RMIInterface {
 	@Override
 	public void backup(String filename, int repDegree) throws RemoteException {
 		File file = new File(filename);
-		double fileLength = file.length();
-	
-		/*int numberChunks = (int) Math.ceil(fileLength / MAX_SIZE);		
-		for (int i = 0; i < numberChunks;i++) {
-			String header = "PUTCHUNK "+ protocolVersion + " "+ serverID + " " +  filename+ " "+ i + " "+repDegree + "\n\r\n\r";
+		FileInfo fileInfo = new FileInfo(file);
+		ArrayList<Chunk> chunks= fileInfo.getChunks();
+		System.out.println(chunks.size());
+				
+		for (int i = 0; i < chunks.size();i++) {
+			String header = "PUTCHUNK "+ protocolVersion + " "+ serverID + " " +  fileInfo.getFileId()+ " "+ chunks.get(i).getChunkNo() + " "+repDegree + "\n\r\n\r";
+			System.out.println("SENT "+header);
 			
+			String name= fileInfo.getFileId()+"-"+chunks.get(i).getChunkNo();
+			if (!memory.storedChunks.containsKey(name)) {
+				Peer.memory.storedChunks.put(name,0);
+			}
 			
-		}*/
-		
-		String test = "mdb test";
-		try {
-			mdbListener.message(test);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			try {
+				byte[] data = chunks.get(i).getData();
+				mdbListener.message(data);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			// TODO Auto-generated method stub
+			
 		}
-		// TODO Auto-generated method stub
+		
 		
 		
 	}

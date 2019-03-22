@@ -2,21 +2,22 @@ package project;
 
 public  class Chunk {
 	
-	private int fileId;
+	private String fileId;
 	private int chunkNo;
 	private byte[] data;
 	private int length;
 	
 	
-	public Chunk(int chunkNo,byte[] data, int length) {
+	public Chunk(String fileId,int chunkNo,byte[] data, int length) {
 		this.chunkNo = chunkNo;
 		this.data=data;
 		this.length=length;
+		this.fileId=fileId;
 	}
 	
 
 
-	public int getFileId() {
+	public String getFileId() {
 		return fileId;
 	}
 
