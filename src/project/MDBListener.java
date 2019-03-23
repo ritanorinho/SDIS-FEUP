@@ -29,7 +29,7 @@ public class MDBListener implements Runnable {
 	         
 	         String msg = new String(buf, 0, buf.length);
 	         
-	         System.out.println(msg);
+	         System.out.println("Chunk data:" + msg);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -37,12 +37,10 @@ public class MDBListener implements Runnable {
 	}
 	 
 	 public int message(byte[] message) throws IOException {
-		 MulticastSocket mcSocket = new MulticastSocket();
-		 System.out.println("aaa"+message);
-		 DatagramPacket packet = new DatagramPacket(message, message.length,
-					mdbAddress, mdbPort);
-			mcSocket.send(packet);
-			mcSocket.close();
+		MulticastSocket mcSocket = new MulticastSocket();
+		DatagramPacket packet = new DatagramPacket(message, message.length, mdbAddress, mdbPort);
+		mcSocket.send(packet);
+		mcSocket.close();
 		 return 0;
 	 }
 

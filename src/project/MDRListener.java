@@ -29,7 +29,7 @@ public class MDRListener implements Runnable{
 	         
 	         String msg = new String(buf, 0, buf.length);
 	         
-	         System.out.println("aaaa"+msg);
+	         System.out.println("msg: "+msg);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

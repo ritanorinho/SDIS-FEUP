@@ -13,7 +13,7 @@ public class FileInfo {
 	
 	private static int MAX_SIZE = 64000;
 	private String fileId;
-	private ArrayList<Chunk> chunks=new ArrayList<Chunk>();
+	private ArrayList<Chunk> chunks = new ArrayList<Chunk>();
 	private File file ;
 	
 	public FileInfo(File file) {
@@ -53,7 +53,6 @@ public class FileInfo {
 	
 	public void fileId() {
 		String fileName= this.file.getName();
-		System.out.println(fileName);
 		String lastModified= String.valueOf(this.file.lastModified());
 		String fileId = fileName + "."+lastModified;
 		this.fileId = sha256(fileId);		
