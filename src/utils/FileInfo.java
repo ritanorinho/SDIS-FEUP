@@ -1,4 +1,4 @@
-package project;
+package utils;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -55,7 +55,7 @@ public class FileInfo {
 		String fileName= this.file.getName();
 		String lastModified= String.valueOf(this.file.lastModified());
 		String fileId = fileName + "."+lastModified;
-		this.fileId = sha256(fileId);		
+		this.fileId = sha256(fileId);	
 		
 		
 		

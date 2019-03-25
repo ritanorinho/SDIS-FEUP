@@ -10,11 +10,17 @@ public class TestApp {
 	public TestApp() {
 	}
 
-	public static void main(String[] args) throws RemoteException, NotBoundException {
+	public static void main(String[] args) throws RemoteException, NotBoundException, InterruptedException {
+		String fileName;
+		
+		if (args.length > 4 || args.length < 2) {
+			System.out.println("ERROR: TestApp parameters must be: <peer_ap> <operation> <opnd_1> <opnd_2> ");
+			return;
+		}else if (args.length >= 3) 	fileName = args[2];
 
     String accessPoint = args[0];
 		String operation = args[1];
-		String fileName;
+		
 		int replicationDegree;
     int spaceDisk;
     Registry registry;
@@ -23,10 +29,7 @@ public class TestApp {
     System.setProperty("java.net.preferIPv4Stack", "true");
 
 
-		if (args.length > 4 || args.length < 2) {
-			System.out.println("ERROR: TestApp parameters must be: <peer_ap> <operation> <opnd_1> <opnd_2> ");
-			return;
-		}else if (args.length >= 3) 	fileName = args[2];
+		
 
     registry = LocateRegistry.getRegistry("localhost");
     try{stub = (RMIInterface) registry.lookup(accessPoint);}

@@ -1,23 +1,25 @@
 package project;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
-import java.net.SocketException;
-import java.net.UnknownHostException;
 import java.rmi.AlreadyBoundException;
-import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
-import java.util.Scanner;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
+import listeners.MCListener;
+import listeners.MDBListener;
+import listeners.MDRListener;
+import threads.*;
+import utils.Chunk;
+import utils.FileInfo;
+import utils.Memory;
 
 public class Peer implements RMIInterface {
 
@@ -36,29 +38,11 @@ public class Peer implements RMIInterface {
 		mcListener = new MCListener(mcAddress, mcPort);
 		mdbListener = new MDBListener(mdbAddress, mdbPort);
 		mdrListener = new MDRListener(mdrAddress, mdrPort);
-		MulticastSocket mcSocket = new MulticastSocket();
-		mcSocket.setTimeToLive(1);
-		DatagramPacket packet;
+		executor = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(250);
+		executor.execute(mcListener);
+		executor.execute(mdbListener);
+		executor.execute(mdrListener);
 
-		String test;
-		test = "mc test";
-		packet = new DatagramPacket(test.getBytes(), test.getBytes().length, mcAddress, mcPort);
-		mcSocket.send(packet);
-		mcSocket.close();
-		mcSocket = new MulticastSocket();
-		mcSocket.setTimeToLive(1);
-
-		mcSocket = new MulticastSocket();
-		mcSocket.setTimeToLive(1);
-		test = "mdr test";
-		packet = new DatagramPacket(test.getBytes(), test.getBytes().length, mdrAddress, mdrPort);
-
-		mcSocket.send(packet);
-		mcSocket.close();
-
-		new Thread(mcListener).start();
-		new Thread(mdbListener).start();
-		new Thread(mdrListener).start();
 
 	}
 
@@ -110,27 +94,43 @@ public class Peer implements RMIInterface {
 			}
 		}
 	}
-
+	public static Memory getMemory() {
+		return memory;
+	}
+	public static MDBListener getMDBListener() {
+	 return mdbListener;
+	}
+	public static ScheduledThreadPoolExecutor getExecutor() {
+		return executor;
+	}
 
 	@Override
-	public void backup(String filename, int repDegree) throws RemoteException {
+	public void backup(String filename, int repDegree) throws RemoteException, InterruptedException {
 		File file = new File(filename);
 		FileInfo fileInfo = new FileInfo(file);
 		ArrayList<Chunk> chunks= fileInfo.getChunks();
+		String name;
 				
 		for (int i = 0; i < chunks.size();i++) {
 			String header = "PUTCHUNK "+ protocolVersion + " "+ serverID + " " +  fileInfo.getFileId()+ " "+ chunks.get(i).getChunkNo() + " "+repDegree + "\n\r\n\r";
 			System.out.println("\n SENT: "+header);
 			
-			String name= fileInfo.getFileId()+"-"+chunks.get(i).getChunkNo();
+			name= fileInfo.getFileId()+"-"+chunks.get(i).getChunkNo();
 
-			if (!memory.storedChunks.containsKey(name)) {
-				Peer.memory.storedChunks.put(name,0);
+			if (!memory.backupChunks.containsKey(name)) {
+				Peer.memory.backupChunks.put(name,0);
 			}
 			
 			try {
-				byte[] data = chunks.get(i).getData();
-				mdbListener.message(data);
+				byte[] data = header.getBytes();
+				byte[] body = chunks.get(i).getData();
+				byte[] message = new byte[data.length+body.length];
+				System.arraycopy(data, 0, message, 0, data.length);
+				System.arraycopy(body, 0, message, data.length, body.length);
+				mdbListener.message(message);
+				Thread.sleep(500);
+				Peer.executor.schedule(new BackupThread(name,message, repDegree),1,TimeUnit.SECONDS);// The initiator-peer collects the confirmation messages during a time interval of one second
+				
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -168,5 +168,15 @@ public class Peer implements RMIInterface {
 		// TODO Auto-generated method stub
 		System.out.println("ABC");
 	}
-	
+
+	public static int getId() {
+		// TODO Auto-generated method stub
+		return serverID;
+	}
+
+	public static MCListener getMCListener() {
+		// TODO Auto-generated method stub
+		return mcListener;
+	}
+
 	}
