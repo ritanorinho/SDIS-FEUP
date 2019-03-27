@@ -51,8 +51,10 @@ public class TestApp {
           System.out.println("ERROR: TestApp parameters must be: <peer_ap> RESTORE <file> ");
           return;
         }
+        
         replicationDegree = 3;
         fileName = args[2];
+        stub.restore(fileName);
         break;
 
       case "DELETE":

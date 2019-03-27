@@ -153,9 +153,29 @@ public class Peer implements RMIInterface {
 	}
 
 	@Override
-	public void restore(String file) throws RemoteException {
-		// TODO Auto-generated method stub
+	public void restore(String filename) throws RemoteException {
+		File file = new File(filename);
+		FileInfo fileInfo = new FileInfo(file);
+		ArrayList<Chunk> chunks= fileInfo.getChunks();
+		String name;
+				
+		for (int i = 0; i < chunks.size();i++) {
+			String header = "GETCHUNK "+ protocolVersion + " "+ serverID + " " +  fileInfo.getFileId()+ " "+ chunks.get(i).getChunkNo() + "\n\r\n\r";
+			System.out.println("\n SENT: "+header);
+			
+			name= fileInfo.getFileId()+"-"+chunks.get(i).getChunkNo();
 
+			if (!memory.backupChunks.containsKey(name)) {
+				Peer.memory.backupChunks.put(name,0);
+			}
+			
+			String channel = "mc";
+			String worker = header + "-"+channel;
+			Peer.executor.execute(new WorkerThread(worker));
+			
+		}
+		
+		
 	}
 
 	@Override

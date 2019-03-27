@@ -46,7 +46,8 @@ public class WorkerThread implements Runnable {
 				e.printStackTrace();
 			}
 			break;
-			
+		default:
+						
 		}
 		
 	}
