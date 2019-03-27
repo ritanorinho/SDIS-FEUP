@@ -52,7 +52,6 @@ public class AnalizeMessageThread implements Runnable {
 
 	@Override
 	public void run() {
-		// TODO Auto-generated method stub
 		String messageType = this.message.trim().split("\\s+")[0];
 		switch (messageType) {
 		case "PUTCHUNK":

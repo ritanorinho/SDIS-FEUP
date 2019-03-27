@@ -140,14 +140,13 @@ public class Peer implements RMIInterface {
 				Peer.executor.execute(new WorkerThread(worker));
 				mdbListener.message(message);
 				Thread.sleep(500);
-				Peer.executor.schedule(new BackupThread(name, message, repDegree), 1, TimeUnit.SECONDS);// The
+				// The initiator-peer collects the confirmation
+				// messages during a time interval of one second
+				Peer.executor.schedule(new BackupThread(name, message, repDegree), 1, TimeUnit.SECONDS);
 
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			// TODO Auto-generated method stub
-
 		}
 
 	}
@@ -200,15 +199,20 @@ public class Peer implements RMIInterface {
 		try {
 			Peer.executor.execute(new WorkerThread(worker));
 			mcListener.message(message);
+
+			try {
+				Thread.sleep(500);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		try {
-			Thread.sleep(500);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-		//Peer.executor.schedule(new BackupThread(name,message, repDegree),1,TimeUnit.SECONDS);// The initiator-peer collects the confirmation messages during a time interval of one second		
+		
+		// The initiator-peer collects the confirmation
+		// messages during a time interval of one second
+		Peer.executor.schedule(new DeleteThread(message), 1, TimeUnit.SECONDS);
 	}
 
 
