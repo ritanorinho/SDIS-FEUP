@@ -16,6 +16,7 @@ public class StoredChunkThread implements Runnable {
 	public void run() {
 		try {
 			Peer.getMCListener().message(message);
+			
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

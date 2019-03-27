@@ -127,6 +127,9 @@ public class Peer implements RMIInterface {
 				byte[] message = new byte[data.length+body.length];
 				System.arraycopy(data, 0, message, 0, data.length);
 				System.arraycopy(body, 0, message, data.length, body.length);
+				String channel = "mdb";
+				String worker = message + "-"+channel;
+				Peer.executor.execute(new WorkerThread(worker));
 				mdbListener.message(message);
 				Thread.sleep(500);
 				Peer.executor.schedule(new BackupThread(name,message, repDegree),1,TimeUnit.SECONDS);// The initiator-peer collects the confirmation messages during a time interval of one second
@@ -177,6 +180,11 @@ public class Peer implements RMIInterface {
 	public static MCListener getMCListener() {
 		// TODO Auto-generated method stub
 		return mcListener;
+	}
+
+	public static MDRListener getMDRListener() {
+		// TODO Auto-generated method stub
+		return mdrListener;
 	}
 
 	}

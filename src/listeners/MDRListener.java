@@ -24,7 +24,7 @@ public class MDRListener implements Runnable{
 			 clientSocket.joinGroup(this.mdrAddress);
 			 
 			 DatagramPacket msgPacket = new DatagramPacket(buf, buf.length);
-			 System.out.println(this.mdrPort+"-"+this.mdrAddress);
+			 //System.out.println(this.mdrPort+"-"+this.mdrAddress);
 	         clientSocket.receive(msgPacket);
 	         
 	         String msg = new String(buf, 0, buf.length);
@@ -35,5 +35,12 @@ public class MDRListener implements Runnable{
 			e.printStackTrace();
 		}     
 	}
+	public int message(byte[] message) throws IOException {
+		MulticastSocket mcSocket = new MulticastSocket();
+		DatagramPacket packet = new DatagramPacket(message, message.length, mdrAddress, mdrPort);
+		mcSocket.send(packet);
+		mcSocket.close();
+		 return 0;
+	 }
 
 }

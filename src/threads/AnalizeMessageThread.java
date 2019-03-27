@@ -14,16 +14,10 @@ public class AnalizeMessageThread implements Runnable {
 		private synchronized void stored() {
 			String[] messageArray = this.message.trim().split("\\s+");
 			String chunkId = messageArray[3]+"-" +messageArray[4];
-			Integer id = Integer.parseInt(messageArray[2]);
-			if(!Peer.getMemory().backupChunks.containsKey(chunkId)) {
-				Peer.getMemory().backupChunks.put(chunkId, 0);
-			}
-			else {
-				if (Peer.getId() != id ) {
-				Peer.getMemory().backupChunks.put(chunkId, Peer.getMemory().backupChunks.get(chunkId)+1);
+			if (Peer.getMemory().backupChunks.containsKey(chunkId)) {
+				System.out.println("replication: "+Peer.getMemory().backupChunks.get(chunkId));
 				
-				System.out.println(Peer.getMemory().backupChunks);
-				}
+				Peer.getMemory().backupChunks.put(chunkId, Peer.getMemory().backupChunks.get(chunkId)+1);
 			}
 			
 		}
@@ -31,7 +25,7 @@ public class AnalizeMessageThread implements Runnable {
 			
 			String[] messageArray = this.message.trim().split("\\s+");
 			String chunkId = messageArray[3]+"-" +messageArray[4];
-			System.out.println("SENDER ID: "+messageArray[2]+"PEER ID: "+Peer.getId());
+			//System.out.println("SENDER ID: "+messageArray[2]+" PEER ID: "+Peer.getId());
 			Integer id = Integer.parseInt(messageArray[2]);
 			Random random = new Random();
 			int delay = random.nextInt(401);
@@ -39,10 +33,9 @@ public class AnalizeMessageThread implements Runnable {
 				Peer.getMemory().backupChunks.put(chunkId, 0);
 			}
 			else {
-				if (Peer.getId() != id) {
+				if (Peer.getId() != id && Peer.getMemory().backupChunks.get(chunkId) < 1) {
 				Peer.getMemory().backupChunks.put(chunkId, Peer.getMemory().backupChunks.get(chunkId)+1);
-				System.out.println(Peer.getMemory().backupChunks);
-				String storedMessage = "STORED "+messageArray[1]+" "+ id + " "+messageArray[4]+"\n\r\n\r";
+				String storedMessage = "STORED "+messageArray[1]+" "+ id + " "+messageArray[3]+" "+messageArray[4]+" "+"\n\r\n\r";
 				Peer.getExecutor().schedule(new StoredChunkThread(storedMessage.getBytes()),delay, TimeUnit.MILLISECONDS);
 				}
 			}

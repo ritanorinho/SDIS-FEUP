@@ -31,12 +31,11 @@ public class MDBListener implements Runnable {
 			 clientSocket.joinGroup(this.mdbAddress);
 			 while(true) {
 			 DatagramPacket msgPacket = new DatagramPacket(buf, buf.length);
-			 System.out.println(this.mdbPort+"-"+this.mdbAddress);
+			 //System.out.println(this.mdbPort+"-"+this.mdbAddress);
 	         clientSocket.receive(msgPacket);
 	         
 	         String msg = new String(buf, 0, buf.length);
 	         
-	         System.out.println("Chunk data:" + msg);
 	         Peer.getExecutor().execute(new AnalizeMessageThread(msg));
 			 }
 		} catch (IOException e) {
