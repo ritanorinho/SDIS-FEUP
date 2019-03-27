@@ -4,12 +4,9 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
-import java.util.Random;
-import java.util.concurrent.TimeUnit;
 
 import project.Peer;
 import threads.AnalizeMessageThread;
-import threads.StoredChunkThread;
 
 
 public class MDBListener implements Runnable {

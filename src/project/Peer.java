@@ -1,4 +1,5 @@
 package project;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -43,7 +44,6 @@ public class Peer implements RMIInterface {
 		executor.execute(mdbListener);
 		executor.execute(mdrListener);
 
-
 	}
 
 	public static void main(String args[]) throws InterruptedException, IOException, AlreadyBoundException {
@@ -62,8 +62,9 @@ public class Peer implements RMIInterface {
 		}
 	}
 
-	private static void validateArgs(String[] args) throws RemoteException, InterruptedException, IOException, AlreadyBoundException {
-		
+	private static void validateArgs(String[] args)
+			throws RemoteException, InterruptedException, IOException, AlreadyBoundException {
+
 		InetAddress MCAddress = InetAddress.getByName(args[0]);
 		Integer MCPort = Integer.parseInt(args[1]);
 		InetAddress MDBAddress = InetAddress.getByName(args[2]);
@@ -75,31 +76,34 @@ public class Peer implements RMIInterface {
 		accessPoint = args[8];
 
 		Peer peer = new Peer(MCAddress, MCPort, MDBAddress, MDBPort, MDRAddress, MDRPort);
-		RMIInterface stub = (RMIInterface) UnicastRemoteObject.exportObject(peer, 0); 
+		RMIInterface stub = (RMIInterface) UnicastRemoteObject.exportObject(peer, 0);
 
 		Registry registry;
 
-		try{
+		try {
 			registry = LocateRegistry.getRegistry();
 			registry.rebind(accessPoint, stub);
-		}catch(RemoteException e){
+		} catch (RemoteException e) {
 
-			try{
+			try {
 				registry = LocateRegistry.createRegistry(1099);
 
 				registry.rebind(accessPoint, stub);
 
-			}catch(RemoteException e3){
+			} catch (RemoteException e3) {
 				e3.printStackTrace();
 			}
 		}
 	}
+
 	public static Memory getMemory() {
 		return memory;
 	}
+
 	public static MDBListener getMDBListener() {
-	 return mdbListener;
+		return mdbListener;
 	}
+
 	public static ScheduledThreadPoolExecutor getExecutor() {
 		return executor;
 	}
@@ -108,54 +112,83 @@ public class Peer implements RMIInterface {
 	public void backup(String filename, int repDegree) throws RemoteException, InterruptedException {
 		File file = new File(filename);
 		FileInfo fileInfo = new FileInfo(file);
-		ArrayList<Chunk> chunks= fileInfo.getChunks();
+		ArrayList<Chunk> chunks = fileInfo.getChunks();
 		String name;
-				
-		for (int i = 0; i < chunks.size();i++) {
-			String header = "PUTCHUNK "+ protocolVersion + " "+ serverID + " " +  fileInfo.getFileId()+ " "+ chunks.get(i).getChunkNo() + " "+repDegree + "\n\r\n\r";
-			System.out.println("\n SENT: "+header);
-			
-			name= fileInfo.getFileId()+"-"+chunks.get(i).getChunkNo();
+
+		for (int i = 0; i < chunks.size(); i++) {
+			String header = "PUTCHUNK " + protocolVersion + " " + serverID + " " + fileInfo.getFileId() + " "
+					+ chunks.get(i).getChunkNo() + " " + repDegree + "\n\r\n\r";
+			System.out.println("\n SENT: " + header);
+
+			name = fileInfo.getFileId() + "-" + chunks.get(i).getChunkNo();
+
+			if (!memory.files.contains(fileInfo))
+				memory.files.add(fileInfo);
 
 			if (!memory.backupChunks.containsKey(name)) {
-				Peer.memory.backupChunks.put(name,0);
+				memory.backupChunks.put(name, 0);
 			}
-			
+
 			try {
 				byte[] data = header.getBytes();
 				byte[] body = chunks.get(i).getData();
-				byte[] message = new byte[data.length+body.length];
+				byte[] message = new byte[data.length + body.length];
 				System.arraycopy(data, 0, message, 0, data.length);
 				System.arraycopy(body, 0, message, data.length, body.length);
 				String channel = "mdb";
-				String worker = message + "-"+channel;
+				String worker = message + "-" + channel;
 				Peer.executor.execute(new WorkerThread(worker));
 				mdbListener.message(message);
 				Thread.sleep(500);
-				Peer.executor.schedule(new BackupThread(name,message, repDegree),1,TimeUnit.SECONDS);// The initiator-peer collects the confirmation messages during a time interval of one second
-				
+				Peer.executor.schedule(new BackupThread(name, message, repDegree), 1, TimeUnit.SECONDS);// The
+
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			// TODO Auto-generated method stub
-			
-		}
-		
-	}
 
+		}
+
+	}
 
 	@Override
 	public void restore(String file) throws RemoteException {
 		// TODO Auto-generated method stub
-		
+
 	}
 
-
 	@Override
-	public void delete(String file) throws RemoteException {
-		// TODO Auto-generated method stub
-		
+	public void delete(String filename) throws RemoteException {
+		File file = new File(filename);
+		FileInfo fileInfo = new FileInfo(file);
+
+		if (!memory.hasFile(fileInfo.getFileId())) {
+			System.out.println("File is not on the system");
+			return;
+		}
+
+		String header = "DELETE " + protocolVersion + " " + serverID + " " + fileInfo.getFileId() + "\n\r\n\r";
+		System.out.println("\n SENT: " + header);
+
+		byte[] data = header.getBytes();
+		byte[] message = new byte[data.length];
+		System.arraycopy(data, 0, message, 0, data.length);
+		String channel = "mdb";
+		String worker = message + "-" + channel;
+
+		try {
+			Peer.executor.execute(new WorkerThread(worker));
+			mcListener.message(message);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		try {
+			Thread.sleep(500);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		//Peer.executor.schedule(new BackupThread(name,message, repDegree),1,TimeUnit.SECONDS);// The initiator-peer collects the confirmation messages during a time interval of one second		
 	}
 
 
