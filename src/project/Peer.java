@@ -121,24 +121,16 @@ public class Peer implements RMIInterface {
 				Peer.memory.backupChunks.put(name,0);
 			}
 			
-			try {
-				byte[] data = header.getBytes();
-				byte[] body = chunks.get(i).getData();
-				byte[] message = new byte[data.length+body.length];
-				System.arraycopy(data, 0, message, 0, data.length);
-				System.arraycopy(body, 0, message, data.length, body.length);
-				String channel = "mdb";
-				String worker = message + "-"+channel;
-				Peer.executor.execute(new WorkerThread(worker));
-				mdbListener.message(message);
-				Thread.sleep(500);
-				Peer.executor.schedule(new BackupThread(name,message, repDegree),1,TimeUnit.SECONDS);// The initiator-peer collects the confirmation messages during a time interval of one second
-				
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			// TODO Auto-generated method stub
+			byte[] data = header.getBytes();
+			byte[] body = chunks.get(i).getData();
+			byte[] message = new byte[data.length+body.length];
+			System.arraycopy(data, 0, message, 0, data.length);
+			System.arraycopy(body, 0, message, data.length, body.length);
+			String channel = "mdb";
+			String worker = message + "-"+channel;
+			Peer.executor.execute(new WorkerThread(worker));
+			Thread.sleep(500);
+			Peer.executor.schedule(new BackupThread(name,message, repDegree),1,TimeUnit.SECONDS);// The initiator-peer collects the confirmation messages during a time interval of one second
 			
 		}
 		
@@ -146,8 +138,28 @@ public class Peer implements RMIInterface {
 
 
 	@Override
-	public void restore(String file) throws RemoteException {
-		// TODO Auto-generated method stub
+	public void restore(String filename) throws RemoteException {
+		File file = new File(filename);
+		FileInfo fileInfo = new FileInfo(file);
+		ArrayList<Chunk> chunks= fileInfo.getChunks();
+		String name;
+				
+		for (int i = 0; i < chunks.size();i++) {
+			String header = "GETCHUNK "+ protocolVersion + " "+ serverID + " " +  fileInfo.getFileId()+ " "+ chunks.get(i).getChunkNo() + "\n\r\n\r";
+			System.out.println("\n SENT: "+header);
+			
+			name= fileInfo.getFileId()+"-"+chunks.get(i).getChunkNo();
+
+			if (!memory.backupChunks.containsKey(name)) {
+				Peer.memory.backupChunks.put(name,0);
+			}
+			
+			String channel = "mc";
+			String worker = header + "-"+channel;
+			Peer.executor.execute(new WorkerThread(worker));
+			
+		}
+		
 		
 	}
 

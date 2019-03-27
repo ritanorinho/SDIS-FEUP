@@ -38,7 +38,7 @@ public class MCListener implements Runnable {
 	         clientSocket.receive(msgPacket);
 	         
 	         String msg = new String(buf, 0, buf.length);
-	         //System.out.println("Stored message:  "+msg);
+	         System.out.println("Stored message:  "+msg);
 	         Peer.getExecutor().execute(new AnalizeMessageThread(msg));
 	         
 			 }
@@ -48,6 +48,7 @@ public class MCListener implements Runnable {
 		}     
 	}
 	public int message(byte[] message) throws IOException {
+		
 		MulticastSocket mcSocket = new MulticastSocket();
 		DatagramPacket packet = new DatagramPacket(message, message.length, mcAddress, mcPort);
 		mcSocket.send(packet);

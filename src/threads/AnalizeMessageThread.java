@@ -54,9 +54,26 @@ public class AnalizeMessageThread implements Runnable {
 			case "STORED":
 				stored();
 				break;
+			case "GETCHUNK":
+				getchunk();
+				break;
 			
 			default:
 					
 			}
+		}
+		private void getchunk() {
+			String[] messageArray = this.message.trim().split("\\s+");
+			String chunkId = messageArray[3]+"-"+messageArray[4];
+			System.out.println(chunkId);
+			String restoredChunk ="CHUNK "+ messageArray[0]+" "+ messageArray[1]+" "+messageArray[2]+" "+messageArray[3]+"\n\r\n\r";
+			Random random = new Random();
+			int delay = random.nextInt(401);
+			if (Peer.getMemory().backupChunks.containsKey(chunkId)) {
+				Peer.getExecutor().schedule(new RestoredChunkThread(restoredChunk.getBytes()), delay, TimeUnit.MILLISECONDS);
+			}
+			
+			// TODO Auto-generated method stub
+			
 		}
 }
