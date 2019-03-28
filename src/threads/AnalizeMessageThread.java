@@ -47,7 +47,15 @@ public class AnalizeMessageThread implements Runnable {
 	}
 
 	private synchronized void delete() {
-		System.out.println("analyze-message-thread:delete");
+
+		String[] messageArray = this.message.trim().split("\\s+");
+		String fileId = messageArray[3];
+		;
+		
+		if (Peer.getMemory().hasFile(fileId)) {
+			Peer.getMemory().removeChunks(fileId);
+		}
+
 	}
 
 	@Override

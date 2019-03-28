@@ -193,7 +193,7 @@ public class Peer implements RMIInterface {
 		byte[] data = header.getBytes();
 		byte[] message = new byte[data.length];
 		System.arraycopy(data, 0, message, 0, data.length);
-		String channel = "mdb";
+		String channel = "mc";
 		String worker = message + "-" + channel;
 
 		try {
