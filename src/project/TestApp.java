@@ -1,5 +1,6 @@
 package project;
 
+import java.io.UnsupportedEncodingException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -43,7 +44,12 @@ public class TestApp {
         }
         fileName = args[2];
         replicationDegree = Integer.parseInt(args[3]);
-        stub.backup(fileName, replicationDegree);
+			try {
+				stub.backup(fileName, replicationDegree);
+			} catch (UnsupportedEncodingException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
         break;
 
       case "RESTORE":

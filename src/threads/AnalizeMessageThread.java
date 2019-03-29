@@ -25,6 +25,8 @@ public class AnalizeMessageThread implements Runnable {
 	}
 
 	private synchronized void putchunk() {
+		
+		
 
 		String[] messageArray = this.message.trim().split("\\s+");
 		String chunkId = messageArray[3] + "-" + messageArray[4];
@@ -40,7 +42,9 @@ public class AnalizeMessageThread implements Runnable {
 				Peer.getMemory().backupChunks.put(chunkId, Peer.getMemory().backupChunks.get(chunkId) + 1);
 				String storedMessage = "STORED " + messageArray[1] + " " + id + " " + messageArray[3] + " "
 						+ messageArray[4] + " " + "\n\r\n\r";
-				Peer.getExecutor().schedule(new StoredChunkThread(storedMessage.getBytes()), delay,
+
+				
+				Peer.getExecutor().schedule(new StoredChunkThread(storedMessage.getBytes(),messageArray[6]), delay,
 						TimeUnit.MILLISECONDS);
 			}
 		}
@@ -54,6 +58,28 @@ public class AnalizeMessageThread implements Runnable {
 		
 		if (Peer.getMemory().hasFile(fileId)) {
 			Peer.getMemory().removeChunks(fileId);
+		}
+
+	}
+	private void chunk() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	private void getchunk() {
+		String[] messageArray = this.message.trim().split("\\s+");
+		String chunkId = messageArray[3] + "-" + messageArray[4];
+		System.out.println(chunkId);
+		String restoredChunk = "CHUNK " + messageArray[1] + " " + messageArray[2] + " " + messageArray[3] + " "
+				+ messageArray[3] + "\n\r\n\r";
+		Random random = new Random();
+		int delay = random.nextInt(401);
+		String worker = restoredChunk + "-"+"mdr";
+		int senderId = Integer.parseInt(messageArray[2]);
+		if (Peer.getId() != senderId && Peer.getMemory().backupChunks.containsKey(chunkId))
+		{
+			Peer.getExecutor().schedule(new WorkerThread(worker), delay,
+					TimeUnit.MILLISECONDS);
 		}
 
 	}
@@ -74,23 +100,12 @@ public class AnalizeMessageThread implements Runnable {
 		case "GETCHUNK":
 			getchunk();
 			break;
+		case "CHUNK":
+			chunk();
+			break;
 		default:
 		}
 	}
 
-	private void getchunk() {
-		String[] messageArray = this.message.trim().split("\\s+");
-		String chunkId = messageArray[3] + "-" + messageArray[4];
-		System.out.println(chunkId);
-		String restoredChunk = "CHUNK " + messageArray[0] + " " + messageArray[1] + " " + messageArray[2] + " "
-				+ messageArray[3] + "\n\r\n\r";
-		Random random = new Random();
-		int delay = random.nextInt(401);
-		String worker = restoredChunk + "-"+"mdr";
-		if (Peer.getMemory().backupChunks.containsKey(chunkId)) {
-			Peer.getExecutor().schedule(new WorkerThread(worker), delay,
-					TimeUnit.MILLISECONDS);
-		}
 
-	}
 }

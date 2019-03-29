@@ -34,7 +34,6 @@ public class FileInfo {
 			while((size=buf.read(content))>0) {
 				chunksCount++;
 				this.chunks.add(new Chunk (this.fileId,chunksCount,content,content.length));
-				System.out.println("chunknr: "+chunksCount + " size: "+size+"content: "+content.toString());
 				content= new byte[size];
 			}
 			if (this.file.length() %64000==0) {
@@ -55,7 +54,6 @@ public class FileInfo {
 	
 	public void fileId() {
 		String fileName= this.file.getName();
-		System.out.println(fileName);
 		this.filename=fileName;
 		String lastModified= String.valueOf(this.file.lastModified());
 		String fileId = fileName + "."+lastModified;

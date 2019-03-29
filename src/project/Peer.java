@@ -2,6 +2,7 @@ package project;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.rmi.AlreadyBoundException;
@@ -17,6 +18,8 @@ import java.util.concurrent.TimeUnit;
 import listeners.MCListener;
 import listeners.MDBListener;
 import listeners.MDRListener;
+import sun.misc.IOUtils;
+import sun.nio.cs.StandardCharsets;
 import threads.*;
 import utils.Chunk;
 import utils.FileInfo;
@@ -122,6 +125,8 @@ public class Peer implements RMIInterface {
 		for (int i = 0; i < chunks.size(); i++) {
 			String header = "PUTCHUNK " + protocolVersion + " " + serverID + " " + fileInfo.getFileId() + " "
 					+ chunks.get(i).getChunkNo() + " " + repDegree + "\n\r\n\r";
+			
+			
 			System.out.println("\n SENT: " + header);
 
 			name = fileInfo.getFileId() + "-" + chunks.get(i).getChunkNo();
@@ -158,14 +163,19 @@ public class Peer implements RMIInterface {
 	@Override
 	public void restore(String filename) throws RemoteException {
 		File file = new File(filename);
-		FileInfo fileInfo = new FileInfo(file);
-		System.out.println("filename: " +fileInfo.getFilename());
-		ArrayList<Chunk> chunks= fileInfo.getChunks();
-		String name;
-		System.out.println(memory.filenameId.size());
-		if (!memory.filenameId.containsValue(fileInfo.getFilename())) {
+		String name= file.getName();
+		ArrayList<Chunk> chunks= new ArrayList<Chunk>();
+		FileInfo fileInfo=null;
+		if (!memory.filenameId.containsValue(name)) {
 			System.out.println(filename + "has never backed up!");
 		}else {
+			for (int i =0;i <memory.files.size();i++) {
+				if (memory.files.get(i).getFilename().equals(name)) {
+					fileInfo= memory.files.get(i);
+					chunks= memory.files.get(i).getChunks();
+					break;
+				}
+			}
 		for (int i = 0; i < chunks.size();i++) {
 			String header = "GETCHUNK "+ protocolVersion + " "+ serverID + " " +  fileInfo.getFileId()+ " "+ chunks.get(i).getChunkNo() + "\n\r\n\r";
 			System.out.println("\n SENT: "+header);
