@@ -5,6 +5,10 @@ import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
 
+import project.Peer;
+import threads.AnalizeMessageThread;
+import threads.RestoreChunkThread;
+
 public class MDRListener implements Runnable{
 
 	private InetAddress mdrAddress;
@@ -28,7 +32,7 @@ public class MDRListener implements Runnable{
 	         clientSocket.receive(msgPacket);
 	         
 	         String msg = new String(buf, 0, buf.length);
-	         
+	         Peer.getExecutor().execute(new RestoreChunkThread(msg));
 	         System.out.println("msg: "+msg);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

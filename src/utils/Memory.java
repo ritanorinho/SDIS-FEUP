@@ -6,6 +6,8 @@ import java.util.Map.Entry;
 
 public class Memory {
 	public ArrayList<FileInfo> files = new ArrayList<FileInfo>();
+	// Filename fileId
+	public HashMap<String,String> filenameId= new HashMap<String,String>();
 	// String: fileId-ChunkNo Integer: Number of occurrences
 	public HashMap<String, Integer> backupChunks = new HashMap<String, Integer>();
 

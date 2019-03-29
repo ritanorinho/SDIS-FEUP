@@ -112,6 +112,10 @@ public class Peer implements RMIInterface {
 	public void backup(String filename, int repDegree) throws RemoteException, InterruptedException {
 		File file = new File(filename);
 		FileInfo fileInfo = new FileInfo(file);
+		System.out.println("filename:" +fileInfo.getFilename());
+		memory.files.add(fileInfo);
+		memory.filenameId.put(fileInfo.getFileId(), fileInfo.getFilename());
+		
 		ArrayList<Chunk> chunks = fileInfo.getChunks();
 		String name;
 
@@ -155,9 +159,12 @@ public class Peer implements RMIInterface {
 	public void restore(String filename) throws RemoteException {
 		File file = new File(filename);
 		FileInfo fileInfo = new FileInfo(file);
+		System.out.println("filename: " +fileInfo.getFilename());
 		ArrayList<Chunk> chunks= fileInfo.getChunks();
 		String name;
-				
+		if (!memory.filenameId.containsValue(fileInfo.getFilename())) {
+			System.out.println(filename + "has never backed up!");
+		}else {
 		for (int i = 0; i < chunks.size();i++) {
 			String header = "GETCHUNK "+ protocolVersion + " "+ serverID + " " +  fileInfo.getFileId()+ " "+ chunks.get(i).getChunkNo() + "\n\r\n\r";
 			System.out.println("\n SENT: "+header);
@@ -173,7 +180,7 @@ public class Peer implements RMIInterface {
 			Peer.executor.execute(new WorkerThread(worker));
 			
 		}
-		
+		}
 		
 	}
 

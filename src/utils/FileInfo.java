@@ -15,7 +15,7 @@ public class FileInfo {
 	private String fileId;
 	private ArrayList<Chunk> chunks = new ArrayList<Chunk>();
 	private File file ;
-	
+	private String filename;
 	public FileInfo(File file) {
 		this.file=file;
 		fileId();
@@ -53,6 +53,8 @@ public class FileInfo {
 	
 	public void fileId() {
 		String fileName= this.file.getName();
+		System.out.println(fileName);
+		this.filename=fileName;
 		String lastModified= String.valueOf(this.file.lastModified());
 		String fileId = fileName + "."+lastModified;
 		this.fileId = sha256(fileId);	
@@ -89,5 +91,13 @@ public class FileInfo {
 
 		return null;
 	}
+
+		public String getFilename() {
+			return filename;
+		}
+
+		public void setFilename(String filename) {
+			this.filename = filename;
+		}
 
 }
