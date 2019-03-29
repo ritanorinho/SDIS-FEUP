@@ -162,6 +162,7 @@ public class Peer implements RMIInterface {
 		System.out.println("filename: " +fileInfo.getFilename());
 		ArrayList<Chunk> chunks= fileInfo.getChunks();
 		String name;
+		System.out.println(memory.filenameId.size());
 		if (!memory.filenameId.containsValue(fileInfo.getFilename())) {
 			System.out.println(filename + "has never backed up!");
 		}else {

@@ -30,10 +30,12 @@ public class FileInfo {
 		try {
 			buf = new BufferedInputStream(new FileInputStream (file));
 			int chunksCount=0;
-			while((buf.read(content))>0) {
+			int size=0;
+			while((size=buf.read(content))>0) {
 				chunksCount++;
 				this.chunks.add(new Chunk (this.fileId,chunksCount,content,content.length));
-				content= new byte[MAX_SIZE];
+				System.out.println("chunknr: "+chunksCount + " size: "+size+"content: "+content.toString());
+				content= new byte[size];
 			}
 			if (this.file.length() %64000==0) {
 				this.chunks.add(new Chunk(this.fileId,chunksCount,null,0));
