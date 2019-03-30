@@ -1,5 +1,8 @@
 package threads;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
@@ -26,8 +29,20 @@ public class GetchunkThread implements Runnable {
 		int delay = random.nextInt(401);
 		
 		int senderId = Integer.parseInt(messageArray[2]);
+		String filename = "Peer"+Peer.getId() +"/"+"CHUNK"+"/"+messageArray[3] + "/" + messageArray[4];
+		try {
+			File file = new File(filename);
+			file.getParentFile().mkdirs();
+			file.createNewFile();
+			FileOutputStream fos = new FileOutputStream(filename);
+			fos.write(chunkContent.getBytes());
+			fos.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
-		if (Peer.getId() != senderId && Peer.getMemory().backupChunks.containsKey(chunkId))
+		if (Peer.getId() != senderId )
 		{
 			Peer.getExecutor().schedule(new WorkerThread(worker), delay,
 					TimeUnit.MILLISECONDS);

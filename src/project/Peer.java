@@ -191,6 +191,8 @@ public class Peer implements RMIInterface {
 			Peer.executor.execute(new WorkerThread(worker));
 			
 		}
+		
+		Peer.executor.schedule(new RestoreFileThread(fileInfo.getFilename()),8,TimeUnit.SECONDS);
 		}
 		
 	}

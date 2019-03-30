@@ -64,36 +64,14 @@ public class AnalizeMessageThread implements Runnable {
 
 	}
 	private void chunk() {
-
 		String chunkId = messageArray[3] + "-" + messageArray[4];
 		System.out.println("RECEIVED "+this.message);
 		int senderId = Integer.parseInt(messageArray[2]);
-		System.out.println(senderId+"-"+Peer.getId());
 		if (Peer.getId() != senderId) {
-			createFileChunk(messageArray[5]);
-			Peer.getMemory().requiredChunks.put(chunkId, messageArray[5]);
-			
-
-			
+			Peer.getMemory().requiredChunks.put(chunkId, messageArray[5]);		
 		}
 		
 	}
-
-private void createFileChunk(String content) {
-		
-		String filename = "Peer"+Peer.getId() +"/"+messageArray[0]+"/"+messageArray[3]+"-"+messageArray[4];
-		System.out.println(filename);
-		try {
-			File file = new File(filename);
-			file.getParentFile().mkdirs();
-			file.createNewFile();
-			FileOutputStream fos = new FileOutputStream(filename);
-			fos.write(content.getBytes());
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-}
 
 	private void getchunk() {
 		String[] messageArray = this.message.trim().split("\\s+");
@@ -101,7 +79,6 @@ private void createFileChunk(String content) {
 		
 		Random random = new Random();
 		int delay = random.nextInt(401);
-		
 		int senderId = Integer.parseInt(messageArray[2]);
 		if (Peer.getId() != senderId && Peer.getMemory().backupChunks.containsKey(chunkId))
 		{

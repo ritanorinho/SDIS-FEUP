@@ -24,7 +24,7 @@ public class StoredChunkThread implements Runnable {
 
 	private void createFileChunk() {
 		
-		String filename = "Peer"+Peer.getId() +"/"+messageArray[0]+"/"+messageArray[3]+"-"+messageArray[4];
+		String filename = "Peer"+Peer.getId() +"/"+messageArray[0]+"/"+messageArray[3]+"/"+messageArray[4];
 	
 		try {
 			File file = new File(filename);

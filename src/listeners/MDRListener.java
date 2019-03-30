@@ -26,7 +26,7 @@ public class MDRListener implements Runnable{
 			
 			clientSocket = new MulticastSocket(this.mdrPort);
 			 clientSocket.joinGroup(this.mdrAddress);
-			 
+			 while(true) {
 			 DatagramPacket msgPacket = new DatagramPacket(buf, buf.length);
 			 //System.out.println(this.mdrPort+"-"+this.mdrAddress);
 	         clientSocket.receive(msgPacket);
@@ -34,6 +34,7 @@ public class MDRListener implements Runnable{
 	         String msg = new String(buf, 0, buf.length);
 	         Peer.getExecutor().execute(new AnalizeMessageThread(msg));
 	         System.out.println("msg: "+msg);
+			 }
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
