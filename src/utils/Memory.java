@@ -11,7 +11,10 @@ public class Memory {
 	public HashMap<String,String> filenameId= new HashMap<String,String>();
 	// String: fileId-ChunkNo Integer: Number of occurrences
 	public ConcurrentHashMap<String, Integer> backupChunks = new ConcurrentHashMap<String, Integer>();
-	public ArrayList<Chunk> savedChunks= new ArrayList<Chunk>();
+	//String: fileId-ChunkNo
+	public HashMap<String,Chunk> savedChunks= new HashMap<String,Chunk>();
+	//String fileId-ChunkNo 
+	public HashMap<String,String> requiredChunks= new HashMap<String, String>();
 	public boolean hasFile(String fileId) {
 		for (int i = 0; i < files.size(); i++) {
 			if (files.get(i).getFileId().equals(fileId))

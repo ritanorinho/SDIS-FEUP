@@ -24,7 +24,7 @@ public class StoredChunkThread implements Runnable {
 
 	private void createFileChunk() {
 		
-		String filename = ""+Peer.getId() +"/"+messageArray[3]+"-"+messageArray[4];
+		String filename = "Peer"+Peer.getId() +"/"+messageArray[0]+"/"+messageArray[3]+"-"+messageArray[4];
 	
 		try {
 			File file = new File(filename);
@@ -49,7 +49,8 @@ public class StoredChunkThread implements Runnable {
 		return;
 		}
 		Chunk chunk = new Chunk(this.messageArray[3],Integer.parseInt(this.messageArray[4]),this.content.getBytes(),this.content.length());
-		Peer.getMemory().savedChunks.add(chunk);
+		String chunkName = this.messageArray[3]+"-"+this.messageArray[4];
+		Peer.getMemory().savedChunks.put(chunkName, chunk);
 		
 	}
 
