@@ -9,12 +9,15 @@ public class WorkerThread implements Runnable {
 	
 	String channel;
 	String message;
-	public WorkerThread(String worker) {
-		String[] message = worker.trim().split("-");
-		this.channel= message[1];
-		this.message= message[0];
+
+
+	public WorkerThread(String message, String channel) {
+		this.message=message;
+		this.channel=channel;
+		
 		// TODO Auto-generated constructor stub
 	}
+	
 
 	@Override
 	public void run() {
@@ -40,7 +43,9 @@ public class WorkerThread implements Runnable {
 			break;
 		case "mc":
 			try {
+				
 				Peer.getMCListener().message(this.message.getBytes());
+				
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

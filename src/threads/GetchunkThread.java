@@ -24,18 +24,19 @@ public class GetchunkThread implements Runnable {
 	
 		String restoredChunk = "CHUNK " + messageArray[1] + " " + messageArray[2] + " " + messageArray[3] + " "
 				+ messageArray[4] + "\n\r\n\r"+chunkContent;
-		String worker= restoredChunk + "-"+"mdr";
+		String channel ="mdr";
 		Random random = new Random();
 		int delay = random.nextInt(401);
 		int senderId = Integer.parseInt(messageArray[2]);
 		String filename = "Peer"+Peer.getId() +"/"+"CHUNK"+"/"+messageArray[3] + "/" + messageArray[4];
+		System.out.println("SIZE "+messageArray[4]+" "+chunkData.length);
 		
 		try {
 			File file = new File(filename);
 			file.getParentFile().mkdirs();
 			file.createNewFile();
 			FileOutputStream fos = new FileOutputStream(filename);
-			fos.write(chunkContent.getBytes());
+			fos.write(chunkData);
 			fos.close();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -44,10 +45,11 @@ public class GetchunkThread implements Runnable {
 		
 		if (Peer.getId() != senderId )
 		{	
-			Peer.getExecutor().schedule(new WorkerThread(worker), delay,
+			Peer.getExecutor().schedule(new WorkerThread(restoredChunk,channel), delay,
 					TimeUnit.MILLISECONDS);
 		}
 		// TODO Auto-generated method stub
 	}
+	
 
 }

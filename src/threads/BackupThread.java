@@ -43,6 +43,7 @@ public class BackupThread implements Runnable {
 				this.attempt++;
 				System.out.println("REPLICATION: "+replicationState);
 			}
+			
 			else {
 				System.out.println("PUTCHUNK THREAD: reached the maximum number of retransmissions per chunk");
 			}

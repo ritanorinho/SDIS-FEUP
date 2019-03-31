@@ -20,7 +20,7 @@ public class MDRListener implements Runnable{
 	}
 
 	public void run() {
-		 byte[] buf = new byte[256];
+		 byte[] buf = new byte[65000];
 		 MulticastSocket clientSocket;
 		try {
 			
@@ -33,7 +33,7 @@ public class MDRListener implements Runnable{
 	         
 	         String msg = new String(buf, 0, buf.length);
 	         Peer.getExecutor().execute(new AnalizeMessageThread(msg));
-	         System.out.println("msg: "+msg);
+	         //System.out.println("msg: "+msg);
 			 }
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

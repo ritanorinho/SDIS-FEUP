@@ -9,12 +9,12 @@ import utils.Chunk;
 
 public class StoredChunkThread implements Runnable {
 	byte[] byteMessage;
-	String content;
+	byte[] data;
 	String[] messageArray;
 	
-	public StoredChunkThread(byte[] storedMessage, String message) {
+	public StoredChunkThread(byte[] storedMessage, byte[]data) {
 		this.byteMessage=storedMessage;
-		this.content=message;
+		this.data=data;
 		String msg = new String(this.byteMessage, 0, this.byteMessage.length);
 		this.messageArray= msg.split("\\s+");
 		saveChunk();
@@ -22,6 +22,7 @@ public class StoredChunkThread implements Runnable {
 		 
 	}
 
+	
 	private void createFileChunk() {
 		
 		String filename = "Peer"+Peer.getId() +"/"+messageArray[0]+"/"+messageArray[3]+"/"+messageArray[4];
@@ -31,7 +32,9 @@ public class StoredChunkThread implements Runnable {
 			file.getParentFile().mkdirs();
 			file.createNewFile();
 			FileOutputStream fos = new FileOutputStream(filename);
-			fos.write(this.content.getBytes());
+			System.out.println("STORED: "+this.data.length);
+			fos.write(this.data);
+			fos.close();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -48,8 +51,9 @@ public class StoredChunkThread implements Runnable {
 			if (Peer.getMemory().files.get(i).getFileId().equals(messageArray[2]))
 		return;
 		}
-		Chunk chunk = new Chunk(this.messageArray[3],Integer.parseInt(this.messageArray[4]),this.content.getBytes(),this.content.length());
 		String chunkName = this.messageArray[3]+"-"+this.messageArray[4];
+		Chunk chunk = new Chunk(this.messageArray[3],Integer.parseInt(this.messageArray[4]),this.data,this.data.length,chunkName);
+		
 		Peer.getMemory().savedChunks.put(chunkName, chunk);
 		
 	}

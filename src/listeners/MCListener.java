@@ -24,7 +24,7 @@ public class MCListener implements Runnable {
 
 	 @Override
 		public void run() {
-		 byte[] buf = new byte[256];
+		 byte[] buf = new byte[65000];
 		 MulticastSocket clientSocket;
 		try {
 			
@@ -37,7 +37,7 @@ public class MCListener implements Runnable {
 	         clientSocket.receive(msgPacket);
 	         
 	         String msg = new String(buf, 0, buf.length);
-	         System.out.println("Stored message:  "+msg);
+	         //System.out.println("Stored message:  "+msg);
 	         Peer.getExecutor().execute(new AnalizeMessageThread(msg));
 	         
 			 }

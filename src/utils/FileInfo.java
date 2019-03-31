@@ -7,6 +7,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class FileInfo {
 	
@@ -16,13 +17,18 @@ public class FileInfo {
 	private ArrayList<Chunk> chunks = new ArrayList<Chunk>();
 	private File file ;
 	private String filename;
-	public FileInfo(File file) {
+	private String filePath;
+	private int replicationDegree;
+	public FileInfo(File file, String filePath, int repDegree) {
 		this.file=file;
+		this.filePath=filePath;
+		this.replicationDegree=repDegree;
 		fileId();
+		calculateNumberChunks();
 		// TODO Auto-generated constructor stub
 	}
 
-	public ArrayList<Chunk> getChunks(){
+	public void calculateNumberChunks(){
 		byte[] content = new byte[MAX_SIZE];
 		double fileLength = file.length();
 		
@@ -31,14 +37,23 @@ public class FileInfo {
 			buf = new BufferedInputStream(new FileInputStream (file));
 			int chunksCount=0;
 			int size=0;
+			String chunkId;
 			while((size=buf.read(content))>0) {
+				
 				chunksCount++;
-				this.chunks.add(new Chunk (this.fileId,chunksCount,content,content.length));
-				content= new byte[size];
+				
+				byte[] body = Arrays.copyOf(content, size);
+				
+				chunkId = this.fileId+"-"+chunksCount;
+				this.chunks.add(new Chunk (this.fileId,chunksCount,body,size,chunkId));
+				content= new byte[MAX_SIZE];
 			}
+			
 			if (this.file.length() %64000==0) {
-				this.chunks.add(new Chunk(this.fileId,chunksCount,null,0));
+				 chunkId = this.fileId+"-"+chunksCount;
+				this.chunks.add(new Chunk(this.fileId,chunksCount,null,0,chunkId));
 			}
+			
 			
 		
 		} catch (FileNotFoundException e) {
@@ -49,7 +64,10 @@ public class FileInfo {
 			e.printStackTrace();
 		}		
 		
-		return chunks;
+	
+	}
+	public ArrayList<Chunk> getChunks(){
+		return this.chunks;
 	}
 	
 	public void fileId() {
@@ -99,6 +117,16 @@ public class FileInfo {
 
 		public void setFilename(String filename) {
 			this.filename = filename;
+		}
+
+		public String getFilePath() {
+			// TODO Auto-generated method stub
+			return this.filePath;
+		}
+
+		public int getReplicationDegree() {
+			// TODO Auto-generated method stub
+			return this.replicationDegree;
 		}
 
 }

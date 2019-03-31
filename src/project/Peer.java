@@ -114,7 +114,7 @@ public class Peer implements RMIInterface {
 	@Override
 	public void backup(String filename, int repDegree) throws RemoteException, InterruptedException {
 		File file = new File(filename);
-		FileInfo fileInfo = new FileInfo(file);
+		FileInfo fileInfo = new FileInfo(file,filename,repDegree);
 		System.out.println("filename:" +fileInfo.getFilename());
 		memory.files.add(fileInfo);
 		memory.filenameId.put(fileInfo.getFileId(), fileInfo.getFilename());
@@ -138,24 +138,21 @@ public class Peer implements RMIInterface {
 				memory.backupChunks.put(name, 0);
 			}
 
-			try {
-				byte[] data = header.getBytes();
-				byte[] body = chunks.get(i).getData();
-				byte[] message = new byte[data.length + body.length];
-				System.arraycopy(data, 0, message, 0, data.length);
-				System.arraycopy(body, 0, message, data.length, body.length);
-				String channel = "mdb";
-				String worker = message + "-" + channel;
-				Peer.executor.execute(new WorkerThread(worker));
-				mdbListener.message(message);
-				Thread.sleep(500);
-				// The initiator-peer collects the confirmation
-				// messages during a time interval of one second
-				Peer.executor.schedule(new BackupThread(name, message, repDegree), 1, TimeUnit.SECONDS);
-
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+			byte[] data = header.getBytes();
+			byte[] body = chunks.get(i).getData();
+			byte[] message = new byte[data.length + body.length];
+			System.arraycopy(data, 0, message, 0, data.length);
+			System.arraycopy(body, 0, message, data.length, body.length);
+			System.out.println("message length: "+message.length);
+			String channel = "mdb";
+			String messageString = new String (message,0, message.length);
+			Peer.executor.execute(new WorkerThread(messageString,channel));
+			
+			Thread.sleep(500);
+			// The initiator-peer collects the confirmation
+			
+			// messages during a time interval of one second
+			Peer.executor.schedule(new BackupThread(name, message, repDegree), 1, TimeUnit.SECONDS);
 		}
 
 	}
@@ -183,14 +180,14 @@ public class Peer implements RMIInterface {
 			
 			
 			String channel = "mc";
-			String worker = header + "-"+channel;
-			Peer.executor.execute(new WorkerThread(worker));
+			
+			Peer.executor.execute(new WorkerThread(header,channel));
 			
 		}
 		
-		String worker = "RESTORE "+serverID+ " "+ name+ " "+ fileInfo.getFileId()+" -"+"mc";
-		
-		Peer.executor.schedule(new WorkerThread(worker),5,TimeUnit.SECONDS);
+		String worker = "RESTORE "+serverID+ " "+ name+ " "+ fileInfo.getFileId();
+		String channel = "mc";
+		Peer.executor.schedule(new WorkerThread(worker,channel),5,TimeUnit.SECONDS);
 		}
 		
 	}
@@ -198,7 +195,7 @@ public class Peer implements RMIInterface {
 	@Override
 	public void delete(String filename) throws RemoteException {
 		File file = new File(filename);
-		FileInfo fileInfo = new FileInfo(file);
+		FileInfo fileInfo = new FileInfo(file,filename,0);
 
 		if (!memory.hasFile(fileInfo.getFileId())) {
 			System.out.println("File is not on the system");
@@ -212,10 +209,10 @@ public class Peer implements RMIInterface {
 		byte[] message = new byte[data.length];
 		System.arraycopy(data, 0, message, 0, data.length);
 		String channel = "mc";
-		String worker = message + "-" + channel;
+		String worker = new String(message,0,message.length);
 
 		try {
-			Peer.executor.execute(new WorkerThread(worker));
+			Peer.executor.execute(new WorkerThread(worker,channel));
 			mcListener.message(message);
 
 			try {
@@ -244,7 +241,18 @@ public class Peer implements RMIInterface {
 	@Override
 	public void state() throws RemoteException {
 		// TODO Auto-generated method stub
-		System.out.println("ABC");
+		// Backup
+		System.out.println("For each file whose backup it has initiated:");
+		for (int i =0; i < memory.files.size();i++) {
+			System.out.println("-File path: "+memory.files.get(i).getFilePath());
+			System.out.println("-Backup service id of the file:"+memory.files.get(i).getFileId());
+			System.out.println("-Replication degree:" + memory.files.get(i).getReplicationDegree());
+			for (int j = 0; j< memory.files.get(i).getChunks().size();j++) {
+				System.out.println("--Chunk number: "+memory.files.get(i).getChunks().get(j).getChunkNo());
+				System.out.println("--Perceived replication degree: "+memory.backupChunks.get(memory.files.get(i).getChunks().get(j).getChunkId()));
+			}
+			
+		}
 	}
 
 	public static int getId() {

@@ -6,13 +6,15 @@ public  class Chunk {
 	private int chunkNo;
 	private byte[] data;
 	private int length;
+	private String chunkId;
 	
 	
-	public Chunk(String fileId,int chunkNo,byte[] data, int length) {
+	public Chunk(String fileId,int chunkNo,byte[] data, int length, String chunkId) {
 		this.chunkNo = chunkNo;
 		this.data=data;
 		this.length=length;
 		this.fileId=fileId;
+		this.chunkId =chunkId;
 	}
 	
 
@@ -35,6 +37,13 @@ public  class Chunk {
 
 	public int getLength() {
 		return length;
+	}
+
+
+
+	public String getChunkId() {
+		// TODO Auto-generated method stub
+		return this.chunkId;
 	}
 
 	

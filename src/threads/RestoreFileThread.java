@@ -20,11 +20,21 @@ public class RestoreFileThread implements Runnable {
 
 	@Override
 	public void run() {
-		//System.out.println("NUMBER CHUNKS" +Peer.getMemory().requiredChunks);
+		boolean aux =createFile();//System.out.println("NUMBER CHUNKS" +Peer.getMemory().requiredChunks);
+		System.out.println("File: "+aux);
+	}
+
+	public boolean createFile() {
 		String filename = "Peer"+Peer.getId() +"/"+"RESTORED"+"/"+this.filename;
-		try {
 		File finalFile= new File(filename);
-		FileOutputStream fos = new FileOutputStream(finalFile);
+		
+		try {		
+		
+		if (!finalFile.exists()) {
+			finalFile.getParentFile().mkdirs();
+			finalFile.createNewFile();
+		}
+		FileOutputStream fos = new FileOutputStream(finalFile,true);
 		ArrayList<String> sortedChunks = new ArrayList<String>(Peer.getMemory().requiredChunks.keySet());
 		String[] split = sortedChunks.get(0).trim().split("-");
 		if (sortedChunks.size() >1) {
@@ -35,7 +45,7 @@ public class RestoreFileThread implements Runnable {
             int chunk2 = Integer.valueOf(o2.split("-")[1]);
             return Integer.compare(chunk1, chunk2);
         });
-		System.out.println(sortedChunks.size());
+		
 		
 		for (String key: sortedChunks) {
 			String[] splitChunkName= key.trim().split("-");
@@ -44,7 +54,7 @@ public class RestoreFileThread implements Runnable {
 			File chunkFile = new File(chunkPath);
 			if (!chunkFile.exists()) {
 				
-				return;
+				return false;
 			}
 			byte[] content = new byte[(int) chunkFile.length()];
 
@@ -53,13 +63,14 @@ public class RestoreFileThread implements Runnable {
 			fos.write(content);
 			Peer.getMemory().requiredChunks.remove(key);
 		}
+		fos.close();
+		return true;
 		} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			
-			
+			return false;
 
 	}
-
-}
+	}
