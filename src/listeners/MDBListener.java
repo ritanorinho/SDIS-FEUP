@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
+import java.util.Arrays;
 
 import project.Peer;
 import threads.AnalizeMessageThread;
@@ -18,6 +19,8 @@ public class MDBListener implements Runnable {
 			this.mdbPort = mdbPort;
 		// TODO Auto-generated constructor stub
 	}
+	
+	
 	 @Override
 		public void run() {
 		 byte[] buf = new byte[65000];
@@ -31,15 +34,16 @@ public class MDBListener implements Runnable {
 			 //System.out.println(this.mdbPort+"-"+this.mdbAddress);
 	         clientSocket.receive(msgPacket);
 	         
-	         String msg = new String(buf, 0, buf.length);
-	         //System.out.println(msg);
+	         byte[] message = Arrays.copyOf(buf,msgPacket.getLength());
+	                  
 	         
-	         Peer.getExecutor().execute(new AnalizeMessageThread(msg));
+	         Peer.getExecutor().execute(new AnalizeMessageThread(message));
 			 }
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}     
+		
 	}
 	 
 	

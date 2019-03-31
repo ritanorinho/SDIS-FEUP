@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
+import java.util.Arrays;
 
 import project.Peer;
 import threads.AnalizeMessageThread;
@@ -18,6 +19,7 @@ public class MDRListener implements Runnable{
 			this.mdrAddress = mdrAddress;
 			this.mdrPort = mdrPort;
 	}
+	
 
 	public void run() {
 		 byte[] buf = new byte[65000];
@@ -30,12 +32,13 @@ public class MDRListener implements Runnable{
 			 DatagramPacket msgPacket = new DatagramPacket(buf, buf.length);
 			 //System.out.println(this.mdrPort+"-"+this.mdrAddress);
 	         clientSocket.receive(msgPacket);
+	         byte[] message = Arrays.copyOf(buf,msgPacket.getLength());
 	         
-	         String msg = new String(buf, 0, buf.length);
-	         Peer.getExecutor().execute(new AnalizeMessageThread(msg));
+	         Peer.getExecutor().execute(new AnalizeMessageThread(message));
 	         //System.out.println("msg: "+msg);
 			 }
 		} catch (IOException e) {
+			
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}     

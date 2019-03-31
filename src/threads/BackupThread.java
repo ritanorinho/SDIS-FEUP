@@ -16,7 +16,9 @@ public class BackupThread implements Runnable {
 	public BackupThread(String hashName,byte[] message, int repDegree) {
 		this.hashName=hashName;
 		this.message=message;
+		
 		this.replicationDegree=repDegree;
+		
 		
 		// TODO Auto-generated constructor stub
 	}

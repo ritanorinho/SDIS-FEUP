@@ -1,30 +1,29 @@
 package threads;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+
 import java.util.Arrays;
-import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import project.Peer;
-import utils.Chunk;
+
 
 public class AnalizeMessageThread implements Runnable {
 	String message;
 	String[] messageArray;
 	byte[] messageBytes;
 	
-	public AnalizeMessageThread(String msg) {
-		this.message = msg.trim();
+
+	public AnalizeMessageThread(byte[] message) {
 		
-		this.messageBytes= this.message.getBytes();
+		this.messageBytes= message;
+		this.message= new String(this.messageBytes,0,this.messageBytes.length);
 		this.messageArray = this.message.split("\\s+");
 		// TODO Auto-generated constructor stub
 	}
 
 	private synchronized void stored() {
+		System.out.println("inside stored");
 		String chunkId = messageArray[3] + "-" + messageArray[4];
 		if (Peer.getMemory().backupChunks.containsKey(chunkId)) {
 			System.out.println("replication: " + Peer.getMemory().backupChunks.get(chunkId));
@@ -97,6 +96,7 @@ public class AnalizeMessageThread implements Runnable {
 
 	@Override
 	public void run() {
+		System.out.println("msgdddddddddd");
 		String messageType = this.message.trim().split("\\s+")[0];
 		switch (messageType) {
 		case "PUTCHUNK":

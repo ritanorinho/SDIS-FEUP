@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
+import java.util.Arrays;
 
 import project.Peer;
 import threads.*;
@@ -21,6 +22,7 @@ public class MCListener implements Runnable {
 	 public MCListener() {
 		// TODO Auto-generated constructor stub
 	}
+	 
 
 	 @Override
 		public void run() {
@@ -35,10 +37,9 @@ public class MCListener implements Runnable {
 			 DatagramPacket msgPacket = new DatagramPacket(buf, buf.length);
 			 //System.out.println(this.mcPort+"-"+this.mcAddress);
 	         clientSocket.receive(msgPacket);
-	         
-	         String msg = new String(buf, 0, buf.length);
-	         //System.out.println("Stored message:  "+msg);
-	         Peer.getExecutor().execute(new AnalizeMessageThread(msg));
+	         byte[] message = Arrays.copyOf(buf,msgPacket.getLength());
+	         System.out.println("Stored message:  ");
+	         Peer.getExecutor().execute(new AnalizeMessageThread(message));
 	         
 			 }
 		} catch (IOException e) {

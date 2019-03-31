@@ -145,8 +145,7 @@ public class Peer implements RMIInterface {
 			System.arraycopy(body, 0, message, data.length, body.length);
 			System.out.println("message length: "+message.length);
 			String channel = "mdb";
-			String messageString = new String (message,0, message.length);
-			Peer.executor.execute(new WorkerThread(messageString,channel));
+			Peer.executor.execute(new WorkerThread(message,channel));
 			
 			Thread.sleep(500);
 			// The initiator-peer collects the confirmation
@@ -182,13 +181,13 @@ public class Peer implements RMIInterface {
 			
 			String channel = "mc";
 			
-			Peer.executor.execute(new WorkerThread(header,channel));
+			Peer.executor.execute(new WorkerThread(header.getBytes(),channel));
 			
 		}
 		
 		String worker = "RESTORE "+serverID+ " "+ name+ " "+ fileInfo.getFileId();
 		String channel = "mc";
-		Peer.executor.schedule(new WorkerThread(worker,channel),5,TimeUnit.SECONDS);
+		Peer.executor.schedule(new WorkerThread(worker.getBytes(),channel),5,TimeUnit.SECONDS);
 		}
 		
 	}
@@ -210,10 +209,10 @@ public class Peer implements RMIInterface {
 		byte[] message = new byte[data.length];
 		System.arraycopy(data, 0, message, 0, data.length);
 		String channel = "mc";
-		String worker = new String(message,0,message.length);
+		
 
 		try {
-			Peer.executor.execute(new WorkerThread(worker,channel));
+			Peer.executor.execute(new WorkerThread(data,channel));
 			mcListener.message(message);
 
 			try {

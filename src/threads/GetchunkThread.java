@@ -20,16 +20,18 @@ public class GetchunkThread implements Runnable {
 	public void run() {
 		String chunkId = messageArray[3] + "-" + messageArray[4];
 		byte[] chunkData = Peer.getMemory().savedChunks.get(chunkId).getData();
-		String chunkContent = new String(chunkData,0,chunkData.length);
 	
 		String restoredChunk = "CHUNK " + messageArray[1] + " " + messageArray[2] + " " + messageArray[3] + " "
-				+ messageArray[4] + "\n\r\n\r"+chunkContent;
+				+ messageArray[4] + "\n\r\n\r";
+		byte[] data = restoredChunk.getBytes();
+		byte[] message = new byte[data.length + chunkData.length];
+		System.arraycopy(data, 0, message, 0, data.length);
+		System.arraycopy(chunkData, 0, message, data.length, chunkData.length);
 		String channel ="mdr";
 		Random random = new Random();
 		int delay = random.nextInt(401);
 		int senderId = Integer.parseInt(messageArray[2]);
 		String filename = "Peer"+Peer.getId() +"/"+"CHUNK"+"/"+messageArray[3] + "/" + messageArray[4];
-		System.out.println("SIZE "+messageArray[4]+" "+chunkData.length);
 		
 		try {
 			File file = new File(filename);
@@ -45,11 +47,12 @@ public class GetchunkThread implements Runnable {
 		
 		if (Peer.getId() != senderId )
 		{	
-			Peer.getExecutor().schedule(new WorkerThread(restoredChunk,channel), delay,
+			Peer.getExecutor().schedule(new WorkerThread(message,channel), delay,
 					TimeUnit.MILLISECONDS);
 		}
 		// TODO Auto-generated method stub
 	}
+	
 	
 
 }
