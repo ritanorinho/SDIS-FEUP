@@ -152,6 +152,7 @@ public class Peer implements RMIInterface {
 			// The initiator-peer collects the confirmation
 			
 			// messages during a time interval of one second
+			
 			Peer.executor.schedule(new BackupThread(name, message, repDegree), 1, TimeUnit.SECONDS);
 		}
 

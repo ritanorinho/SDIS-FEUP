@@ -17,6 +17,7 @@ public class BackupThread implements Runnable {
 		this.hashName=hashName;
 		this.message=message;
 		this.replicationDegree=repDegree;
+		
 		// TODO Auto-generated constructor stub
 	}
 	@Override

@@ -15,6 +15,7 @@ public class FileInfo {
 	private static int MAX_SIZE = 64000;
 	private String fileId;
 	private ArrayList<Chunk> chunks = new ArrayList<Chunk>();
+	
 	private File file ;
 	private String filename;
 	private String filePath;
@@ -30,7 +31,6 @@ public class FileInfo {
 
 	public void calculateNumberChunks(){
 		byte[] content = new byte[MAX_SIZE];
-		double fileLength = file.length();
 		
 		BufferedInputStream buf;
 		try {
@@ -39,11 +39,8 @@ public class FileInfo {
 			int size=0;
 			String chunkId;
 			while((size=buf.read(content))>0) {
-				
-				chunksCount++;
-				
+				chunksCount++;				
 				byte[] body = Arrays.copyOf(content, size);
-				
 				chunkId = this.fileId+"-"+chunksCount;
 				this.chunks.add(new Chunk (this.fileId,chunksCount,body,size,chunkId));
 				content= new byte[MAX_SIZE];

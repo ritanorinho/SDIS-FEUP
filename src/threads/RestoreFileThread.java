@@ -18,9 +18,10 @@ public class RestoreFileThread implements Runnable {
 		this.fileId=fileId;
 	}
 
+	
 	@Override
 	public void run() {
-		boolean aux =createFile();//System.out.println("NUMBER CHUNKS" +Peer.getMemory().requiredChunks);
+		boolean aux =createFile();
 		System.out.println("File: "+aux);
 	}
 
@@ -36,10 +37,7 @@ public class RestoreFileThread implements Runnable {
 		}
 		FileOutputStream fos = new FileOutputStream(finalFile,true);
 		ArrayList<String> sortedChunks = new ArrayList<String>(Peer.getMemory().requiredChunks.keySet());
-		String[] split = sortedChunks.get(0).trim().split("-");
-		if (sortedChunks.size() >1) {
-		sortedChunks.add(split[0]+"-1");
-		}
+		
 		sortedChunks.sort((o1, o2) -> {
             int chunk1 = Integer.valueOf(o1.split("-")[1]);
             int chunk2 = Integer.valueOf(o2.split("-")[1]);
@@ -60,7 +58,10 @@ public class RestoreFileThread implements Runnable {
 
 			FileInputStream in = new FileInputStream(chunkFile);
 			in.read(content);
+			String st = new String(content,0,content.length);
+			System.out.println("Chunk no "+splitChunkName[1]+ " content  " +content.length);
 			fos.write(content);
+			in.close();			
 			Peer.getMemory().requiredChunks.remove(key);
 		}
 		fos.close();

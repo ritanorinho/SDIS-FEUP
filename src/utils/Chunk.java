@@ -15,7 +15,9 @@ public  class Chunk {
 		this.length=length;
 		this.fileId=fileId;
 		this.chunkId =chunkId;
+		
 	}
+	
 	
 
 

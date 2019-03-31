@@ -20,7 +20,7 @@ public class AnalizeMessageThread implements Runnable {
 		this.message = msg.trim();
 		
 		this.messageBytes= this.message.getBytes();
-		this.messageArray = this.message.trim().split("\\s+");
+		this.messageArray = this.message.split("\\s+");
 		// TODO Auto-generated constructor stub
 	}
 
@@ -132,15 +132,17 @@ public class AnalizeMessageThread implements Runnable {
 		int i;
 		for (i =0; i< this.messageBytes.length-4;i++) {
 			if (this.messageBytes[i] == 0xA && this.messageBytes[i+1]== 0xD && this.messageBytes[i+2]== 0xA && this.messageBytes[i+3]== 0xD) {
-				
 				break;
 			}
 			
 			
 		}
+		int j = this.messageBytes.length -(i+4);
 		
 		byte[] body = Arrays.copyOfRange(this.messageBytes,i+4,this.messageBytes.length);
+		System.out.println(this.messageBytes.length);
 		System.out.println("body "+body.length);
+		
 		return body;
 	}
 
