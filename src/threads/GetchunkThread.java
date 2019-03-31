@@ -27,9 +27,9 @@ public class GetchunkThread implements Runnable {
 		String worker= restoredChunk + "-"+"mdr";
 		Random random = new Random();
 		int delay = random.nextInt(401);
-		
 		int senderId = Integer.parseInt(messageArray[2]);
 		String filename = "Peer"+Peer.getId() +"/"+"CHUNK"+"/"+messageArray[3] + "/" + messageArray[4];
+		
 		try {
 			File file = new File(filename);
 			file.getParentFile().mkdirs();
@@ -43,7 +43,7 @@ public class GetchunkThread implements Runnable {
 		}
 		
 		if (Peer.getId() != senderId )
-		{
+		{	
 			Peer.getExecutor().schedule(new WorkerThread(worker), delay,
 					TimeUnit.MILLISECONDS);
 		}

@@ -67,6 +67,7 @@ public class AnalizeMessageThread implements Runnable {
 		String chunkId = messageArray[3] + "-" + messageArray[4];
 		System.out.println("RECEIVED "+this.message);
 		int senderId = Integer.parseInt(messageArray[2]);
+		
 		if (Peer.getId() != senderId) {
 			Peer.getMemory().requiredChunks.put(chunkId, messageArray[5]);		
 		}
@@ -107,8 +108,18 @@ public class AnalizeMessageThread implements Runnable {
 		case "CHUNK":
 			chunk();
 			break;
+		case "RESTORE":
+			restore();
 		default:
 		}
+	}
+
+	private void restore() {
+		int senderId = Integer.parseInt(this.messageArray[1]);
+		
+		if (Peer.getId()!= senderId)
+		Peer.getExecutor().execute(new RestoreFileThread(this.messageArray[2],this.messageArray[3]));
+		
 	}
 
 

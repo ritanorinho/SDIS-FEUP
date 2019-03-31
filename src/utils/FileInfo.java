@@ -55,6 +55,7 @@ public class FileInfo {
 	public void fileId() {
 		String fileName= this.file.getName();
 		this.filename=fileName;
+		
 		String lastModified= String.valueOf(this.file.lastModified());
 		String fileId = fileName + "."+lastModified;
 		this.fileId = sha256(fileId);	

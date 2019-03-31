@@ -180,11 +180,7 @@ public class Peer implements RMIInterface {
 			String header = "GETCHUNK "+ protocolVersion + " "+ serverID + " " +  fileInfo.getFileId()+ " "+ chunks.get(i).getChunkNo() + "\n\r\n\r";
 			System.out.println("\n SENT: "+header);
 			
-			name= fileInfo.getFileId()+"-"+chunks.get(i).getChunkNo();
-
-			if (!memory.backupChunks.containsKey(name)) {
-				Peer.memory.backupChunks.put(name,0);
-			}
+			
 			
 			String channel = "mc";
 			String worker = header + "-"+channel;
@@ -192,7 +188,9 @@ public class Peer implements RMIInterface {
 			
 		}
 		
-		Peer.executor.schedule(new RestoreFileThread(fileInfo.getFilename()),8,TimeUnit.SECONDS);
+		String worker = "RESTORE "+serverID+ " "+ name+ " "+ fileInfo.getFileId()+" -"+"mc";
+		
+		Peer.executor.schedule(new WorkerThread(worker),5,TimeUnit.SECONDS);
 		}
 		
 	}
