@@ -38,7 +38,6 @@ public class MCListener implements Runnable {
 			 //System.out.println(this.mcPort+"-"+this.mcAddress);
 	         clientSocket.receive(msgPacket);
 	         byte[] message = Arrays.copyOf(buf,msgPacket.getLength());
-	         System.out.println("Stored message:  ");
 	         Peer.getExecutor().execute(new AnalizeMessageThread(message));
 	         
 			 }

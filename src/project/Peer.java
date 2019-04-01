@@ -169,6 +169,7 @@ public class Peer implements RMIInterface {
 			for (int i =0;i <memory.files.size();i++) {
 				if (memory.files.get(i).getFilename().equals(name)) {
 					fileInfo= memory.files.get(i);
+				
 					chunks= memory.files.get(i).getChunks();
 					break;
 				}
@@ -176,11 +177,10 @@ public class Peer implements RMIInterface {
 		for (int i = 0; i < chunks.size();i++) {
 			String header = "GETCHUNK "+ protocolVersion + " "+ serverID + " " +  fileInfo.getFileId()+ " "+ chunks.get(i).getChunkNo() + "\n\r\n\r";
 			System.out.println("\n SENT: "+header);
-			
-			
-			
-			String channel = "mc";
-			
+			String chunkId= fileInfo.getFileId()+ "-"+ chunks.get(i).getChunkNo();
+			if (!memory.restoredChunks.containsKey(chunkId))
+				memory.restoredChunks.put(chunkId, 0);
+				String channel = "mc";
 			Peer.executor.execute(new WorkerThread(header.getBytes(),channel));
 			
 		}
@@ -241,16 +241,29 @@ public class Peer implements RMIInterface {
 	@Override
 	public void state() throws RemoteException {
 		// TODO Auto-generated method stub
+		int i;
 		// Backup
-		System.out.println("For each file whose backup it has initiated:");
-		for (int i =0; i < memory.files.size();i++) {
+		System.out.println("\nFor each file whose backup it has initiated:\n");
+		for (i =0; i < memory.files.size();i++) {
 			System.out.println("-File path: "+memory.files.get(i).getFilePath());
 			System.out.println("-Backup service id of the file:"+memory.files.get(i).getFileId());
 			System.out.println("-Replication degree:" + memory.files.get(i).getReplicationDegree());
 			for (int j = 0; j< memory.files.get(i).getChunks().size();j++) {
-				System.out.println("--Chunk number: "+memory.files.get(i).getChunks().get(j).getChunkNo());
+				System.out.println("\n Backup chunks\n");
+				System.out.println("--Chunk id: "+memory.files.get(i).getChunks().get(j).getChunkId());
 				System.out.println("--Perceived replication degree: "+memory.backupChunks.get(memory.files.get(i).getChunks().get(j).getChunkId()));
+				
+				
+				
+				
 			}
+			}
+		//Stored chunks
+		System.out.println("\n Stored chunks\n");
+		for (String key: memory.savedChunks.keySet()) {
+			System.out.println("--Chunk id: "+key);
+			System.out.println("--Chunk size: "+memory.savedChunks.get(key).getChunkSize());
+			System.out.println("--Perceived replication degree: "+memory.savedOcurrences.get(key));		
 			
 		}
 	}

@@ -48,6 +48,14 @@ public  class Chunk {
 		return this.chunkId;
 	}
 
+
+
+
+	public int getChunkSize() {
+		// TODO Auto-generated method stub
+		return this.length;
+	}
+
 	
 
 }

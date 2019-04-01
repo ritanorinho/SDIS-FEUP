@@ -33,7 +33,6 @@ public class MDRListener implements Runnable{
 			 //System.out.println(this.mdrPort+"-"+this.mdrAddress);
 	         clientSocket.receive(msgPacket);
 	         byte[] message = Arrays.copyOf(buf,msgPacket.getLength());
-	         
 	         Peer.getExecutor().execute(new AnalizeMessageThread(message));
 	         //System.out.println("msg: "+msg);
 			 }

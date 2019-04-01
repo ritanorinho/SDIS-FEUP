@@ -16,6 +16,7 @@ public class FileInfo {
 	private String fileId;
 	private ArrayList<Chunk> chunks = new ArrayList<Chunk>();
 	
+	
 	private File file ;
 	private String filename;
 	private String filePath;

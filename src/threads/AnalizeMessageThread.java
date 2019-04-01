@@ -23,12 +23,12 @@ public class AnalizeMessageThread implements Runnable {
 	}
 
 	private synchronized void stored() {
-		System.out.println("inside stored");
 		String chunkId = messageArray[3] + "-" + messageArray[4];
 		if (Peer.getMemory().backupChunks.containsKey(chunkId)) {
 			System.out.println("replication: " + Peer.getMemory().backupChunks.get(chunkId));
-
-			Peer.getMemory().backupChunks.put(chunkId, Peer.getMemory().backupChunks.get(chunkId) + 1);
+			int senderId = Integer.parseInt(messageArray[2]);
+			if (Peer.getId() == senderId)
+				Peer.getMemory().backupChunks.put(chunkId, Peer.getMemory().backupChunks.get(chunkId) + 1);
 		}
 	}
 	
@@ -37,14 +37,14 @@ public class AnalizeMessageThread implements Runnable {
 		
 	    String chunkId = messageArray[3] + "-" + messageArray[4];
 		 System.out.println("SENDER ID: "+messageArray[2]+" PEER ID: "+Peer.getId());
-		Integer id = Integer.parseInt(messageArray[2]);
+		 Integer id = Integer.parseInt(messageArray[2]);
 		Random random = new Random();
 		int delay = random.nextInt(401);
 
 		if (!Peer.getMemory().backupChunks.containsKey(chunkId)) {
 			Peer.getMemory().backupChunks.put(chunkId, 0);
 		} else {
-			if (Peer.getId() != id && Peer.getMemory().backupChunks.get(chunkId) < 1) {
+			
 				Peer.getMemory().backupChunks.put(chunkId, Peer.getMemory().backupChunks.get(chunkId) + 1);
 				String storedMessage = "STORED " + messageArray[1] + " " + id + " " + messageArray[3] + " "
 						+ messageArray[4] + " " + "\n\r\n\r";
@@ -54,7 +54,6 @@ public class AnalizeMessageThread implements Runnable {
 				
 				Peer.getExecutor().schedule(new StoredChunkThread(storedMessage.getBytes(),data), delay,
 						TimeUnit.MILLISECONDS);
-			}
 		}
 	}
 
@@ -74,8 +73,19 @@ public class AnalizeMessageThread implements Runnable {
 		int senderId = Integer.parseInt(messageArray[2]);
 		
 		if (Peer.getId() != senderId) {
-			Peer.getMemory().requiredChunks.put(chunkId, messageArray[5]);		
+			Peer.getMemory().requiredChunks.put(chunkId, messageArray[3]);	
+			if (!Peer.getMemory().restoredChunks.containsKey(chunkId)) {
+				Peer.getMemory().restoredChunks.put(chunkId, 1);
+			}
+			else 
+				Peer.getMemory().restoredChunks.put(chunkId, Peer.getMemory().restoredChunks.get(chunkId)+1);
+			
 		}
+		if (Peer.getId() == senderId) {
+			Peer.getMemory().restoredChunks.put(chunkId, Peer.getMemory().restoredChunks.get(chunkId)+1);
+			System.out.println("replication degree: "+ this.messageArray[4]+" "+Peer.getMemory().restoredChunks.get(chunkId));
+		}
+		
 		
 	}
 
@@ -96,7 +106,6 @@ public class AnalizeMessageThread implements Runnable {
 
 	@Override
 	public void run() {
-		System.out.println("msgdddddddddd");
 		String messageType = this.message.trim().split("\\s+")[0];
 		switch (messageType) {
 		case "PUTCHUNK":
@@ -123,8 +132,9 @@ public class AnalizeMessageThread implements Runnable {
 	private void restore() {
 		int senderId = Integer.parseInt(this.messageArray[1]);
 		
-		if (Peer.getId()!= senderId)
+		if (Peer.getId()!= senderId) {
 		Peer.getExecutor().execute(new RestoreFileThread(this.messageArray[2],this.messageArray[3]));
+		}
 		
 	}
 

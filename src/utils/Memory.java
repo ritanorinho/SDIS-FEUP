@@ -7,14 +7,15 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class Memory {
 	public ArrayList<FileInfo> files = new ArrayList<FileInfo>();
-	// Filename fileId
 	public HashMap<String,String> filenameId= new HashMap<String,String>();
 	// String: fileId-ChunkNo Integer: Number of occurrences
 	public ConcurrentHashMap<String, Integer> backupChunks = new ConcurrentHashMap<String, Integer>();
 	//String: fileId-ChunkNo
 	public HashMap<String,Chunk> savedChunks= new HashMap<String,Chunk>();
-	//String fileId-ChunkNo 
+	//String fileId-ChunkNo fileId
 	public HashMap<String,String> requiredChunks= new HashMap<String, String>();
+	public HashMap<String,Integer> restoredChunks= new HashMap<String, Integer>();
+	public ConcurrentHashMap<String,Integer> savedOcurrences = new ConcurrentHashMap<String,Integer>();
 	public boolean hasFile(String fileId) {
 		for (int i = 0; i < files.size(); i++) {
 			if (files.get(i).getFileId().equals(fileId))
@@ -23,6 +24,7 @@ public class Memory {
 
 		return false;
 	}
+	
 
 	public void removeChunks(String fileId) {
 
