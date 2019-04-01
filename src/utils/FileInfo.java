@@ -27,6 +27,7 @@ public class FileInfo {
 		this.replicationDegree=repDegree;
 		fileId();
 		calculateNumberChunks();
+		
 		// TODO Auto-generated constructor stub
 	}
 
@@ -43,13 +44,13 @@ public class FileInfo {
 				chunksCount++;				
 				byte[] body = Arrays.copyOf(content, size);
 				chunkId = this.fileId+"-"+chunksCount;
-				this.chunks.add(new Chunk (this.fileId,chunksCount,body,size,chunkId));
+				this.chunks.add(new Chunk (this.fileId,chunksCount,body,size,chunkId,this.replicationDegree));
 				content= new byte[MAX_SIZE];
 			}
 			
 			if (this.file.length() %64000==0) {
 				 chunkId = this.fileId+"-"+chunksCount;
-				this.chunks.add(new Chunk(this.fileId,chunksCount,null,0,chunkId));
+				this.chunks.add(new Chunk(this.fileId,chunksCount,null,0,chunkId,this.replicationDegree));
 			}
 			
 			

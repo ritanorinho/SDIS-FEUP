@@ -18,7 +18,7 @@ public class AnalizeMessageThread implements Runnable {
 		
 		this.messageBytes= message;
 		this.message= new String(this.messageBytes,0,this.messageBytes.length);
-		this.messageArray = this.message.split("\\s+");
+		this.messageArray = this.message.trim().split("\\s+");
 		// TODO Auto-generated constructor stub
 	}
 
@@ -50,7 +50,7 @@ public class AnalizeMessageThread implements Runnable {
 				String storedMessage = "STORED " + messageArray[1] + " " + id + " " + messageArray[3] + " "
 						+ messageArray[4] + " " + "\n\r\n\r";				
 				byte[] data = getBody();
-				Peer.getExecutor().schedule(new StoredChunkThread(storedMessage.getBytes(),data), delay,
+				Peer.getExecutor().schedule(new StoredChunkThread(storedMessage.getBytes(),data,Integer.parseInt(messageArray[5])), delay,
 						TimeUnit.MILLISECONDS);
 	}
 
@@ -122,8 +122,26 @@ public class AnalizeMessageThread implements Runnable {
 			break;
 		case "RESTORE":
 			restore();
+			break;
+		case "REMOVED":
+			removed();
 		default:
 		}
+	}
+
+	private void removed() {
+			String fileId = this.messageArray[3];
+			String chunkNo = this.messageArray[4];
+			String chunkId = fileId +"-"+chunkNo;
+			int senderId = Integer.parseInt(this.messageArray[2]);
+			if (senderId != Peer.getId()) {
+				Peer.getMemory().savedOcurrences.put(chunkId,Peer.getMemory().savedOcurrences.get(chunkId)-1);
+				Random random = new Random();
+				int delay = random.nextInt(401);
+				Peer.getExecutor().schedule(new RemovedChunkThread(chunkId), delay, TimeUnit.MILLISECONDS);
+			}
+		
+		
 	}
 
 	private void restore() {
@@ -131,6 +149,7 @@ public class AnalizeMessageThread implements Runnable {
 		
 		if (Peer.getId()!= senderId) {
 		Peer.getExecutor().execute(new RestoreFileThread(this.messageArray[2],this.messageArray[3]));
+		
 		}
 		
 	}

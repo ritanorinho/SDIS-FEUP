@@ -233,9 +233,29 @@ public class Peer implements RMIInterface {
 
 	@Override
 	public void reclaim(int space) throws RemoteException {
-		// TODO Auto-generated method stub
+		int currentSpaceToFree = memory.getAvailableCapacity()-space; // space to free 
+		if (currentSpaceToFree > 0) {
+			for (String key : memory.savedChunks.keySet()) {
+				if (memory.savedChunks.get(key).getChunkSize()<= currentSpaceToFree) {
+					currentSpaceToFree-=memory.savedChunks.get(key).getChunkSize();
+					String header = "REMOVED 1.0 "+serverID+" "+ memory.savedChunks.get(key).getFileId() + " "+memory.savedChunks.get(key).getChunkNo()+"\n\r\n\r";
+					byte[] data;
+					try {
+						data = header.getBytes("US-ASCII");
+						String channel = "mc";
+						Peer.executor.execute(new WorkerThread(data,channel));
+					} catch (UnsupportedEncodingException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					
+				}
+			}
+			
+		}
 		
 	}
+	
 
 
 	@Override

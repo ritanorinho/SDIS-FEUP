@@ -12,18 +12,19 @@ public class StoredChunkThread implements Runnable {
 	byte[] data;
 	String[] messageArray;
 	private int senderId;
+	private int replicationDegree;
 	
-	public StoredChunkThread(byte[] storedMessage, byte[]data) {
+	public StoredChunkThread(byte[] storedMessage, byte[]data, int replicationDegree) {
 		this.byteMessage=storedMessage;
 		this.data=data;
 		String msg = new String(this.byteMessage, 0, this.byteMessage.length);
 		this.messageArray= msg.split("\\s+");
 		this.senderId = Integer.parseInt(messageArray[2]);
+		this.replicationDegree=replicationDegree;
 		System.out.println("SENDER ID "+this.senderId);
-		
-		
-		 
+				 
 	}
+	
 	
 	
 	
@@ -58,7 +59,7 @@ public class StoredChunkThread implements Runnable {
 		return;
 		}
 		String chunkName = this.messageArray[3]+"-"+this.messageArray[4];
-		Chunk chunk = new Chunk(this.messageArray[3],Integer.parseInt(this.messageArray[4]),this.data,this.data.length,chunkName);
+		Chunk chunk = new Chunk(this.messageArray[3],Integer.parseInt(this.messageArray[4]),this.data,this.data.length,chunkName,this.replicationDegree);
 		Peer.getMemory().savedChunks.put(chunkName, chunk);
 		System.out.println(Peer.getMemory().savedChunks);
 		if (!Peer.getMemory().savedOcurrences.containsKey(chunkName)) {
