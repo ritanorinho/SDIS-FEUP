@@ -19,6 +19,8 @@ public class StoredChunkThread implements Runnable {
 		String msg = new String(this.byteMessage, 0, this.byteMessage.length);
 		this.messageArray= msg.split("\\s+");
 		this.senderId = Integer.parseInt(messageArray[2]);
+		System.out.println("SENDER ID "+this.senderId);
+		
 		
 		saveChunk();
 		createFileChunk();
@@ -32,7 +34,7 @@ public class StoredChunkThread implements Runnable {
 		String filename = "Peer"+Peer.getId() +"/"+messageArray[0]+"/"+messageArray[3]+"/"+messageArray[4];
 		
 		try {
-			if (Peer.getId() != senderId) {
+			if (Peer.getId() != this.senderId) {
 			File file = new File(filename);
 			file.getParentFile().mkdirs();
 			file.createNewFile();

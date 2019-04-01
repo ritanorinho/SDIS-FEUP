@@ -42,19 +42,16 @@ public class AnalizeMessageThread implements Runnable {
 		int delay = random.nextInt(401);
 
 		if (!Peer.getMemory().backupChunks.containsKey(chunkId)) {
-			Peer.getMemory().backupChunks.put(chunkId, 0);
+			Peer.getMemory().backupChunks.put(chunkId, 1);
 		} else {
 			
 				Peer.getMemory().backupChunks.put(chunkId, Peer.getMemory().backupChunks.get(chunkId) + 1);
+		}
 				String storedMessage = "STORED " + messageArray[1] + " " + id + " " + messageArray[3] + " "
-						+ messageArray[4] + " " + "\n\r\n\r";
-					
-				
+						+ messageArray[4] + " " + "\n\r\n\r";				
 				byte[] data = getBody();
-				
 				Peer.getExecutor().schedule(new StoredChunkThread(storedMessage.getBytes(),data), delay,
 						TimeUnit.MILLISECONDS);
-		}
 	}
 
 	private synchronized void delete() {
