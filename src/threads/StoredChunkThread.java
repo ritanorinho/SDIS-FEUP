@@ -22,8 +22,6 @@ public class StoredChunkThread implements Runnable {
 		System.out.println("SENDER ID "+this.senderId);
 		
 		
-		saveChunk();
-		createFileChunk();
 		 
 	}
 	
@@ -75,6 +73,15 @@ public class StoredChunkThread implements Runnable {
 	@Override
 	public void run() {
 		try {
+			if(Peer.getMemory().getAvailableCapacity()>=this.data.length) {
+				Peer.getMemory().updateMemoryUsed(this.data.length);
+				saveChunk();
+				createFileChunk();
+				}
+				else {
+					System.out.println("There isn't enough disk space to save this chunk\n");
+					return;
+				}
 			Peer.getMCListener().message(byteMessage);
 			
 		} catch (IOException e) {

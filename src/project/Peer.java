@@ -266,6 +266,11 @@ public class Peer implements RMIInterface {
 			System.out.println("--Perceived replication degree: "+memory.savedOcurrences.get(key));		
 			
 		}
+		
+		//Storage capacity
+		System.out.println("\nThe maximum amount of disk space that can be used to store chunks: "+memory.capacity);
+		System.out.println("The amount of storage used to backup the chunks: "+memory.memoryUsed);
+		
 	}
 
 	public static int getId() {

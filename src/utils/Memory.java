@@ -16,6 +16,12 @@ public class Memory {
 	public HashMap<String,String> requiredChunks= new HashMap<String, String>();
 	public HashMap<String,Integer> restoredChunks= new HashMap<String, Integer>();
 	public ConcurrentHashMap<String,Integer> savedOcurrences = new ConcurrentHashMap<String,Integer>();
+	
+	public int capacity = 999999999;
+	public int memoryUsed = 0;
+	public int availableCapacity;
+	
+	
 	public boolean hasFile(String fileId) {
 		for (int i = 0; i < files.size(); i++) {
 			if (files.get(i).getFileId().equals(fileId))
@@ -40,4 +46,10 @@ public class Memory {
 		}
 	}
 	
+	public void updateMemoryUsed(int memory) {
+		this.memoryUsed+=memory; 
+	}
+	public int getAvailableCapacity() {
+		return this.capacity-this.memoryUsed;
+	}
 }
