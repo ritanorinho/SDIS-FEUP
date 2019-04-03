@@ -60,10 +60,12 @@ public class StoredChunkThread implements Runnable {
 		}
 		String chunkName = this.messageArray[3]+"-"+this.messageArray[4];
 		Chunk chunk = new Chunk(this.messageArray[3],Integer.parseInt(this.messageArray[4]),this.data,this.data.length,chunkName,this.replicationDegree);
+		if (Peer.getId() != senderId) {
 		Peer.getMemory().savedChunks.put(chunkName, chunk);
 		System.out.println(Peer.getMemory().savedChunks);
 		if (!Peer.getMemory().savedOcurrences.containsKey(chunkName)) {
 			Peer.getMemory().savedOcurrences.put(chunkName,1);
+		}
 		}
 		if (Peer.getId() == senderId) {
 			Peer.getMemory().savedOcurrences.put(chunkName,Peer.getMemory().savedOcurrences.get(chunkName)+1);

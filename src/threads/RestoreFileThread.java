@@ -54,7 +54,6 @@ public class RestoreFileThread implements Runnable {
 
 			String[] splitChunkName= key.trim().split("-");
 			String chunkPath =  "Peer"+Peer.getId() +"/"+"CHUNK"+"/"+splitChunkName[0]+"/"+splitChunkName[1];
-			System.out.println("inside for " +key);
 			File chunkFile = new File(chunkPath);
 			if (!chunkFile.exists()) {
 				return false;

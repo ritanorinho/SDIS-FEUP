@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
-import java.net.MulticastSocket;
 import java.rmi.AlreadyBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -180,7 +179,6 @@ public class Peer implements RMIInterface {
 		for (int i = 0; i < chunks.size();i++) {
 			String header = "GETCHUNK "+ protocolVersion + " "+ serverID + " " +  fileInfo.getFileId()+ " "+ chunks.get(i).getChunkNo() + "\n\r\n\r";
 			System.out.println("\n SENT: "+header);
-			String chunkId= fileInfo.getFileId()+ "-"+ chunks.get(i).getChunkNo();
 				String channel = "mc";
 			try {
 				Peer.executor.execute(new WorkerThread(header.getBytes("US-ASCII"),channel));
@@ -262,7 +260,8 @@ public class Peer implements RMIInterface {
 		// TODO Auto-generated method stub
 		int i;
 		// Backup
-		System.out.println("\nFor each file whose backup it has initiated:\n");
+		System.out.println("\nPEER "+Peer.getId()+" STATE");
+		System.out.println("\nFor each file whose backup it has initiated:");
 		for (i =0; i < memory.files.size();i++) {
 			System.out.println("-File path: "+memory.files.get(i).getFilePath());
 			System.out.println("-Backup service id of the file:"+memory.files.get(i).getFileId());

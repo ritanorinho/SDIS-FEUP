@@ -11,6 +11,7 @@ public class BackupThread implements Runnable {
 	private String hashName;
 	private int attempt=1;
 	private final int MAX_ATTEMPT =5;
+	private int delay=1;
 	public BackupThread(String hashName,byte[] message, int repDegree) {
 		this.hashName=hashName;
 		this.message=message;
