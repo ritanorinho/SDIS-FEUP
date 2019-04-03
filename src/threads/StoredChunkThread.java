@@ -13,32 +13,30 @@ public class StoredChunkThread implements Runnable {
 	String[] messageArray;
 	private int senderId;
 	private int replicationDegree;
+	String msg;
 	
 	public StoredChunkThread(byte[] storedMessage, byte[]data, int replicationDegree) {
 		this.byteMessage=storedMessage;
 		this.data=data;
-		String msg = new String(this.byteMessage, 0, this.byteMessage.length);
+		this.msg = new String(this.byteMessage, 0, this.byteMessage.length);
 		this.messageArray= msg.split("\\s+");
 		this.senderId = Integer.parseInt(messageArray[2]);
 		this.replicationDegree=replicationDegree;
-		System.out.println("SENDER ID "+this.senderId);
-				 
 	}
 	
 	
 	
 	
 	private void createFileChunk() {
-		
+		System.out.println("inside create");
 		String filename = "Peer"+Peer.getId() +"/"+messageArray[0]+"/"+messageArray[3]+"/"+messageArray[4];
-		
+		System.out.println(filename);
 		try {
 			if (Peer.getId() != this.senderId) {
 			File file = new File(filename);
 			file.getParentFile().mkdirs();
 			file.createNewFile();
 			FileOutputStream fos = new FileOutputStream(filename);
-			System.out.println("STORED: "+this.data.length);
 			fos.write(this.data);
 			fos.close();
 			}
@@ -58,12 +56,18 @@ public class StoredChunkThread implements Runnable {
 			if (Peer.getMemory().files.get(i).getFileId().equals(messageArray[2]))
 		return;
 		}
+		System.out.println(msg);
 		String chunkName = this.messageArray[3]+"-"+this.messageArray[4];
+		System.out.println("1."+chunkName);
+		System.out.println("2."+this.data);
+		System.out.println("3."+Integer.parseInt(this.messageArray[4]));
+		System.out.println("4."+this.data.length);
+		System.out.println("5."+this.replicationDegree);
 		Chunk chunk = new Chunk(this.messageArray[3],Integer.parseInt(this.messageArray[4]),this.data,this.data.length,chunkName,this.replicationDegree);
+		System.out.println("inside save");
 		if (Peer.getId() != senderId && !Peer.getMemory().savedChunks.containsKey(chunkName)) {
 		Peer.getMemory().savedChunks.put(chunkName, chunk);
 		Peer.getMemory().updateMemoryUsed(this.data.length);
-		System.out.println(Peer.getMemory().savedChunks);
 		}		
 		
 	}
@@ -72,8 +76,10 @@ public class StoredChunkThread implements Runnable {
 	public void run() {
 		try {
 			if(Peer.getMemory().getAvailableCapacity()>=this.data.length) {
+				
 				int senderId = Integer.parseInt(messageArray[2]);
 				if (Peer.getId() != senderId) {
+					
 				saveChunk();
 				createFileChunk();
 				Peer.getMCListener().message(byteMessage);

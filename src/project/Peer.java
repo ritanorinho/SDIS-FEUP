@@ -236,7 +236,6 @@ public class Peer implements RMIInterface {
 		if (currentSpaceToFree > 0) {
 			for (Iterator<String> iterator = memory.savedChunks.keySet().iterator(); iterator.hasNext();) {
 				String key = iterator.next();
-				System.out.println("RECLAIM KEY "+key);
 				if (currentSpaceToFree>0) {
 					currentSpaceToFree-=memory.savedChunks.get(key).getChunkSize();
 					String header = "REMOVED 1.0 "+serverID+" "+ memory.savedChunks.get(key).getFileId() + " "+memory.savedChunks.get(key).getChunkNo()+"\n\r\n\r";
@@ -244,19 +243,21 @@ public class Peer implements RMIInterface {
 					try {
 						byte[] data = header.getBytes("US-ASCII");
 						String channel = "mc";
-						Peer.executor.execute(new WorkerThread(data,channel));
+						executor.execute(new WorkerThread(data,channel));
 					} catch (UnsupportedEncodingException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 					String[] splitKey = key.trim().split("-");
-					String filePath = "Peer "+Peer.getId()+"/"+ splitKey[0]+"/"+splitKey[1];
+					String filePath = "Peer"+Peer.getId()+"/"+ splitKey[0]+"/"+splitKey[1];
+					System.out.println("filePath "+filePath);
 					File fileToDelete = new File(filePath);
 					fileToDelete.delete();
 					iterator.remove();	
 					System.out.println("-"+Peer.getMemory().savedOcurrences.get(key));
 					Peer.getMemory().savedOcurrences.put(key,Peer.getMemory().savedOcurrences.get(key)-1);
 				}
+				else break;
 			}
 		}
 		else {
