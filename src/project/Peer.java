@@ -249,10 +249,11 @@ public class Peer implements RMIInterface {
 						e.printStackTrace();
 					}
 					String[] splitKey = key.trim().split("-");
-					String filePath = "Peer"+Peer.getId()+"/"+ splitKey[0]+"/"+splitKey[1];
+					String filePath ="Peer"+Peer.getId()+"/"+"STORED"+"/"+ splitKey[0]+"/"+splitKey[1];
 					System.out.println("filePath "+filePath);
 					File fileToDelete = new File(filePath);
-					fileToDelete.delete();
+					boolean a=fileToDelete.delete();
+					System.out.println("delete "+a);
 					iterator.remove();	
 					System.out.println("-"+Peer.getMemory().savedOcurrences.get(key));
 					Peer.getMemory().savedOcurrences.put(key,Peer.getMemory().savedOcurrences.get(key)-1);

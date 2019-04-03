@@ -139,7 +139,7 @@ public class AnalizeMessageThread implements Runnable {
 			String fileId = this.messageArray[3];
 			String chunkNo = this.messageArray[4];
 			String chunkId = fileId +"-"+chunkNo;
-			int senderId = Integer.parseInt(this.messageArray[2]);
+			int senderId = Integer.parseInt(this.messageArray[2].trim());
 			if (senderId != Peer.getId()) {
 				Peer.getMemory().savedOcurrences.put(chunkId,Peer.getMemory().savedOcurrences.get(chunkId)-1);
 				System.out.println("inside removed "+Peer.getMemory().savedOcurrences.get(chunkId));
