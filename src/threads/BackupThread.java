@@ -50,6 +50,7 @@ public class BackupThread implements Runnable {
 		}
 		else {
 			System.out.println("REPLICATION DEGREE REACHED!");
+			System.out.println("Replication degree "+ replicationState);
 		}
 	}
 

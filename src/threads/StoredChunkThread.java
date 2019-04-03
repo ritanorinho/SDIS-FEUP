@@ -28,7 +28,6 @@ public class StoredChunkThread implements Runnable {
 	
 	
 	private void createFileChunk() {
-		System.out.println("inside create");
 		String filename = "Peer"+Peer.getId() +"/"+messageArray[0]+"/"+messageArray[3]+"/"+messageArray[4];
 		System.out.println(filename);
 		try {
@@ -53,47 +52,43 @@ public class StoredChunkThread implements Runnable {
 
 	private void saveChunk() {
 		for(int i = 0;i< Peer.getMemory().files.size();i++) {
-			if (Peer.getMemory().files.get(i).getFileId().equals(messageArray[2]))
-		return;
+			
+			if (Peer.getMemory().files.get(i).getFileId().equals(messageArray[3])) {
+				return;
+			}
+				
 		}
-		System.out.println(msg);
 		String chunkName = this.messageArray[3]+"-"+this.messageArray[4];
-		System.out.println("1."+chunkName);
-		System.out.println("2."+this.data);
-		System.out.println("3."+Integer.parseInt(this.messageArray[4]));
-		System.out.println("4."+this.data.length);
-		System.out.println("5."+this.replicationDegree);
 		Chunk chunk = new Chunk(this.messageArray[3],Integer.parseInt(this.messageArray[4]),this.data,this.data.length,chunkName,this.replicationDegree);
-		System.out.println("inside save");
 		if (Peer.getId() != senderId && !Peer.getMemory().savedChunks.containsKey(chunkName)) {
 		Peer.getMemory().savedChunks.put(chunkName, chunk);
 		Peer.getMemory().updateMemoryUsed(this.data.length);
+		createFileChunk();
+		try {
+			Peer.getMCListener().message(byteMessage);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		}		
 		
 	}
 
 	@Override
 	public void run() {
-		try {
-			if(Peer.getMemory().getAvailableCapacity()>=this.data.length) {
-				
-				int senderId = Integer.parseInt(messageArray[2]);
-				if (Peer.getId() != senderId) {
-					
+		if(Peer.getMemory().getAvailableCapacity()>=this.data.length) {
+			
+			int senderId = Integer.parseInt(messageArray[2]);
+			if (Peer.getId() != senderId) {
+		
 				saveChunk();
-				createFileChunk();
-				Peer.getMCListener().message(byteMessage);
-				}
+					
 			}
-				else {
-					System.out.println("There isn't enough disk space to save this chunk\n");
-					return;
-				}
-			
-			
-		} catch (IOException e) {
-			e.printStackTrace();
 		}
+			else {
+				System.out.println("There isn't enough disk space to save this chunk\n");
+				return;
+			}
 		
 	}
 

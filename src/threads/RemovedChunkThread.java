@@ -64,6 +64,9 @@ public class RemovedChunkThread implements Runnable {
 			
 			
 		}
+			else {
+				System.out.println("The count doesn't drop below the desired replication degree of the chunk "+this.chunkNo);
+			}
 		// TODO Auto-generated method stub
 
 	}

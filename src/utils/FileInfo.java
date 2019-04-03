@@ -85,7 +85,7 @@ public class FileInfo {
 	{
 		return this.fileId;
 	}
-		public static final String sha256(String str) {
+	public static final String sha256(String str) {
 		try {
 			MessageDigest sha = MessageDigest.getInstance("SHA-256");
 
