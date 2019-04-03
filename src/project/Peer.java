@@ -18,8 +18,6 @@ import java.util.concurrent.TimeUnit;
 import listeners.MCListener;
 import listeners.MDBListener;
 import listeners.MDRListener;
-import sun.misc.IOUtils;
-import sun.nio.cs.StandardCharsets;
 import threads.*;
 import utils.Chunk;
 import utils.FileInfo;
@@ -33,7 +31,6 @@ public class Peer implements RMIInterface {
 	private static volatile MCListener mcListener;
 	private static volatile MDBListener mdbListener;
 	private static volatile MDRListener mdrListener;
-	private static MulticastSocket socket;
 	private static ScheduledThreadPoolExecutor executor;
 	private static Memory memory = new Memory();
 
@@ -43,10 +40,7 @@ public class Peer implements RMIInterface {
 		mdbListener = new MDBListener(mdbAddress, mdbPort);
 		mdrListener = new MDRListener(mdrAddress, mdrPort);
 		executor = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(250);
-		executor.execute(mcListener);
-		executor.execute(mdbListener);
-		executor.execute(mdrListener);
-
+	
 	}
 
 	public static void main(String args[]) throws InterruptedException, IOException, AlreadyBoundException {
@@ -60,9 +54,13 @@ public class Peer implements RMIInterface {
 			} else
 				validateArgs(args);
 
-			socket = new MulticastSocket();
+			executor.execute(mcListener);
+			executor.execute(mdbListener);
+			executor.execute(mdrListener);
+
 
 		}
+		
 	}
 
 	private static void validateArgs(String[] args)
@@ -138,21 +136,26 @@ public class Peer implements RMIInterface {
 				memory.backupChunks.put(name, 0);
 			}
 
-			byte[] data = header.getBytes();
-			byte[] body = chunks.get(i).getData();
-			byte[] message = new byte[data.length + body.length];
-			System.arraycopy(data, 0, message, 0, data.length);
-			System.arraycopy(body, 0, message, data.length, body.length);
-			System.out.println("message length: "+message.length);
-			String channel = "mdb";
-			Peer.executor.execute(new WorkerThread(message,channel));
+			byte[] data;
+			try {
+				data = header.getBytes("US-ASCII");
+				
+				byte[] body = chunks.get(i).getData();
+				byte[] message = new byte[data.length + body.length];
+				System.arraycopy(data, 0, message, 0, data.length);
+				System.arraycopy(body, 0, message, data.length, body.length);
+				System.out.println("message length: "+message.length);
+				String channel = "mdb";
+				Peer.executor.execute(new WorkerThread(message,channel));
+				// The initiator-peer collects the confirmation			
+				// messages during a time interval of one second
+				Peer.executor.schedule(new BackupThread(name, message, repDegree), 1, TimeUnit.SECONDS);
+			} catch (UnsupportedEncodingException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			
-			Thread.sleep(500);
-			// The initiator-peer collects the confirmation
-			
-			// messages during a time interval of one second
-			
-			Peer.executor.schedule(new BackupThread(name, message, repDegree), 1, TimeUnit.SECONDS);
+		
 		}
 
 	}
@@ -178,10 +181,13 @@ public class Peer implements RMIInterface {
 			String header = "GETCHUNK "+ protocolVersion + " "+ serverID + " " +  fileInfo.getFileId()+ " "+ chunks.get(i).getChunkNo() + "\n\r\n\r";
 			System.out.println("\n SENT: "+header);
 			String chunkId= fileInfo.getFileId()+ "-"+ chunks.get(i).getChunkNo();
-			if (!memory.restoredChunks.containsKey(chunkId))
-				memory.restoredChunks.put(chunkId, 0);
 				String channel = "mc";
-			Peer.executor.execute(new WorkerThread(header.getBytes(),channel));
+			try {
+				Peer.executor.execute(new WorkerThread(header.getBytes("US-ASCII"),channel));
+			} catch (UnsupportedEncodingException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			
 		}
 		Peer.executor.schedule(new RestoreFileThread(fileInfo.getFilename(),fileInfo.getFileId()),10,TimeUnit.SECONDS);
@@ -201,29 +207,26 @@ public class Peer implements RMIInterface {
 		String header = "DELETE " + protocolVersion + " " + serverID + " " + fileInfo.getFileId() + "\n\r\n\r";
 		System.out.println("\n SENT: " + header);
 
-		byte[] data = header.getBytes();
-		byte[] message = new byte[data.length];
-		System.arraycopy(data, 0, message, 0, data.length);
-		String channel = "mc";
-		
-
+		byte[] data;
 		try {
+			data = header.getBytes("US-ASCII");
+			byte[] message = new byte[data.length];
+			System.arraycopy(data, 0, message, 0, data.length);
+			String channel = "mc";
 			Peer.executor.execute(new WorkerThread(data,channel));
 			mcListener.message(message);
-
-			try {
-				Thread.sleep(500);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-
+			Peer.executor.schedule(new DeleteThread(message), 1, TimeUnit.SECONDS);
+		} catch (UnsupportedEncodingException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
 		} catch (IOException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
 		// The initiator-peer collects the confirmation
 		// messages during a time interval of one second
-		Peer.executor.schedule(new DeleteThread(message), 1, TimeUnit.SECONDS);
+		
 	}
 
 
@@ -304,4 +307,12 @@ public class Peer implements RMIInterface {
 		return mdrListener;
 	}
 
+public static void deleteLocalStorage() {
+	String directory = "Peer"+Peer.getId();
+	File file = new File(directory);
+	if (!file.exists()) {
+		System.out.println(directory +" does not exist");
 	}
+	else System.out.println("exist");
+}
+}

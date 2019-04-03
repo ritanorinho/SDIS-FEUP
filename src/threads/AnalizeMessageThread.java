@@ -2,8 +2,6 @@ package threads;
 
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
@@ -71,7 +69,6 @@ public class AnalizeMessageThread implements Runnable {
 	}
 	private void chunk() {
 		String chunkId = messageArray[3] + "-" + messageArray[4];
-		byte[] body = getBody();
 		int senderId = Integer.parseInt(messageArray[2]);
 		
 		if (Peer.getId() == senderId) {
@@ -83,17 +80,18 @@ public class AnalizeMessageThread implements Runnable {
 					chunkFile.getParentFile().mkdirs();
 						chunkFile.createNewFile();
 				}
-			byte[] content = getBody();
-			FileOutputStream fos;
+				byte[] content = getBody();
+				FileOutputStream fos;
 				fos = new FileOutputStream(chunkFile);
 				System.out.println("Chunk no "+messageArray[4]+ " content  " +content.length);
 				fos.write(content);	
+				fos.close();
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		
-			Peer.getMemory().requiredChunks.put(chunkId, messageArray[3]);
+			Peer.getMemory().chunksToRestore.put(chunkId, messageArray[3]);
 		}
 					
 	}
@@ -162,7 +160,6 @@ public class AnalizeMessageThread implements Runnable {
 			
 			
 		}
-		int j = this.messageBytes.length -(i+4);
 		
 		byte[] body = Arrays.copyOfRange(this.messageBytes,i+4,this.messageBytes.length);
 		System.out.println(this.messageBytes.length);

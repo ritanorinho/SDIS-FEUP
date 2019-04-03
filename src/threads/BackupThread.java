@@ -1,14 +1,12 @@
 package threads;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
 
 import project.Peer;
 
 public class BackupThread implements Runnable {
 	private byte[] message;
-	private int delay=1;
 	private int replicationDegree;
 	private String hashName;
 	private int attempt=1;

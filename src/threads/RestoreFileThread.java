@@ -2,7 +2,6 @@ package threads;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -17,9 +16,7 @@ public class RestoreFileThread implements Runnable {
 	public RestoreFileThread(String filename, String fileId) {
 		this.filename= filename;
 		this.fileId=fileId;
-	}
-
-	
+	}	
 	
 	@Override
 	public void run() {
@@ -37,8 +34,8 @@ public class RestoreFileThread implements Runnable {
 			finalFile.getParentFile().mkdirs();
 			finalFile.createNewFile();
 		}
-		FileOutputStream fos = new FileOutputStream(finalFile);
-		HashMap<String,String> requiredChunks = Peer.getMemory().requiredChunks;
+	
+		HashMap<String,String> requiredChunks = Peer.getMemory().chunksToRestore;
 		ArrayList<String> sortedChunks = new ArrayList<String>();
 		for (String key : requiredChunks.keySet()){
 			if (requiredChunks.get(key).equals(this.fileId))
@@ -52,7 +49,7 @@ public class RestoreFileThread implements Runnable {
             return Integer.compare(chunk1, chunk2);
         });
 		
-		
+		FileOutputStream fos = new FileOutputStream(finalFile);
 		for (String key: sortedChunks) {
 
 			String[] splitChunkName= key.trim().split("-");
@@ -69,7 +66,7 @@ public class RestoreFileThread implements Runnable {
 			System.out.println("Chunk no "+splitChunkName[1]+ " content  " +content.length);
 			fos.write(content);
 			in.close();			
-			Peer.getMemory().requiredChunks.remove(key);
+			Peer.getMemory().chunksToRestore.remove(key);
 			
 		}
 		fos.close();

@@ -8,7 +8,6 @@ import java.util.Arrays;
 
 import project.Peer;
 import threads.AnalizeMessageThread;
-import threads.GetchunkThread;
 
 public class MDRListener implements Runnable{
 
