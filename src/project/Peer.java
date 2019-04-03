@@ -184,12 +184,8 @@ public class Peer implements RMIInterface {
 			Peer.executor.execute(new WorkerThread(header.getBytes(),channel));
 			
 		}
-		
-		String worker = "RESTORE "+serverID+ " "+ name+ " "+ fileInfo.getFileId();
-		String channel = "mc";
-		Peer.executor.schedule(new WorkerThread(worker.getBytes(),channel),5,TimeUnit.SECONDS);
+		Peer.executor.schedule(new RestoreFileThread(fileInfo.getFilename(),fileInfo.getFileId()),10,TimeUnit.SECONDS);
 		}
-		
 	}
 
 	@Override

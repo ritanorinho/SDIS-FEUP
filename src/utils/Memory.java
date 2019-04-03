@@ -13,7 +13,7 @@ public class Memory {
 	//String: fileId-ChunkNo
 	public HashMap<String,Chunk> savedChunks= new HashMap<String,Chunk>();
 	//String fileId-ChunkNo fileId
-	public HashMap<String,String> requiredChunks= new HashMap<String, String>();
+	public HashMap<String,String> requiredChunks= new HashMap<String,String>();
 	public HashMap<String,Integer> restoredChunks= new HashMap<String, Integer>();
 	public ConcurrentHashMap<String,Integer> savedOcurrences = new ConcurrentHashMap<String,Integer>();
 	

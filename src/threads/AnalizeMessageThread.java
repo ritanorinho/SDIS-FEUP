@@ -1,6 +1,11 @@
 package threads;
 
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
@@ -66,24 +71,31 @@ public class AnalizeMessageThread implements Runnable {
 	}
 	private void chunk() {
 		String chunkId = messageArray[3] + "-" + messageArray[4];
-		//System.out.println("RECEIVED "+this.message);
+		byte[] body = getBody();
 		int senderId = Integer.parseInt(messageArray[2]);
 		
-		if (Peer.getId() != senderId) {
-			Peer.getMemory().requiredChunks.put(chunkId, messageArray[3]);	
-			if (!Peer.getMemory().restoredChunks.containsKey(chunkId)) {
-				Peer.getMemory().restoredChunks.put(chunkId, 1);
-			}
-			else 
-				Peer.getMemory().restoredChunks.put(chunkId, Peer.getMemory().restoredChunks.get(chunkId)+1);
-			
-		}
 		if (Peer.getId() == senderId) {
-			Peer.getMemory().restoredChunks.put(chunkId, Peer.getMemory().restoredChunks.get(chunkId)+1);
-			System.out.println("replication degree: "+ this.messageArray[4]+" "+Peer.getMemory().restoredChunks.get(chunkId));
+			
+			String chunkPath =  "Peer"+Peer.getId() +"/"+"CHUNK"+"/"+messageArray[3]+"/"+messageArray[4];
+			File chunkFile = new File(chunkPath);		
+			try {		
+				if (!chunkFile.exists()) {
+					chunkFile.getParentFile().mkdirs();
+						chunkFile.createNewFile();
+				}
+			byte[] content = getBody();
+			FileOutputStream fos;
+				fos = new FileOutputStream(chunkFile);
+				System.out.println("Chunk no "+messageArray[4]+ " content  " +content.length);
+				fos.write(content);	
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		
+			Peer.getMemory().requiredChunks.put(chunkId, messageArray[3]);
 		}
-		
-		
+					
 	}
 
 	private void getchunk() {
@@ -120,9 +132,6 @@ public class AnalizeMessageThread implements Runnable {
 		case "CHUNK":
 			chunk();
 			break;
-		case "RESTORE":
-			restore();
-			break;
 		case "REMOVED":
 			removed();
 		default:
@@ -141,16 +150,6 @@ public class AnalizeMessageThread implements Runnable {
 				Peer.getExecutor().schedule(new RemovedChunkThread(chunkId), delay, TimeUnit.MILLISECONDS);
 			}
 		
-		
-	}
-
-	private void restore() {
-		int senderId = Integer.parseInt(this.messageArray[1]);
-		
-		if (Peer.getId()!= senderId) {
-		Peer.getExecutor().execute(new RestoreFileThread(this.messageArray[2],this.messageArray[3]));
-		
-		}
 		
 	}
 

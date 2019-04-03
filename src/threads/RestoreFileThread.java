@@ -21,14 +21,12 @@ public class RestoreFileThread implements Runnable {
 
 	
 	
-	
 	@Override
 	public void run() {
 		boolean aux =createFile();
 		System.out.println("File: "+aux);
 	}
 	
-
 	public boolean createFile() {
 		String filename = "Peer"+Peer.getId() +"/"+"RESTORED"+"/"+this.filename;
 		File finalFile= new File(filename);
@@ -44,8 +42,7 @@ public class RestoreFileThread implements Runnable {
 		ArrayList<String> sortedChunks = new ArrayList<String>();
 		for (String key : requiredChunks.keySet()){
 			if (requiredChunks.get(key).equals(this.fileId))
-				sortedChunks.add(key);
-				
+				sortedChunks.add(key);				
 		}
 		
 		
@@ -57,6 +54,7 @@ public class RestoreFileThread implements Runnable {
 		
 		
 		for (String key: sortedChunks) {
+
 			String[] splitChunkName= key.trim().split("-");
 			String chunkPath =  "Peer"+Peer.getId() +"/"+"CHUNK"+"/"+splitChunkName[0]+"/"+splitChunkName[1];
 			System.out.println("inside for " +key);
@@ -72,6 +70,7 @@ public class RestoreFileThread implements Runnable {
 			fos.write(content);
 			in.close();			
 			Peer.getMemory().requiredChunks.remove(key);
+			
 		}
 		fos.close();
 		return true;

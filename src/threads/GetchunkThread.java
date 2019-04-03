@@ -19,6 +19,10 @@ public class GetchunkThread implements Runnable {
 	@Override
 	public void run() {
 		String chunkId = messageArray[3] + "-" + messageArray[4];
+		if (!Peer.getMemory().savedChunks.containsKey(chunkId)) {
+			System.out.println("This peer doesn't contain this chunk: "+chunkId);
+		}
+		else {
 		byte[] chunkData = Peer.getMemory().savedChunks.get(chunkId).getData();
 	
 		String restoredChunk = "CHUNK " + messageArray[1] + " " + messageArray[2] + " " + messageArray[3] + " "
@@ -52,7 +56,7 @@ public class GetchunkThread implements Runnable {
 		}
 		// TODO Auto-generated method stub
 	}
-	
+	}
 	
 
 }

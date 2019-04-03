@@ -20,7 +20,9 @@ public class TestApp {
 			return;
 		}else if (args.length >= 3) 	fileName = args[2];
 
-    String accessPoint = args[0];
+	String[] host_accessPoint = args[0].trim().split(":");
+    String accessPoint = host_accessPoint[1];
+    String host = host_accessPoint[0];
 		String operation = args[1];
 		
 		int replicationDegree;
@@ -30,7 +32,7 @@ public class TestApp {
 
     System.setProperty("java.net.preferIPv4Stack", "true");
 
-    registry = LocateRegistry.getRegistry("localhost");
+    registry = LocateRegistry.getRegistry(host);
 
     try{stub = (RMIInterface) registry.lookup(accessPoint);}
     catch(NotBoundException e){
