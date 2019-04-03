@@ -60,16 +60,11 @@ public class StoredChunkThread implements Runnable {
 		}
 		String chunkName = this.messageArray[3]+"-"+this.messageArray[4];
 		Chunk chunk = new Chunk(this.messageArray[3],Integer.parseInt(this.messageArray[4]),this.data,this.data.length,chunkName,this.replicationDegree);
-		if (Peer.getId() != senderId) {
+		if (Peer.getId() != senderId && !Peer.getMemory().savedChunks.containsKey(chunkName)) {
 		Peer.getMemory().savedChunks.put(chunkName, chunk);
+		Peer.getMemory().updateMemoryUsed(this.data.length);
 		System.out.println(Peer.getMemory().savedChunks);
-		if (!Peer.getMemory().savedOcurrences.containsKey(chunkName)) {
-			Peer.getMemory().savedOcurrences.put(chunkName,1);
-		}
-		}
-		if (Peer.getId() == senderId) {
-			Peer.getMemory().savedOcurrences.put(chunkName,Peer.getMemory().savedOcurrences.get(chunkName)+1);
-		}
+		}		
 		
 	}
 
@@ -77,15 +72,18 @@ public class StoredChunkThread implements Runnable {
 	public void run() {
 		try {
 			if(Peer.getMemory().getAvailableCapacity()>=this.data.length) {
-				Peer.getMemory().updateMemoryUsed(this.data.length);
+				int senderId = Integer.parseInt(messageArray[2]);
+				if (Peer.getId() != senderId) {
 				saveChunk();
 				createFileChunk();
+				Peer.getMCListener().message(byteMessage);
 				}
+			}
 				else {
 					System.out.println("There isn't enough disk space to save this chunk\n");
 					return;
 				}
-			Peer.getMCListener().message(byteMessage);
+			
 			
 		} catch (IOException e) {
 			e.printStackTrace();

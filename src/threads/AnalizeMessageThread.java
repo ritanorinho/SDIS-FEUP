@@ -25,13 +25,37 @@ public class AnalizeMessageThread implements Runnable {
 		// TODO Auto-generated constructor stub
 	}
 
+	
+	@Override
+	public void run() {
+		String messageType = this.message.trim().split("\\s+")[0];
+		switch (messageType) {
+		case "PUTCHUNK":
+			putchunk();
+			break;
+		case "STORED":
+			stored();
+			break;
+		case "DELETE":
+			delete();
+			break;
+		case "GETCHUNK":
+			getchunk();
+			break;
+		case "CHUNK":
+			chunk();
+			break;
+		case "REMOVED":
+			removed();
+		default:
+		}
+	}
 	private synchronized void stored() {
 		String chunkId = messageArray[3] + "-" + messageArray[4];
-		if (Peer.getMemory().backupChunks.containsKey(chunkId)) {
-			System.out.println("replication: " + Peer.getMemory().backupChunks.get(chunkId));
-			int senderId = Integer.parseInt(messageArray[2]);
-			if (Peer.getId() == senderId)
-				Peer.getMemory().backupChunks.put(chunkId, Peer.getMemory().backupChunks.get(chunkId) + 1);
+		if (Peer.getMemory().savedOcurrences.containsKey(chunkId)) {
+			System.out.println(Peer.getId()+" "+Peer.getMemory().savedOcurrences.get(chunkId));
+			Peer.getMemory().savedOcurrences.put(chunkId, Peer.getMemory().savedOcurrences.get(chunkId) + 1);
+			
 		}
 	}
 	
@@ -44,19 +68,18 @@ public class AnalizeMessageThread implements Runnable {
 		Random random = new Random();
 		int delay = random.nextInt(401);
 
-		if (!Peer.getMemory().backupChunks.containsKey(chunkId)) {
-			Peer.getMemory().backupChunks.put(chunkId, 1);
-		} else {
-			
-				Peer.getMemory().backupChunks.put(chunkId, Peer.getMemory().backupChunks.get(chunkId) + 1);
-		}
+		
+		if (Peer.getId() != id && !Peer.getMemory().savedChunks.containsKey(chunkId)) {
+			if (!Peer.getMemory().savedOcurrences.containsKey(chunkId)) {
+				Peer.getMemory().savedOcurrences.put(chunkId, 0);
+			} 
 				String storedMessage = "STORED " + messageArray[1] + " " + id + " " + messageArray[3] + " "
 						+ messageArray[4] + " " + "\n\r\n\r";				
 				byte[] data = getBody();
 				Peer.getExecutor().schedule(new StoredChunkThread(storedMessage.getBytes(),data,Integer.parseInt(messageArray[5])), delay,
 						TimeUnit.MILLISECONDS);
+		}
 	}
-
 	private synchronized void delete() {
 
 		String fileId = messageArray[3];
@@ -83,7 +106,6 @@ public class AnalizeMessageThread implements Runnable {
 				byte[] content = getBody();
 				FileOutputStream fos;
 				fos = new FileOutputStream(chunkFile);
-				System.out.println("Chunk no "+messageArray[4]+ " content  " +content.length);
 				fos.write(content);	
 				fos.close();
 			} catch (IOException e) {
@@ -103,7 +125,7 @@ public class AnalizeMessageThread implements Runnable {
 		Random random = new Random();
 		int delay = random.nextInt(401);
 		int senderId = Integer.parseInt(messageArray[2]);
-		if (Peer.getId() != senderId && Peer.getMemory().backupChunks.containsKey(chunkId))
+		if (Peer.getId() != senderId && Peer.getMemory().savedChunks.containsKey(chunkId))
 		{
 			Peer.getExecutor().schedule(new GetchunkThread(messageArray), delay,
 					TimeUnit.MILLISECONDS);
@@ -111,30 +133,6 @@ public class AnalizeMessageThread implements Runnable {
 
 	}
 
-	@Override
-	public void run() {
-		String messageType = this.message.trim().split("\\s+")[0];
-		switch (messageType) {
-		case "PUTCHUNK":
-			putchunk();
-			break;
-		case "STORED":
-			stored();
-			break;
-		case "DELETE":
-			delete();
-			break;
-		case "GETCHUNK":
-			getchunk();
-			break;
-		case "CHUNK":
-			chunk();
-			break;
-		case "REMOVED":
-			removed();
-		default:
-		}
-	}
 
 	private void removed() {
 			String fileId = this.messageArray[3];
@@ -142,7 +140,9 @@ public class AnalizeMessageThread implements Runnable {
 			String chunkId = fileId +"-"+chunkNo;
 			int senderId = Integer.parseInt(this.messageArray[2]);
 			if (senderId != Peer.getId()) {
+				
 				Peer.getMemory().savedOcurrences.put(chunkId,Peer.getMemory().savedOcurrences.get(chunkId)-1);
+				System.out.println("inside removed "+Peer.getMemory().savedOcurrences.get(chunkId));
 				Random random = new Random();
 				int delay = random.nextInt(401);
 				Peer.getExecutor().schedule(new RemovedChunkThread(chunkId), delay, TimeUnit.MILLISECONDS);
@@ -161,10 +161,7 @@ public class AnalizeMessageThread implements Runnable {
 			
 		}
 		
-		byte[] body = Arrays.copyOfRange(this.messageBytes,i+4,this.messageBytes.length);
-		System.out.println(this.messageBytes.length);
-		System.out.println("body "+body.length);
-		
+		byte[] body = Arrays.copyOfRange(this.messageBytes,i+4,this.messageBytes.length);		
 		return body;
 	}
 

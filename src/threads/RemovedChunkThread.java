@@ -31,6 +31,7 @@ public class RemovedChunkThread implements Runnable {
 		
 		if (Peer.getMemory().savedChunks.containsKey(this.chunkId)) {
 			replicationDegree = Peer.getMemory().savedChunks.get(this.chunkId).getReplicationDegree();
+			System.out.println("replication degree "+replicationDegree+" "+Peer.getMemory().savedOcurrences.get(this.chunkId));
 			if (Peer.getMemory().savedOcurrences.get(this.chunkId) < replicationDegree) {
 			
 			String filePath = "Peer"+Peer.getId()+"/"+"STORED"+"/"+this.fileId+"/"+this.chunkNo;

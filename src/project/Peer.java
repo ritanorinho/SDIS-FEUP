@@ -10,6 +10,7 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -131,8 +132,8 @@ public class Peer implements RMIInterface {
 			if (!memory.files.contains(fileInfo))
 				memory.files.add(fileInfo);
 
-			if (!memory.backupChunks.containsKey(name)) {
-				memory.backupChunks.put(name, 0);
+			if (!memory.savedOcurrences.containsKey(name)) {
+				memory.savedOcurrences.put(name, 0);
 			}
 
 			byte[] data;
@@ -213,6 +214,8 @@ public class Peer implements RMIInterface {
 			String channel = "mc";
 			Peer.executor.execute(new WorkerThread(data,channel));
 			mcListener.message(message);
+			// The initiator-peer collects the confirmation
+			// messages during a time interval of one second
 			Peer.executor.schedule(new DeleteThread(message), 1, TimeUnit.SECONDS);
 		} catch (UnsupportedEncodingException e1) {
 			// TODO Auto-generated catch block
@@ -222,33 +225,42 @@ public class Peer implements RMIInterface {
 			e.printStackTrace();
 		}
 		
-		// The initiator-peer collects the confirmation
-		// messages during a time interval of one second
+		
 		
 	}
 
 
 	@Override
 	public void reclaim(int space) throws RemoteException {
-		int currentSpaceToFree = memory.getAvailableCapacity()-space; // space to free 
+		int currentSpaceToFree = memory.getUsedMemory()-space; // space to free 
 		if (currentSpaceToFree > 0) {
-			for (String key : memory.savedChunks.keySet()) {
-				if (memory.savedChunks.get(key).getChunkSize()<= currentSpaceToFree) {
+			for (Iterator<String> iterator = memory.savedChunks.keySet().iterator(); iterator.hasNext();) {
+				String key = iterator.next();
+				System.out.println("RECLAIM KEY "+key);
+				if (currentSpaceToFree>0) {
 					currentSpaceToFree-=memory.savedChunks.get(key).getChunkSize();
 					String header = "REMOVED 1.0 "+serverID+" "+ memory.savedChunks.get(key).getFileId() + " "+memory.savedChunks.get(key).getChunkNo()+"\n\r\n\r";
-					byte[] data;
+					System.out.print(header);
 					try {
-						data = header.getBytes("US-ASCII");
+						byte[] data = header.getBytes("US-ASCII");
 						String channel = "mc";
 						Peer.executor.execute(new WorkerThread(data,channel));
 					} catch (UnsupportedEncodingException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
-					
+					String[] splitKey = key.trim().split("-");
+					String filePath = "Peer "+Peer.getId()+"/"+ splitKey[0]+"/"+splitKey[1];
+					File fileToDelete = new File(filePath);
+					fileToDelete.delete();
+					iterator.remove();	
+					System.out.println("-"+Peer.getMemory().savedOcurrences.get(key));
+					Peer.getMemory().savedOcurrences.put(key,Peer.getMemory().savedOcurrences.get(key)-1);
 				}
 			}
-			
+		}
+		else {
+			System.out.println("\nPeer "+ Peer.getId()+" doesn't have space to free!");
 		}
 		
 	}
@@ -269,10 +281,8 @@ public class Peer implements RMIInterface {
 			for (int j = 0; j< memory.files.get(i).getChunks().size();j++) {
 				System.out.println("\n Backup chunks\n");
 				System.out.println("--Chunk id: "+memory.files.get(i).getChunks().get(j).getChunkId());
-				System.out.println("--Perceived replication degree: "+memory.backupChunks.get(memory.files.get(i).getChunks().get(j).getChunkId()));
-				
-				
-				
+				System.out.println("--Perceived replication degree: "+memory.savedOcurrences.get(memory.files.get(i).getChunks().get(j).getChunkId()));
+							
 				
 			}
 			}

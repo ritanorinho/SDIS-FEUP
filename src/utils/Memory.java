@@ -8,8 +8,6 @@ import java.util.concurrent.ConcurrentHashMap;
 public class Memory {
 	public ArrayList<FileInfo> files = new ArrayList<FileInfo>();
 	public HashMap<String,String> filenameId= new HashMap<String,String>();
-	// String: fileId-ChunkNo Integer: Number of occurrences
-	public ConcurrentHashMap<String, Integer> backupChunks = new ConcurrentHashMap<String, Integer>();
 	//String: fileId-ChunkNo
 	public HashMap<String,Chunk> savedChunks= new HashMap<String,Chunk>();
 	//String fileId-ChunkNo fileId
@@ -38,9 +36,9 @@ public class Memory {
 				files.remove(i);
 		}
 
-		for (Entry<String, Integer> entry : backupChunks.entrySet()) {
+		for (Entry<String, Integer> entry : savedOcurrences.entrySet()) {
 		   if(entry.getKey().split("-")[0].equals(fileId)){
-			   backupChunks.remove(entry.getKey());
+			   savedOcurrences.remove(entry.getKey());
 		   }
 		}
 	}
@@ -50,5 +48,9 @@ public class Memory {
 	}
 	public int getAvailableCapacity() {
 		return this.capacity-this.memoryUsed;
+	}
+	
+	public int getUsedMemory() {
+		return this.memoryUsed;
 	}
 }

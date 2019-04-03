@@ -23,12 +23,10 @@ public class BackupThread implements Runnable {
 	}
 	@Override
 	public void run() {
-		int replicationState = Peer.getMemory().backupChunks.get(this.hashName);
-		
+		int replicationState = Peer.getMemory().savedOcurrences.get(this.hashName);
 		 // if the number of confirmation messages it received up to the end 
 		 // of that interval is lower than the desired replication degree
 		if (replicationState < this.replicationDegree) {
-
 			//it retransmits the backup message on the MDB channel, and 
 			//doubles the time interval for receiving confirmation messages.
 
@@ -43,7 +41,7 @@ public class BackupThread implements Runnable {
 			if (this.attempt < this.MAX_ATTEMPT) { // This procedure is repeated up to a maximum number of five times
 				Peer.getExecutor().schedule(this,this.attempt,TimeUnit.SECONDS);
 				this.attempt++;
-				System.out.println("REPLICATION: "+replicationState);
+				
 			}
 			
 			else {
