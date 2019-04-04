@@ -233,9 +233,12 @@ public class Peer implements RMIInterface {
 	@Override
 	public void reclaim(int space) throws RemoteException {
 		int currentSpaceToFree = memory.getUsedMemory()-space; // space to free 
+		
 		if (currentSpaceToFree > 0) {
-			for (Iterator<String> iterator = memory.savedChunks.keySet().iterator(); iterator.hasNext();) {
-				String key = iterator.next();
+			ArrayList<String> sortedChunks=sortChunksToDelete();
+			for (Iterator<String> iterator = sortedChunks.iterator(); iterator.hasNext();) {
+				String[] splitString = iterator.next().trim().split("-");
+				String key = splitString[0]+"-"+splitString[1];
 				if (currentSpaceToFree>0) {
 					currentSpaceToFree-=memory.savedChunks.get(key).getChunkSize();
 					String header = "REMOVED 1.0 "+serverID+" "+ memory.savedChunks.get(key).getFileId() + " "+memory.savedChunks.get(key).getChunkNo()+"\n\r\n\r";
@@ -328,5 +331,21 @@ public static void deleteLocalStorage() {
 		System.out.println(directory +" does not exist");
 	}
 	else System.out.println("exist");
+}
+
+
+public static ArrayList<String> sortChunksToDelete() {
+	ArrayList<String> chunksToSort = new ArrayList<String>();
+	for (String key : memory.savedChunks.keySet()){
+		String chunk = key +"-"+memory.savedChunks.get(key).getReplicationDegree();
+		chunksToSort.add(chunk);
+	}
+	chunksToSort.sort((o1, o2) -> {
+        int chunk1 = Integer.valueOf(o1.split("-")[2]);
+        int chunk2 = Integer.valueOf(o2.split("-")[2]);
+        return Integer.compare(chunk1, chunk2);
+    });
+	System.out.println(chunksToSort);
+	return chunksToSort;
 }
 }
