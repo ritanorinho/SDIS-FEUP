@@ -258,7 +258,10 @@ public class Peer implements RMIInterface {
 					System.out.println("-"+Peer.getMemory().savedOcurrences.get(key));
 					Peer.getMemory().savedOcurrences.put(key,Peer.getMemory().savedOcurrences.get(key)-1);
 				}
-				else break;
+					
+					Peer.getMemory().capacity=space;
+					Peer.getMemory().memoryUsed= Peer.getMemory().getUsedMemory();
+					System.out.println("CAPACITY"+Peer.getMemory().capacity+" "+Peer.getMemory().memoryUsed);
 			}
 		}
 		else {

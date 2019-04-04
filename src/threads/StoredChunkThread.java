@@ -70,14 +70,14 @@ public class StoredChunkThread implements Runnable {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		}		
+		}
 		
-	}
+		
+		}		
 
 	@Override
 	public void run() {
-		if(Peer.getMemory().getAvailableCapacity()>=this.data.length) {
-			
+		if(Peer.getMemory().getAvailableCapacity()>=this.data.length) {			
 			int senderId = Integer.parseInt(messageArray[2]);
 			if (Peer.getId() != senderId) {
 		

@@ -142,7 +142,7 @@ public class AnalizeMessageThread implements Runnable {
 			int senderId = Integer.parseInt(this.messageArray[2].trim());
 			if (senderId != Peer.getId()) {
 				Peer.getMemory().savedOcurrences.put(chunkId,Peer.getMemory().savedOcurrences.get(chunkId)-1);
-				System.out.println("inside removed "+Peer.getMemory().savedOcurrences.get(chunkId));
+
 				Random random = new Random();
 				int delay = random.nextInt(401);
 				Peer.getExecutor().schedule(new RemovedChunkThread(chunkId), delay, TimeUnit.MILLISECONDS);

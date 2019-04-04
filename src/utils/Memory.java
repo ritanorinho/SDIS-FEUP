@@ -16,7 +16,7 @@ public class Memory {
 	
 	public int capacity = 999999999;
 	public int memoryUsed = 0;
-	public int availableCapacity;
+	public int availableCapacity= capacity - memoryUsed;
 	
 	
 	public boolean hasFile(String fileId) {
@@ -51,6 +51,13 @@ public class Memory {
 	}
 	
 	public int getUsedMemory() {
-		return this.memoryUsed;
+		int usedMemory=0;
+		for (String key: savedChunks.keySet()) {
+			usedMemory+=savedChunks.get(key).getChunkSize();
+			
+		}
+		this.memoryUsed=usedMemory;
+		this.availableCapacity= this.capacity-usedMemory;
+		return usedMemory;
 	}
 }
