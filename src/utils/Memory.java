@@ -27,6 +27,12 @@ public class Memory {
 
 		return false;
 	}
+
+
+	public void putChunk(String name, Integer i){
+		String fileid = name.split("-")[0];
+		savedOcurrences.put(name, i);
+	}
 	
 
 	public void removeChunks(String fileId) {
@@ -41,6 +47,13 @@ public class Memory {
 			   savedOcurrences.remove(entry.getKey());
 		   }
 		}
+
+		for (Entry<String, Chunk> entry : savedChunks.entrySet()) {
+			if(entry.getKey().split("-")[0].equals(fileId)){
+				savedChunks.remove(entry.getKey());
+			}
+		 }
+
 	}
 	
 	public void updateMemoryUsed(int memory) {
