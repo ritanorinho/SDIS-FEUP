@@ -122,7 +122,7 @@ public class Peer implements RMIInterface {
 
 		for (int i = 0; i < chunks.size(); i++) {
 			String header = "PUTCHUNK " + protocolVersion + " " + serverID + " " + fileInfo.getFileId() + " "
-					+ chunks.get(i).getChunkNo() + " " + repDegree + "\n\r\n\r";
+					+ chunks.get(i).getChunkNo() + " " + repDegree + "\r\n\r\n";
 			
 			
 			System.out.println("\n SENT: " + header);
@@ -178,7 +178,7 @@ public class Peer implements RMIInterface {
 				}
 			}
 		for (int i = 0; i < chunks.size();i++) {
-			String header = "GETCHUNK "+ protocolVersion + " "+ serverID + " " +  fileInfo.getFileId()+ " "+ chunks.get(i).getChunkNo() + "\n\r\n\r";
+			String header = "GETCHUNK "+ protocolVersion + " "+ serverID + " " +  fileInfo.getFileId()+ " "+ chunks.get(i).getChunkNo() + "\r\n\r\n";
 			System.out.println("\n SENT: "+header);
 				String channel = "mc";
 			try {
@@ -203,7 +203,7 @@ public class Peer implements RMIInterface {
 			return;
 		}
 
-		String header = "DELETE " + protocolVersion + " " + serverID + " " + fileInfo.getFileId() + "\n\r\n\r";
+		String header = "DELETE " + protocolVersion + " " + serverID + " " + fileInfo.getFileId() + "\r\n\r\n";
 		System.out.println("\n SENT: " + header);
 
 		byte[] data;
@@ -241,7 +241,7 @@ public class Peer implements RMIInterface {
 				String key = splitString[0]+"-"+splitString[1];
 				if (currentSpaceToFree>0) {
 					currentSpaceToFree-=memory.savedChunks.get(key).getChunkSize();
-					String header = "REMOVED 1.0 "+serverID+" "+ memory.savedChunks.get(key).getFileId() + " "+memory.savedChunks.get(key).getChunkNo()+"\n\r\n\r";
+					String header = "REMOVED 1.0 "+serverID+" "+ memory.savedChunks.get(key).getFileId() + " "+memory.savedChunks.get(key).getChunkNo()+"\r\n\r\n";
 					System.out.print(header);
 					try {
 						byte[] data = header.getBytes("US-ASCII");

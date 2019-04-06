@@ -51,7 +51,7 @@ public class RemovedChunkThread implements Runnable {
 				e.printStackTrace();
 			}
 			String header ="PUTCHUNK 1.0 " +Peer.getId() + " " + this.fileId + " "
-					+this.chunkNo + " " + replicationDegree + "\n\r\n\r";
+					+this.chunkNo + " " + replicationDegree + "\r\n\r\n";
 			System.out.println("REMOVED "+header);
 			byte[] message = new byte[header.getBytes().length+body.length];
 			System.arraycopy(header.getBytes(), 0, message, 0, header.getBytes().length);

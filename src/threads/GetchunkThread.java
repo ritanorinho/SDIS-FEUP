@@ -26,7 +26,7 @@ public class GetchunkThread implements Runnable {
 		byte[] chunkData = Peer.getMemory().savedChunks.get(chunkId).getData();
 	
 		String restoredChunk = "CHUNK " + messageArray[1] + " " + messageArray[2] + " " + messageArray[3] + " "
-				+ messageArray[4] + "\n\r\n\r";
+				+ messageArray[4] + "\r\n\r\n";
 		byte[] data = restoredChunk.getBytes();
 		byte[] message = new byte[data.length + chunkData.length];
 		System.arraycopy(data, 0, message, 0, data.length);

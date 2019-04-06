@@ -74,7 +74,7 @@ public class AnalizeMessageThread implements Runnable {
 				Peer.getMemory().savedOcurrences.put(chunkId, 0);
 			} 
 				String storedMessage = "STORED " + messageArray[1] + " " + id + " " + messageArray[3] + " "
-						+ messageArray[4] + " " + "\n\r\n\r";
+						+ messageArray[4] + " " + "\r\n\r\n";
 				System.out.println(storedMessage);
 				byte[] data = getBody();
 				Peer.getExecutor().schedule(new StoredChunkThread(storedMessage.getBytes(),data,Integer.parseInt(messageArray[5])), delay,
@@ -153,7 +153,7 @@ public class AnalizeMessageThread implements Runnable {
 	private byte[] getBody() {
 		int i;
 		for (i =0; i< this.messageBytes.length-4;i++) {
-			if (this.messageBytes[i] == 0xA && this.messageBytes[i+1]== 0xD && this.messageBytes[i+2]== 0xA && this.messageBytes[i+3]== 0xD) {
+			if (this.messageBytes[i] == 0xD && this.messageBytes[i+1]== 0xA && this.messageBytes[i+2]== 0xD && this.messageBytes[i+3]== 0xA) {
 				break;
 			}
 			
