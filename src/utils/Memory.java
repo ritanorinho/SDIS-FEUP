@@ -7,8 +7,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class Memory {
 	public ArrayList<FileInfo> files = new ArrayList<FileInfo>();
-	public HashMap<String,String> filenameId= new HashMap<String,String>();
-	//String: fileId-ChunkNo
 	public HashMap<String,Chunk> savedChunks= new HashMap<String,Chunk>();
 	//String fileId-ChunkNo fileId
 	public HashMap<String,String> chunksToRestore= new HashMap<String,String>();
@@ -19,7 +17,7 @@ public class Memory {
 	public int availableCapacity= capacity - memoryUsed;
 	
 	
-	public boolean hasFile(String fileId) {
+	public boolean hasFileByID(String fileId) {
 		for (int i = 0; i < files.size(); i++) {
 			if (files.get(i).getFileId().equals(fileId))
 				return true;
@@ -28,12 +26,14 @@ public class Memory {
 		return false;
 	}
 
+	public boolean hasFileByName(String filename) {
+		for (int i = 0; i < files.size(); i++) {
+			if (files.get(i).getFilename().equals(filename))
+				return true;
+		}
 
-	public void putChunk(String name, Integer i){
-		String fileid = name.split("-")[0];
-		savedOcurrences.put(name, i);
+		return false;
 	}
-	
 
 	public void removeChunks(String fileId) {
 
