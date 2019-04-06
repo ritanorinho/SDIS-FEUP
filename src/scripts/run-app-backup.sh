@@ -1,1 +1,1 @@
-java project/TestApp Peer1 BACKUP project/test.txt 2
+java project/TestApp localhost:Peer1 BACKUP project/test.txt 2

@@ -1,1 +1,1 @@
-java project/TestApp Peer1 DELETE project/test.txt
+java project/TestApp localhost:Peer1 DELETE project/test.txt

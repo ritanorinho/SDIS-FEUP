@@ -9,6 +9,7 @@ import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import project.Peer;
+import utils.FileInfo;
 
 
 public class AnalizeMessageThread implements Runnable {
@@ -22,7 +23,6 @@ public class AnalizeMessageThread implements Runnable {
 		this.messageBytes= message;
 		this.message= new String(this.messageBytes,0,this.messageBytes.length);
 		this.messageArray = this.message.trim().split("\\s+");
-		// TODO Auto-generated constructor stub
 	}
 
 	
@@ -84,13 +84,14 @@ public class AnalizeMessageThread implements Runnable {
 	private synchronized void delete() {
 
 		String fileId = messageArray[3];
-		;
 		
-		if (Peer.getMemory().hasFile(fileId)) {
-			Peer.getMemory().removeChunks(fileId);
-		}
+		Peer.getMemory().removeChunks(fileId);
 
+		String localDirPath = "Peer" + Peer.getId() + "/STORED/" + fileId;
+		File localDir = new File(localDirPath);
+		FileInfo.deleteFolder(localDir);
 	}
+
 	private void chunk() {
 		String chunkId = messageArray[3] + "-" + messageArray[4];
 		int senderId = Integer.parseInt(messageArray[2]);
@@ -110,7 +111,6 @@ public class AnalizeMessageThread implements Runnable {
 				fos.write(content);	
 				fos.close();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		
@@ -156,8 +156,6 @@ public class AnalizeMessageThread implements Runnable {
 			if (this.messageBytes[i] == 0xD && this.messageBytes[i+1]== 0xA && this.messageBytes[i+2]== 0xD && this.messageBytes[i+3]== 0xA) {
 				break;
 			}
-			
-			
 		}
 		
 		byte[] body = Arrays.copyOfRange(this.messageBytes,i+4,this.messageBytes.length);		
