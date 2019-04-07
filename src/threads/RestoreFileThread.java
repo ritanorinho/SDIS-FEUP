@@ -20,8 +20,9 @@ public class RestoreFileThread implements Runnable {
 	
 	@Override
 	public void run() {
-		boolean aux =createFile();
-		System.out.println("File: "+aux);
+		if(createFile())
+			System.out.println("Local file restored");
+		else System.out.println("Errror occured: Local file not created");
 	}
 	
 	public boolean createFile() {
@@ -71,7 +72,6 @@ public class RestoreFileThread implements Runnable {
 		fos.close();
 		return true;
 		} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			

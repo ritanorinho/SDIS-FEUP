@@ -114,7 +114,6 @@ public class Peer implements RMIInterface {
 		File file = new File(filename);
 		FileInfo fileInfo = new FileInfo(file,filename,repDegree);
 		System.out.println("filename:" +fileInfo.getFilename());
-		memory.files.add(fileInfo);
 		
 		ArrayList<Chunk> chunks = fileInfo.getChunks();
 		String name;
@@ -171,7 +170,6 @@ public class Peer implements RMIInterface {
 			for (int i =0;i <memory.files.size();i++) {
 				if (memory.files.get(i).getFilename().equals(name)) {
 					fileInfo= memory.files.get(i);
-				
 					chunks= memory.files.get(i).getChunks();
 					break;
 				}
@@ -197,8 +195,8 @@ public class Peer implements RMIInterface {
 		File file = new File(filename);
 		FileInfo fileInfo = new FileInfo(file,filename,0);
 
-		if (!memory.hasFileByName(fileInfo.getFileId())) {
-			System.out.println("File is not on the system");
+		if (!memory.hasFileByName(file.getName())) {
+			System.out.println(filename + "has never backed up!");
 			return;
 		}
 
