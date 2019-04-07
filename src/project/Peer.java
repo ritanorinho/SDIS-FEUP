@@ -10,7 +10,10 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -186,7 +189,7 @@ public class Peer implements RMIInterface {
 			}
 			
 		}
-		Peer.executor.schedule(new RestoreFileThread(fileInfo.getFilename(),fileInfo.getFileId()),10,TimeUnit.SECONDS);
+		Peer.executor.schedule(new RestoreFileThread(fileInfo.getFilename(),fileInfo.getFileId(),chunks.size()),10,TimeUnit.SECONDS);
 		}
 	}
 
@@ -232,10 +235,10 @@ public class Peer implements RMIInterface {
 		int currentSpaceToFree = memory.getUsedMemory()-space; // space to free 
 		
 		if (currentSpaceToFree > 0) {
-			ArrayList<String> sortedChunks=sortChunksToDelete();
+			List<String> sortedChunks=sortChunksToDelete();
 			for (Iterator<String> iterator = sortedChunks.iterator(); iterator.hasNext();) {
-				String[] splitString = iterator.next().trim().split("-");
-				String key = splitString[0]+"-"+splitString[1];
+				String[] splitString = iterator.next().trim().split(":");
+				String key = splitString[0];
 				if (currentSpaceToFree>0) {
 					currentSpaceToFree-=memory.savedChunks.get(key).getChunkSize();
 					String header = "REMOVED 1.0 "+serverID+" "+ memory.savedChunks.get(key).getFileId() + " "+memory.savedChunks.get(key).getChunkNo()+"\r\n\r\n";
@@ -247,6 +250,7 @@ public class Peer implements RMIInterface {
 					} catch (UnsupportedEncodingException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
+						
 					}
 					String[] splitKey = key.trim().split("-");
 					String filePath ="Peer"+Peer.getId()+"/"+"STORED"+"/"+ splitKey[0]+"/"+splitKey[1];
@@ -255,8 +259,8 @@ public class Peer implements RMIInterface {
 					boolean a=fileToDelete.delete();
 					System.out.println("delete "+a);
 					iterator.remove();	
-					System.out.println("-"+Peer.getMemory().savedOcurrences.get(key));
 					Peer.getMemory().savedOcurrences.put(key,Peer.getMemory().savedOcurrences.get(key)-1);
+					Peer.getMemory().savedChunks.remove(key);
 				}
 					
 					Peer.getMemory().capacity=space;
@@ -331,18 +335,23 @@ public static void deleteLocalStorage() {
 }
 
 
-public static ArrayList<String> sortChunksToDelete() {
+public static List<String> sortChunksToDelete() {
 	ArrayList<String> chunksToSort = new ArrayList<String>();
 	for (String key : memory.savedChunks.keySet()){
-		String chunk = key +"-"+memory.savedChunks.get(key).getReplicationDegree();
+		//System.out.println(memory.savedOcurrences.get(key)+"-"+memory.savedChunks.get(key).getReplicationDegree());
+		int diff = memory.savedOcurrences.get(key)- memory.savedChunks.get(key).getReplicationDegree(); 
+		String chunk = key +":"+diff;
 		chunksToSort.add(chunk);
 	}
 	chunksToSort.sort((o1, o2) -> {
-        int chunk1 = Integer.valueOf(o1.split("-")[2]);
-        int chunk2 = Integer.valueOf(o2.split("-")[2]);
+        int chunk1 = Integer.valueOf(o1.split(":")[1]);
+        int chunk2 = Integer.valueOf(o2.split(":")[1]);
         return Integer.compare(chunk1, chunk2);
     });
-	System.out.println(chunksToSort);
-	return chunksToSort;
+
+	List<String> returnList =chunksToSort;
+	Collections.reverse(returnList);
+	System.out.println(returnList);
+	return returnList;
 }
 }

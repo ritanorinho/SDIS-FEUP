@@ -12,10 +12,12 @@ import project.Peer;
 public class RestoreFileThread implements Runnable {
 	private String filename;
 	private String fileId;
+	private int numberChunks;
 
-	public RestoreFileThread(String filename, String fileId) {
-		this.filename= filename;
-		this.fileId=fileId;
+	public RestoreFileThread(String filename, String fileId, int numberChunks) {
+		this.filename = filename;
+		this.fileId = fileId;
+		this.numberChunks = numberChunks;
 	}	
 	
 	@Override
@@ -28,7 +30,11 @@ public class RestoreFileThread implements Runnable {
 	public boolean createFile() {
 		String filename = "Peer"+Peer.getId() +"/"+"RESTORED"+"/"+this.filename;
 		File finalFile= new File(filename);
-		
+		HashMap<String,String> requiredChunks = Peer.getMemory().chunksToRestore;
+		if (requiredChunks.size() < this.numberChunks) {
+			System.out.println("Could not find all the chunks needed to restore the requested file\n");
+			return false;
+		}else {
 		try {		
 		
 		if (!finalFile.exists()) {
@@ -36,7 +42,7 @@ public class RestoreFileThread implements Runnable {
 			finalFile.createNewFile();
 		}
 	
-		HashMap<String,String> requiredChunks = Peer.getMemory().chunksToRestore;
+		
 		ArrayList<String> sortedChunks = new ArrayList<String>();
 		for (String key : requiredChunks.keySet()){
 			if (requiredChunks.get(key).equals(this.fileId))
@@ -79,3 +85,4 @@ public class RestoreFileThread implements Runnable {
 
 	}
 	}
+}
