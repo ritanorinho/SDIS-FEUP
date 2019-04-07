@@ -27,7 +27,8 @@ public class StoredChunkThread implements Runnable {
 	
 	
 	
-	private void createFileChunk() {
+	
+	private synchronized void createFileChunk() {
 		String filename = "Peer"+Peer.getId() +"/"+messageArray[0]+"/"+messageArray[3]+"/"+messageArray[4];
 		System.out.println(filename);
 		try {
@@ -50,7 +51,7 @@ public class StoredChunkThread implements Runnable {
 		
 	}
 
-	private void saveChunk() {
+	private synchronized void saveChunk() {
 		for(int i = 0;i< Peer.getMemory().files.size();i++) {
 			
 			if (Peer.getMemory().files.get(i).getFileId().equals(messageArray[3])) {
@@ -58,11 +59,21 @@ public class StoredChunkThread implements Runnable {
 			}
 				
 		}
+		String version = this.messageArray[1];
 		String chunkName = this.messageArray[3]+"-"+this.messageArray[4];
+		System.out.println( Peer.getMemory().savedOcurrences.get(chunkName)+" "+this.replicationDegree);
+		if (version.equals("2.0") && Peer.getMemory().savedOcurrences.get(chunkName) >= this.replicationDegree)
+		{
+			System.out.println("new version");
+			System.out.println("Replication degree rechead");
+			return;
+		}
+		
 		Chunk chunk = new Chunk(this.messageArray[3],Integer.parseInt(this.messageArray[4]),this.data,this.data.length,chunkName,this.replicationDegree);
 		if (Peer.getId() != senderId && !Peer.getMemory().savedChunks.containsKey(chunkName)) {
 		Peer.getMemory().savedChunks.put(chunkName, chunk);
 		Peer.getMemory().updateMemoryUsed(this.data.length);
+		
 		createFileChunk();
 		try {
 			Peer.getMCListener().message(byteMessage);
@@ -80,16 +91,13 @@ public class StoredChunkThread implements Runnable {
 		if(Peer.getMemory().getAvailableCapacity()>=this.data.length) {			
 			int senderId = Integer.parseInt(messageArray[2]);
 			if (Peer.getId() != senderId) {
-		
-				saveChunk();
-					
+				saveChunk();					
 			}
 		}
 			else {
 				System.out.println("There isn't enough disk space to save this chunk\n");
 				return;
 			}
-		
 	}
 
 }

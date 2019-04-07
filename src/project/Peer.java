@@ -338,7 +338,6 @@ public static void deleteLocalStorage() {
 public static List<String> sortChunksToDelete() {
 	ArrayList<String> chunksToSort = new ArrayList<String>();
 	for (String key : memory.savedChunks.keySet()){
-		//System.out.println(memory.savedOcurrences.get(key)+"-"+memory.savedChunks.get(key).getReplicationDegree());
 		int diff = memory.savedOcurrences.get(key)- memory.savedChunks.get(key).getReplicationDegree(); 
 		String chunk = key +":"+diff;
 		chunksToSort.add(chunk);

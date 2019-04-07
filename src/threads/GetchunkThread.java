@@ -36,6 +36,7 @@ public class GetchunkThread implements Runnable {
 		int delay = random.nextInt(401);
 		int senderId = Integer.parseInt(messageArray[2]);
 		String filename = "Peer"+Peer.getId() +"/"+"CHUNK"+"/"+messageArray[3] + "/" + messageArray[4];
+	
 		
 		try {
 			File file = new File(filename);
