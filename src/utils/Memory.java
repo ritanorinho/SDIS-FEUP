@@ -7,8 +7,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class Memory {
 	public ArrayList<FileInfo> files = new ArrayList<FileInfo>();
+	//key: fileId-ChunkNo
 	public HashMap<String,Chunk> savedChunks= new HashMap<String,Chunk>();
-	//String fileId-ChunkNo fileId
+	//key: fileId-ChunkNo String: fileId
 	public HashMap<String,String> chunksToRestore= new HashMap<String,String>();
 	public ConcurrentHashMap<String,Integer> savedOcurrences = new ConcurrentHashMap<String,Integer>();
 	

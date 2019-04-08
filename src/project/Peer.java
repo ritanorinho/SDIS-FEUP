@@ -24,6 +24,7 @@ import threads.*;
 import utils.Chunk;
 import utils.FileInfo;
 import utils.Memory;
+import utils.Utils;
 
 public class Peer implements RMIInterface {
 
@@ -114,20 +115,18 @@ public class Peer implements RMIInterface {
 
 	@Override
 	public void backup(String filename, int repDegree) throws RemoteException, InterruptedException {
-		File file = new File(filename);
-		FileInfo fileInfo = new FileInfo(file,filename,repDegree);
+		File file = new File(filename);		
 		
-		String fileId = file.getName() +"."+String.valueOf(file.lastModified());
-		fileId = FileInfo.sha256(fileId);
+		String fileId = Utils.createFileId(file);
 		
-		for(int i =0; i< memory.files.size();i++) {
-			if (memory.files.get(i).getFileId().equals(fileId)) {
-				System.out.println("This file was backed up!");
+		if (memory.hasFileByID(fileId)){
+				System.out.println("This file has already backed up!");
 				return;
 			}
-		}
+			
+		FileInfo fileInfo = new FileInfo(file,filename,repDegree);
 		ArrayList<Chunk> chunks = fileInfo.getChunks();
-		String name;
+		String chunkId;
 
 		for (int i = 0; i < chunks.size(); i++) {
 			String header = "PUTCHUNK " + protocolVersion + " " + serverID + " " + fileInfo.getFileId() + " "
@@ -136,13 +135,13 @@ public class Peer implements RMIInterface {
 			
 			System.out.println("\n SENT: " + header);
 
-			name = fileInfo.getFileId() + "-" + chunks.get(i).getChunkNo();
+			chunkId = fileInfo.getFileId() + "-" + chunks.get(i).getChunkNo();
 
-			if (!memory.hasFileByName(fileInfo.getFilename()))
+			if (!memory.hasFileByID(fileInfo.getFileId()))
 				memory.files.add(fileInfo);
 
-			if (!memory.savedOcurrences.containsKey(name)) {
-				memory.savedOcurrences.put(name, 0);
+			if (!memory.savedOcurrences.containsKey(chunkId)) {
+				memory.savedOcurrences.put(chunkId, 0);
 			}
 
 			byte[] data;
@@ -158,7 +157,7 @@ public class Peer implements RMIInterface {
 				Peer.executor.execute(new WorkerThread(message,channel));
 				// The initiator-peer collects the confirmation			
 				// messages during a time interval of one second
-				Peer.executor.schedule(new BackupThread(name, message, repDegree), 1, TimeUnit.SECONDS);
+				Peer.executor.schedule(new BackupThread(chunkId, message, repDegree), 1, TimeUnit.SECONDS);
 			} catch (UnsupportedEncodingException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -178,11 +177,10 @@ public class Peer implements RMIInterface {
 			System.out.println(filename + "has never backed up!");
 			return;
 		}else {
-			String fileId = name + "."+String.valueOf(file.lastModified());
-			String hashedFileId = FileInfo.sha256(fileId);
-			System.out.println(hashedFileId);
+			String fileId = Utils.createFileId(file);
+			System.out.println(fileId);
 			for (int i =0;i <memory.files.size();i++) {
-				if (memory.files.get(i).getFileId().equals(hashedFileId)) {
+				if (memory.files.get(i).getFileId().equals(fileId)) {
 					fileInfo= memory.files.get(i);
 					chunks= memory.files.get(i).getChunks();
 					break;

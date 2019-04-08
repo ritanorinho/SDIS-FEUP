@@ -72,69 +72,43 @@ public class FileInfo {
 	
 	public void fileId() {
 		this.filename = this.file.getName();
-		String fileId = this.filename + "."+String.valueOf(this.file.lastModified());
-		this.fileId = sha256(fileId);		
+		this.fileId = Utils.createFileId(file);
 		
 	}
 	public String getFileId()
 	{
 		return this.fileId;
 	}
-	public static final String sha256(String str) {
-		try {
-			MessageDigest sha = MessageDigest.getInstance("SHA-256");
-
-			byte[] hash = sha.digest(str.getBytes("UTF-8"));
-
-			StringBuffer hexStringBuffer = new StringBuffer();
-
-			for (int i = 0; i < hash.length; i++) {
-				String hex = Integer.toHexString(0xff & hash[i]);
-
-				if (hex.length() == 1)
-					hexStringBuffer.append('0');
-
-				hexStringBuffer.append(hex);
-			}
-
-			return hexStringBuffer.toString();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
-		return null;
+	public String getFilename() {
+		return filename;
 	}
 
-		public String getFilename() {
-			return filename;
-		}
+	public void setFilename(String filename) {
+		this.filename = filename;
+	}
 
-		public void setFilename(String filename) {
-			this.filename = filename;
-		}
+	public String getFilePath() {
+		// TODO Auto-generated method stub
+		return this.filePath;
+	}
 
-		public String getFilePath() {
+	public int getReplicationDegree() {
 			// TODO Auto-generated method stub
-			return this.filePath;
-		}
+		return this.replicationDegree;
+	}
 
-		public int getReplicationDegree() {
-			// TODO Auto-generated method stub
-			return this.replicationDegree;
-		}
-
-		public static void deleteFolder(File folder) {
-			File[] files = folder.listFiles();
-			if(files!=null) { 
-				for(File f: files) {
-					if(f.isDirectory()) {
-						deleteFolder(f);
-					} else {
-						f.delete();
-					}
+	public static void deleteFolder(File folder) {
+		File[] files = folder.listFiles();
+		if(files!=null) { 
+			for(File f: files) {
+				if(f.isDirectory()) {
+					deleteFolder(f);
+				} else {
+					f.delete();
 				}
 			}
-			folder.delete();
 		}
+		folder.delete();
+	}
 
 }

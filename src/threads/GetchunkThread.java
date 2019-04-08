@@ -9,16 +9,17 @@ import java.util.concurrent.TimeUnit;
 import project.Peer;
 
 public class GetchunkThread implements Runnable {
-	String[] messageArray;
+	private String[] messageArray;
+	private String chunkId;
 
 	public GetchunkThread(String[] msg) {
 		this.messageArray = msg;
+		this.chunkId = messageArray[3] + "-" + messageArray[4];
 		// TODO Auto-generated constructor stub
 	}
 
 	@Override
 	public void run() {
-		String chunkId = messageArray[3] + "-" + messageArray[4];
 		if (!Peer.getMemory().savedChunks.containsKey(chunkId)) {
 			System.out.println("This peer doesn't contain this chunk: "+chunkId);
 		}
@@ -27,6 +28,7 @@ public class GetchunkThread implements Runnable {
 	
 		String restoredChunk = "CHUNK " + messageArray[1] + " " + messageArray[2] + " " + messageArray[3] + " "
 				+ messageArray[4] + "\r\n\r\n";
+		
 		byte[] data = restoredChunk.getBytes();
 		byte[] message = new byte[data.length + chunkData.length];
 		System.arraycopy(data, 0, message, 0, data.length);

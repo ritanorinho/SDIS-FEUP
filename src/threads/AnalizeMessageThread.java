@@ -16,13 +16,14 @@ public class AnalizeMessageThread implements Runnable {
 	String message;
 	String[] messageArray;
 	byte[] messageBytes;
-	
+	String chunkId;
 
 	public AnalizeMessageThread(byte[] message) {
 		
-		this.messageBytes= message;
-		this.message= new String(this.messageBytes,0,this.messageBytes.length);
+		this.messageBytes = message;
+		this.message = new String(this.messageBytes,0,this.messageBytes.length);
 		this.messageArray = this.message.trim().split("\\s+");
+		this.chunkId = this.messageArray[3]+"-"+this.messageArray[4];
 	}
 
 	
@@ -61,11 +62,10 @@ public class AnalizeMessageThread implements Runnable {
 
 	private synchronized void putchunk() {
 		
-	    String chunkId = messageArray[3] + "-" + messageArray[4];
 		 System.out.println("SENDER ID: "+messageArray[2]+" PEER ID: "+Peer.getId());
 		 Integer id = Integer.parseInt(messageArray[2]);
-		Random random = new Random();
-		int delay = random.nextInt(401);
+		 Random random = new Random();
+		 int delay = random.nextInt(401);
 		
 		
 		
@@ -93,7 +93,7 @@ public class AnalizeMessageThread implements Runnable {
 	}
 
 	private void chunk() {
-		String chunkId = messageArray[3] + "-" + messageArray[4];
+		
 		int senderId = Integer.parseInt(messageArray[2]);
 		
 		if (Peer.getId() == senderId) {
@@ -120,8 +120,8 @@ public class AnalizeMessageThread implements Runnable {
 	}
 
 	private void getchunk() {
+		
 		String[] messageArray = this.message.trim().split("\\s+");
-		String chunkId = messageArray[3] + "-" + messageArray[4];
 		
 		Random random = new Random();
 		int delay = random.nextInt(401);
@@ -136,9 +136,7 @@ public class AnalizeMessageThread implements Runnable {
 
 
 	private void removed() {
-			String fileId = this.messageArray[3];
-			String chunkNo = this.messageArray[4];
-			String chunkId = fileId +"-"+chunkNo;
+			
 			int senderId = Integer.parseInt(this.messageArray[2].trim());
 			if (senderId != Peer.getId()) {
 				Peer.getMemory().savedOcurrences.put(chunkId,Peer.getMemory().savedOcurrences.get(chunkId)-1);
