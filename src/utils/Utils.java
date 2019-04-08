@@ -1,6 +1,7 @@
 package utils;
 
 import java.io.File;
+import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 
 public class Utils {
@@ -38,6 +39,22 @@ public class Utils {
 		}
 
 		return null;
+	}
+	public static byte[] getHeader(String type, double protocolVersion,int serverID,String fileId, int chunkNo,int repDegree) {
+		
+		byte[] byteHeader=null;;
+		try {
+			String header = type+" " + protocolVersion + " " + serverID + " " + fileId + " "
+					+ chunkNo + " " + repDegree + "\r\n\r\n";
+			
+			byteHeader = header.getBytes("US-ASCII");
+			
+		} catch (UnsupportedEncodingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return byteHeader;
+		
 	}
 
 }

@@ -15,12 +15,11 @@ public class FileInfo {
 	private static int MAX_SIZE = 64000;
 	private String fileId;
 	private ArrayList<Chunk> chunks = new ArrayList<Chunk>();
-	
-	
 	private File file ;
 	private String filename;
 	private String filePath;
 	private int replicationDegree;
+	
 	public FileInfo(File file, String filePath, int repDegree) {
 		this.file=file;
 		this.filePath=filePath;

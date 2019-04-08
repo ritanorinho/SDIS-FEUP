@@ -129,11 +129,11 @@ public class Peer implements RMIInterface {
 		String chunkId;
 
 		for (int i = 0; i < chunks.size(); i++) {
-			String header = "PUTCHUNK " + protocolVersion + " " + serverID + " " + fileInfo.getFileId() + " "
-					+ chunks.get(i).getChunkNo() + " " + repDegree + "\r\n\r\n";
 			
+			byte[] header = Utils.getHeader("PUTCHUNK", protocolVersion, serverID, fileInfo.getFileId(), chunks.get(i).getChunkNo(), repDegree);
+			String headerString = new String(header,0,header.length);
 			
-			System.out.println("\n SENT: " + header);
+			System.out.println("\n SENT: " +headerString);
 
 			chunkId = fileInfo.getFileId() + "-" + chunks.get(i).getChunkNo();
 
@@ -144,24 +144,16 @@ public class Peer implements RMIInterface {
 				memory.savedOcurrences.put(chunkId, 0);
 			}
 
-			byte[] data;
-			try {
-				data = header.getBytes("US-ASCII");
-				
-				byte[] body = chunks.get(i).getData();
-				byte[] message = new byte[data.length + body.length];
-				System.arraycopy(data, 0, message, 0, data.length);
-				System.arraycopy(body, 0, message, data.length, body.length);
-				System.out.println("message length: "+message.length);
-				String channel = "mdb";
-				Peer.executor.execute(new WorkerThread(message,channel));
-				// The initiator-peer collects the confirmation			
-				// messages during a time interval of one second
-				Peer.executor.schedule(new BackupThread(chunkId, message, repDegree), 1, TimeUnit.SECONDS);
-			} catch (UnsupportedEncodingException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			byte[] body = chunks.get(i).getData();
+			byte[] message = new byte[header.length + body.length];
+			System.arraycopy(header, 0, message, 0, header.length);
+			System.arraycopy(body, 0, message, header.length, body.length);
+			System.out.println("message length: "+message.length);
+			String channel = "mdb";
+			Peer.executor.execute(new WorkerThread(message,channel));
+			// The initiator-peer collects the confirmation			
+			// messages during a time interval of one second
+			Peer.executor.schedule(new BackupThread(chunkId, message, repDegree), 1, TimeUnit.SECONDS);
 			
 		}
 
