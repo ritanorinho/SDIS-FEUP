@@ -116,8 +116,16 @@ public class Peer implements RMIInterface {
 	public void backup(String filename, int repDegree) throws RemoteException, InterruptedException {
 		File file = new File(filename);
 		FileInfo fileInfo = new FileInfo(file,filename,repDegree);
-		System.out.println("filename:" +fileInfo.getFilename());
 		
+		String fileId = file.getName() +"."+String.valueOf(file.lastModified());
+		fileId = FileInfo.sha256(fileId);
+		
+		for(int i =0; i< memory.files.size();i++) {
+			if (memory.files.get(i).getFileId().equals(fileId)) {
+				System.out.println("This file was backed up!");
+				return;
+			}
+		}
 		ArrayList<Chunk> chunks = fileInfo.getChunks();
 		String name;
 
@@ -169,9 +177,13 @@ public class Peer implements RMIInterface {
 		FileInfo fileInfo=null;
 		if (!memory.hasFileByName(name)) {
 			System.out.println(filename + "has never backed up!");
+			return;
 		}else {
+			String fileId = name + "."+String.valueOf(file.lastModified());
+			String hashedFileId = FileInfo.sha256(fileId);
+			System.out.println(hashedFileId);
 			for (int i =0;i <memory.files.size();i++) {
-				if (memory.files.get(i).getFilename().equals(name)) {
+				if (memory.files.get(i).getFileId().equals(hashedFileId)) {
 					fileInfo= memory.files.get(i);
 					chunks= memory.files.get(i).getChunks();
 					break;
@@ -249,8 +261,7 @@ public class Peer implements RMIInterface {
 						executor.execute(new WorkerThread(data,channel));
 					} catch (UnsupportedEncodingException e) {
 						// TODO Auto-generated catch block
-						e.printStackTrace();
-						
+						e.printStackTrace();	
 					}
 					String[] splitKey = key.trim().split("-");
 					String filePath ="Peer"+Peer.getId()+"/"+"STORED"+"/"+ splitKey[0]+"/"+splitKey[1];

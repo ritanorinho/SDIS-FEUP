@@ -35,21 +35,6 @@ public class GetchunkThread implements Runnable {
 		Random random = new Random();
 		int delay = random.nextInt(401);
 		int senderId = Integer.parseInt(messageArray[2]);
-		String filename = "Peer"+Peer.getId() +"/"+"CHUNK"+"/"+messageArray[3] + "/" + messageArray[4];
-	
-		
-		try {
-			File file = new File(filename);
-			file.getParentFile().mkdirs();
-			file.createNewFile();
-			FileOutputStream fos = new FileOutputStream(filename);
-			fos.write(chunkData);
-			fos.close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
 		if (Peer.getId() != senderId )
 		{	
 			Peer.getExecutor().schedule(new WorkerThread(message,channel), delay,

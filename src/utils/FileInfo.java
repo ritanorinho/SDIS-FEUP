@@ -46,6 +46,7 @@ public class FileInfo {
 				chunkId = this.fileId+"-"+chunksCount;
 				this.chunks.add(new Chunk (this.fileId,chunksCount,body,size,chunkId,this.replicationDegree));
 				content= new byte[MAX_SIZE];
+				
 			}
 			
 			if (this.file.length() %64000==0) {
@@ -70,15 +71,9 @@ public class FileInfo {
 	}
 	
 	public void fileId() {
-		String fileName= this.file.getName();
-		this.filename=fileName;
-		
-		String lastModified= String.valueOf(this.file.lastModified());
-		String fileId = fileName + "."+lastModified;
-		this.fileId = sha256(fileId);	
-		
-		
-		
+		this.filename = this.file.getName();
+		String fileId = this.filename + "."+String.valueOf(this.file.lastModified());
+		this.fileId = sha256(fileId);		
 		
 	}
 	public String getFileId()
