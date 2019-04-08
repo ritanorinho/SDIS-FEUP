@@ -10,7 +10,6 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -52,9 +51,10 @@ public class Peer implements RMIInterface {
 		{
 			if (args.length != 9) {
 				System.out.println(
-						"ERROR: Peer format : Peer <MC_IP> <MC_Port> <MDB_IP> <MDB_PORT> <MDR_IP> <MDR_PORT> <PROTOCOL_VERSION> <SERVER_ID> <SERVICE_ACCESS_POINT>");
+						"ERROR: Peer format : Peer <PROTOCOL_VERSION> <SERVER_ID> <SERVICE_ACCESS_POINT> <MC_IP> <MC_Port> <MDB_IP> <MDB_PORT> <MDR_IP> <MDR_PORT> ");
 				return;
-			} else
+			}
+			else
 				validateArgs(args);
 
 			executor.execute(mcListener);
@@ -69,15 +69,15 @@ public class Peer implements RMIInterface {
 	private static void validateArgs(String[] args)
 			throws RemoteException, InterruptedException, IOException, AlreadyBoundException {
 
-		InetAddress MCAddress = InetAddress.getByName(args[0]);
-		Integer MCPort = Integer.parseInt(args[1]);
-		InetAddress MDBAddress = InetAddress.getByName(args[2]);
-		Integer MDBPort = Integer.parseInt(args[3]);
-		InetAddress MDRAddress = InetAddress.getByName(args[4]);
-		Integer MDRPort = Integer.parseInt(args[5]);
-		protocolVersion = Double.parseDouble(args[6]);
-		serverID = Integer.parseInt(args[7]);
-		accessPoint = args[8];
+		InetAddress MCAddress = InetAddress.getByName(args[3]);
+		Integer MCPort = Integer.parseInt(args[4]);
+		InetAddress MDBAddress = InetAddress.getByName(args[5]);
+		Integer MDBPort = Integer.parseInt(args[6]);
+		InetAddress MDRAddress = InetAddress.getByName(args[7]);
+		Integer MDRPort = Integer.parseInt(args[8]);
+		protocolVersion = Double.parseDouble(args[0]);
+		serverID = Integer.parseInt(args[1]);
+		accessPoint = args[2];
 
 		Peer peer = new Peer(MCAddress, MCPort, MDBAddress, MDBPort, MDRAddress, MDRPort);
 		RMIInterface stub = (RMIInterface) UnicastRemoteObject.exportObject(peer, 0);
@@ -164,7 +164,6 @@ public class Peer implements RMIInterface {
 				e.printStackTrace();
 			}
 			
-		
 		}
 
 	}
@@ -199,12 +198,10 @@ public class Peer implements RMIInterface {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			
 		}
 		Peer.executor.schedule(new RestoreFileThread(fileInfo.getFilename(),fileInfo.getFileId(),chunks.size()),10,TimeUnit.SECONDS);
 		}
 	}
-
 	@Override
 	public void delete(String filename) throws RemoteException {
 		File file = new File(filename);
@@ -241,7 +238,9 @@ public class Peer implements RMIInterface {
 		int currentSpaceToFree = memory.getUsedMemory()-space; // space to free 
 		
 		if (currentSpaceToFree > 0) {
+			
 			List<String> sortedChunks=sortChunksToDelete();
+			
 			for (Iterator<String> iterator = sortedChunks.iterator(); iterator.hasNext();) {
 				String[] splitString = iterator.next().trim().split(":");
 				String key = splitString[0];
@@ -295,11 +294,10 @@ public class Peer implements RMIInterface {
 			for (int j = 0; j< memory.files.get(i).getChunks().size();j++) {
 				System.out.println("\n Backup chunks\n");
 				System.out.println("--Chunk id: "+memory.files.get(i).getChunks().get(j).getChunkId());
-				System.out.println("--Perceived replication degree: "+memory.savedOcurrences.get(memory.files.get(i).getChunks().get(j).getChunkId()));
-							
+				System.out.println("--Perceived replication degree: "+memory.savedOcurrences.get(memory.files.get(i).getChunks().get(j).getChunkId()));				
 				
 			}
-			}
+		}
 		//Stored chunks
 		System.out.println("\n Stored chunks\n");
 		for (String key: memory.savedChunks.keySet()) {
