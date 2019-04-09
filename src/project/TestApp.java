@@ -34,7 +34,9 @@ public class TestApp {
 
     registry = LocateRegistry.getRegistry(host);
 
-    try{stub = (RMIInterface) registry.lookup(accessPoint);}
+    try{
+    	stub = (RMIInterface) registry.lookup(accessPoint);
+    	}
     catch(NotBoundException e){
       e.printStackTrace();
     }

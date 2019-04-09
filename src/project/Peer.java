@@ -93,7 +93,6 @@ public class Peer implements RMIInterface {
 
 			try {
 				registry = LocateRegistry.createRegistry(1099);
-
 				registry.rebind(accessPoint, stub);
 
 			} catch (RemoteException e3) {
@@ -180,6 +179,7 @@ public class Peer implements RMIInterface {
 				}
 			}
 		for (int i = 0; i < chunks.size();i++) {
+			//byte[] header=Utils.getHeader("GETCHUNK", protocolVersion, serverID, fileInfo.getFileId(), chunks.get(i).getChunkNo(), -1);
 			String header = "GETCHUNK "+ protocolVersion + " "+ serverID + " " +  fileInfo.getFileId()+ " "+ chunks.get(i).getChunkNo() + "\r\n\r\n";
 			System.out.println("\n SENT: "+header);
 				String channel = "mc";

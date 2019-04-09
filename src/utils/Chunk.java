@@ -21,9 +21,6 @@ public  class Chunk {
 	}
 	
 	
-	
-
-
 	public String getFileId() {
 		return fileId;
 	}
