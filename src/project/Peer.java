@@ -304,20 +304,14 @@ public class Peer implements RMIInterface {
 		
 	}
 
-	public static int getId() {
-		// TODO Auto-generated method stub
-		return serverID;
-	}
+	public static int getId() { return serverID;}
 
-	public static MCListener getMCListener() {
-		// TODO Auto-generated method stub
-		return mcListener;
-	}
+	public static MCListener getMCListener() { return mcListener;}
 
-	public static MDRListener getMDRListener() {
-		// TODO Auto-generated method stub
-		return mdrListener;
-	}
+	public static MDRListener getMDRListener() {return mdrListener;}
+
+	public static double getProtocolVersion(){return protocolVersion;} 
+
 
 public static void deleteLocalStorage() {
 	String directory = "Peer"+Peer.getId();

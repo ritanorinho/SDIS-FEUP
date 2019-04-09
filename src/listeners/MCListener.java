@@ -36,9 +36,9 @@ public class MCListener implements Runnable {
 			 while(true) {
 			 DatagramPacket msgPacket = new DatagramPacket(buf, buf.length);
 			 //System.out.println(this.mcPort+"-"+this.mcAddress);
-	         clientSocket.receive(msgPacket);
+			 clientSocket.receive(msgPacket);
 	         byte[] message = Arrays.copyOf(buf,msgPacket.getLength());
-	         Peer.getExecutor().execute(new AnalizeMessageThread(message));
+	         Peer.getExecutor().execute(new AnalizeMessageThread(message, msgPacket.getAddress()));
 	         
 			 }
 		} catch (IOException e) {

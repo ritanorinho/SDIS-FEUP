@@ -1,9 +1,9 @@
 package threads;
 
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.util.Arrays;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
@@ -17,6 +17,7 @@ public class AnalizeMessageThread implements Runnable {
 	String[] messageArray;
 	byte[] messageBytes;
 	String chunkId;
+	InetAddress InetAddress;
 
 	public AnalizeMessageThread(byte[] message) {
 		
@@ -24,6 +25,15 @@ public class AnalizeMessageThread implements Runnable {
 		this.message = new String(this.messageBytes,0,this.messageBytes.length);
 		this.messageArray = this.message.trim().split("\\s+");
 		this.chunkId = this.messageArray[3]+"-"+this.messageArray[4];
+	}
+
+	public AnalizeMessageThread(byte[] message, InetAddress adress) {
+		
+		this.messageBytes = message;
+		this.message = new String(this.messageBytes,0,this.messageBytes.length);
+		this.messageArray = this.message.trim().split("\\s+");
+		this.chunkId = this.messageArray[3]+"-"+this.messageArray[4];
+		this.InetAddress = adress;
 	}
 
 	
@@ -66,8 +76,7 @@ public class AnalizeMessageThread implements Runnable {
 		 Integer id = Integer.parseInt(messageArray[2]);
 		 Random random = new Random();
 		 int delay = random.nextInt(401);
-		
-		
+		 
 		
 		if (Peer.getId() != id && !Peer.getMemory().savedChunks.containsKey(chunkId)) {
 			if (!Peer.getMemory().savedOcurrences.containsKey(chunkId)) {
@@ -126,10 +135,8 @@ public class AnalizeMessageThread implements Runnable {
 		Random random = new Random();
 		int delay = random.nextInt(401);
 		int senderId = Integer.parseInt(messageArray[2]);
-		if (Peer.getId() != senderId && Peer.getMemory().savedChunks.containsKey(chunkId))
-		{
-			Peer.getExecutor().schedule(new GetchunkThread(messageArray), delay,
-					TimeUnit.MILLISECONDS);
+		if (Peer.getId() != senderId && Peer.getMemory().savedChunks.containsKey(chunkId)){
+			Peer.getExecutor().schedule(new GetchunkThread(messageArray, InetAddress), delay, TimeUnit.MILLISECONDS);
 		}
 
 	}
