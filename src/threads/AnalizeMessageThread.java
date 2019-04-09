@@ -53,13 +53,13 @@ public class AnalizeMessageThread implements Runnable {
 	}
 	private synchronized void stored() {
 		String chunkId = messageArray[3] + "-" + messageArray[4];
-		if (Peer.getMemory().savedOcurrences.containsKey(chunkId)) {
+		int senderId = Integer.parseInt(messageArray[2]);
+		if (Peer.getMemory().savedOcurrences.containsKey(chunkId) && Peer.getId() != senderId) {
 			Peer.getMemory().savedOcurrences.put(chunkId, Peer.getMemory().savedOcurrences.get(chunkId) + 1);
 			
 		}
 	}
 	
-
 	private synchronized void putchunk() {
 		
 		 System.out.println("SENDER ID: "+messageArray[2]+" PEER ID: "+Peer.getId());
@@ -73,8 +73,8 @@ public class AnalizeMessageThread implements Runnable {
 			if (!Peer.getMemory().savedOcurrences.containsKey(chunkId)) {
 				Peer.getMemory().savedOcurrences.put(chunkId, 0);
 			} 
-				String storedMessage = "STORED " + messageArray[1] + " " + id + " " + messageArray[3] + " "
-						+ messageArray[4] + " " + "\r\n\r\n";
+				String storedMessage =  messageArray[1] + " " +messageArray[2]+" "+ messageArray[3] + " "
+						+ messageArray[4];
 				System.out.println(storedMessage);
 				byte[] data = getBody();
 				Peer.getExecutor().schedule(new StoredChunkThread(storedMessage.getBytes(),data,Integer.parseInt(messageArray[5])), delay,

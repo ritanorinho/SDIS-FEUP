@@ -11,35 +11,41 @@ public class StoredChunkThread implements Runnable {
 	byte[] byteMessage;
 	byte[] data;
 	String[] messageArray;
-	private int senderId;
 	private int replicationDegree;
 	String msg;
+	private String version;
+	private String fileId;
+	private String chunkNo;
+	private String chunkId;
+	private int senderId;
+	
 	
 	public StoredChunkThread(byte[] storedMessage, byte[]data, int replicationDegree) {
 		this.byteMessage=storedMessage;
 		this.data=data;
 		this.msg = new String(this.byteMessage, 0, this.byteMessage.length);
 		this.messageArray= msg.split("\\s+");
-		this.senderId = Integer.parseInt(messageArray[2]);
+		this.version = messageArray[0];
+		this.senderId = Integer.parseInt(messageArray[1]);
+		this.fileId = messageArray[2];
+		this.chunkNo = messageArray[3];
+		this.chunkId = this.fileId+"-"+this.chunkNo;
 		this.replicationDegree=replicationDegree;
 	}
 	
-	
-	
-	
-	
-	private synchronized void createFileChunk() {
-		String filename = "Peer"+Peer.getId() +"/"+messageArray[0]+"/"+messageArray[3]+"/"+messageArray[4];
+
+	private  void createFileChunk() {
+		String filename = "Peer"+Peer.getId() +"/"+"STORED"+"/"+this.fileId+"/"+this.chunkNo;
 		System.out.println(filename);
 		try {
-			if (Peer.getId() != this.senderId) {
+			
 			File file = new File(filename);
 			file.getParentFile().mkdirs();
 			file.createNewFile();
 			FileOutputStream fos = new FileOutputStream(filename);
 			fos.write(this.data);
 			fos.close();
-			}
+			
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -51,53 +57,55 @@ public class StoredChunkThread implements Runnable {
 		
 	}
 
-	private synchronized void saveChunk() {
-		for(int i = 0;i< Peer.getMemory().files.size();i++) {
-			
-			if (Peer.getMemory().files.get(i).getFileId().equals(messageArray[3])) {
-				return;
-			}
-				
-		}
-		String version = this.messageArray[1];
-		String chunkName = this.messageArray[3]+"-"+this.messageArray[4];
-		System.out.println( Peer.getMemory().savedOcurrences.get(chunkName)+" "+this.replicationDegree);
-		if (version.equals("2.0") && Peer.getMemory().savedOcurrences.get(chunkName) >= this.replicationDegree)
+	private  void saveChunk() {
+		
+			System.out.println(Peer.getMemory().savedOcurrences.get(this.chunkId)+" "+this.replicationDegree);
+		if (version.equals("2.0") && Peer.getMemory().savedOcurrences.get(this.chunkId) >= this.replicationDegree)
 		{
 			System.out.println("new version");
 			System.out.println("Replication degree rechead");
 			return;
 		}
-		
-		Chunk chunk = new Chunk(this.messageArray[3],Integer.parseInt(this.messageArray[4]),this.data,this.data.length,chunkName,this.replicationDegree);
-		if (Peer.getId() != senderId && !Peer.getMemory().savedChunks.containsKey(chunkName)) {
-		Peer.getMemory().savedChunks.put(chunkName, chunk);
-		Peer.getMemory().updateMemoryUsed(this.data.length);
+		Chunk chunk = new Chunk(this.fileId,Integer.parseInt(this.chunkNo),this.data,this.data.length,this.chunkId,this.replicationDegree);
+		if (!Peer.getMemory().savedChunks.containsKey(this.chunkId)) {
+		Peer.getMemory().savedChunks.put(this.chunkId, chunk);
+		Peer.getMemory().savedOcurrences.put(this.chunkId, Peer.getMemory().savedOcurrences.get(this.chunkId) + 1);
+		System.out.println( Peer.getMemory().savedOcurrences.get(this.chunkId)+" "+this.replicationDegree);
+		Peer.getMemory().updateMemoryUsed(this.data.length);	
 		
 		createFileChunk();
+		
 		try {
-			Peer.getMCListener().message(byteMessage);
+			String storedMessage = "STORED "+this.version+" "+Peer.getId()+" "+this.fileId+" "+this.chunkNo+"\n\r\n\r";
+			System.out.println(storedMessage);
+			Peer.getMCListener().message(storedMessage.getBytes("US-ASCII"));
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		}
-		
-		
-		}		
+		else return;
+		}
+			
 
 	@Override
 	public void run() {
-		if(Peer.getMemory().getAvailableCapacity()>=this.data.length) {			
-			int senderId = Integer.parseInt(messageArray[2]);
-			if (Peer.getId() != senderId) {
+	
+	try {
+		Thread.sleep((long)(Math.random() * 1500));
+	} catch (InterruptedException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}finally{
+		if (Peer.getId()==this.senderId) return;
+		if(Peer.getMemory().getAvailableCapacity()>=this.data.length) {	
 				saveChunk();					
-			}
 		}
 			else {
 				System.out.println("There isn't enough disk space to save this chunk\n");
 				return;
 			}
+	}
 	}
 
 }
