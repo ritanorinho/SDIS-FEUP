@@ -48,6 +48,7 @@ public class Peer implements RMIInterface {
 
 	public static void main(String args[]) throws InterruptedException, IOException, AlreadyBoundException {
 		System.setProperty("java.net.preferIPv4Stack", "true");
+		System.setProperty ("java.rmi.server.hostname", "localhost"); 
 
 		{
 			if (args.length != 9) {
