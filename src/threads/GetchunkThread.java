@@ -23,42 +23,84 @@ public class GetchunkThread implements Runnable {
 		this.chunkId = messageArray[3] + "-" + messageArray[4];
 	}
 
-	public GetchunkThread(String[] msg, InetAddress InetAddress) {
-		this.messageArray = msg;
-		this.chunkId = messageArray[3] + "-" + messageArray[4];
-		this.InetAddress = InetAddress;
-	}
 
 	@Override
 	public void run() {
 
 		if (!Peer.getMemory().savedChunks.containsKey(chunkId)) {
-			System.out.println("This peer doesn't contain this chunk: " + chunkId);
-		} else {
-			byte[] chunkData = Peer.getMemory().savedChunks.get(chunkId).getData();
-
-			String restoredChunk = "CHUNK " + messageArray[1] + " " + messageArray[2] + " " + messageArray[3] + " "
-					+ messageArray[4] + "\r\n\r\n";
-			System.out.println("SENT " + restoredChunk);
-			byte[] data = restoredChunk.getBytes();
-			byte[] message = new byte[data.length + chunkData.length];
-			System.arraycopy(data, 0, message, 0, data.length);
-			System.arraycopy(chunkData, 0, message, data.length, chunkData.length);
-			String channel = "mdr";
-			Random random = new Random();
-			int delay = random.nextInt(401);
-			int senderId = Integer.parseInt(messageArray[2]);
-
-			if (Peer.getId() != senderId) {
-
-				if (Peer.getProtocolVersion() == 1.0)
-					Peer.getExecutor().schedule(new WorkerThread(message, channel), delay, TimeUnit.MILLISECONDS);
+			System.out.println("This peer doesn't contain this chunk: "+chunkId);
+		}
+		else {
+				if(Peer.getProtocolVersion()==1.0) sendChunkMulticast();
 				else{
-					TCPSocketPort = Integer.parseInt(messageArray[5]);
-					sendByTCP(message);
-				} 
-				
+			int senderId = Integer.parseInt(messageArray[2]);
+			if (Peer.getId() != senderId )
+			{	
+
+				try {
+					String storedMessage = "CONFIRMCHUNK "+Peer.getProtocolVersion()+" "+Peer.getId()+" "+ chunkId +" "+Peer.getTCPPort()+"\n\r\n\r";
+					System.out.println(storedMessage);
+					Peer.getMCListener().message(storedMessage.getBytes("US-ASCII"));
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				/*Peer.getExecutor().schedule(new WorkerThread(message,channel), delay,
+						TimeUnit.MILLISECONDS);*/
 			}
+			// TODO Auto-generated method stub
+		}
+	}
+	}
+
+
+	public void sendChunkMulticast(){
+		byte[] chunkData = Peer.getMemory().savedChunks.get(chunkId).getData();
+	
+		String restoredChunk = "CHUNK " + messageArray[1] + " " + messageArray[2] + " " + messageArray[3] + " "
+				+ messageArray[4] + "\r\n\r\n";
+		byte[] data = restoredChunk.getBytes();
+		byte[] message = new byte[data.length + chunkData.length];
+		System.arraycopy(data, 0, message, 0, data.length);
+		System.arraycopy(chunkData, 0, message, data.length, chunkData.length);
+		String channel ="mdr";
+		Random random = new Random();
+		int delay = random.nextInt(401);
+		int senderId = Integer.parseInt(messageArray[2]);
+		if (Peer.getId() != senderId )
+		{	
+			Peer.getExecutor().schedule(new WorkerThread(message,channel), delay,
+					TimeUnit.MILLISECONDS);
+		}
+	}
+	
+	
+
+	public void sendChunk(){
+		byte[] chunkData = Peer.getMemory().savedChunks.get(chunkId).getData();
+
+		String restoredChunk = "CHUNK " + messageArray[1] + " " + messageArray[2] + " " + messageArray[3] + " "
+				+ messageArray[4] + "\r\n\r\n";
+		System.out.println("SENT " + restoredChunk);
+		byte[] data = restoredChunk.getBytes();
+		byte[] message = new byte[data.length + chunkData.length];
+		System.arraycopy(data, 0, message, 0, data.length);
+		System.arraycopy(chunkData, 0, message, data.length, chunkData.length);
+		String channel = "mdr";
+		Random random = new Random();
+		int delay = random.nextInt(401);
+		int senderId = Integer.parseInt(messageArray[2]);
+
+		if (Peer.getId() != senderId) {
+
+			if (Peer.getProtocolVersion() == 1.0)
+				Peer.getExecutor().schedule(new WorkerThread(message, channel), delay, TimeUnit.MILLISECONDS);
+			else{
+				System.out.println("version 2.0");
+				/* TCPSocketPort = Integer.parseInt(messageArray[5]);
+				sendByTCP(message);*/
+			} 
+			
 		}
 	}
 

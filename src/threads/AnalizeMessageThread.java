@@ -58,6 +58,8 @@ public class AnalizeMessageThread implements Runnable {
 			break;
 		case "REMOVED":
 			removed();
+		case "CONFIRMCHUNK":	
+			confirmChunk();
 		default:
 		}
 	}
@@ -66,7 +68,6 @@ public class AnalizeMessageThread implements Runnable {
 		int senderId = Integer.parseInt(messageArray[2]);
 		if (Peer.getMemory().savedOcurrences.containsKey(chunkId) && Peer.getId() != senderId) {
 			Peer.getMemory().savedOcurrences.put(chunkId, Peer.getMemory().savedOcurrences.get(chunkId) + 1);
-			
 		}
 	}
 	
@@ -136,7 +137,7 @@ public class AnalizeMessageThread implements Runnable {
 		int delay = random.nextInt(401);
 		int senderId = Integer.parseInt(messageArray[2]);
 		if (Peer.getId() != senderId && Peer.getMemory().savedChunks.containsKey(chunkId)){
-			Peer.getExecutor().schedule(new GetchunkThread(messageArray, InetAddress), delay, TimeUnit.MILLISECONDS);
+			Peer.getExecutor().schedule(new GetchunkThread(messageArray), delay, TimeUnit.MILLISECONDS);
 		}
 
 	}
@@ -154,6 +155,16 @@ public class AnalizeMessageThread implements Runnable {
 			}
 		
 	}
+
+	private void confirmChunk() {
+		int senderId = Integer.parseInt(this.messageArray[2].trim());
+		String chunkid = messageArray[3].trim();
+		int port = Integer.parseInt(this.messageArray[4].trim());
+		if (senderId != Peer.getId() && !Peer.getMemory().confirmedChunks.containsKey(chunkid)) {
+			Peer.getMemory().confirmedChunks.put(chunkid, port);
+		}
+	
+}
 
 	private byte[] getBody() {
 		int i;

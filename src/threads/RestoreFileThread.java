@@ -13,6 +13,7 @@ public class RestoreFileThread implements Runnable {
 	private String filename;
 	private String fileId;
 	private int numberChunks;
+	private byte[] message;
 
 	public RestoreFileThread(String filename, String fileId, int numberChunks) {
 		this.filename = filename;
@@ -22,9 +23,20 @@ public class RestoreFileThread implements Runnable {
 	
 	@Override
 	public void run() {
-		if(createFile())
-			System.out.println("Local file restored");
-		else System.out.println("Errror occured: Local file not created");
+
+		
+		/*if(Peer.getProtocolVersion()!=1.0){
+			String chunkId;
+			for(int i=1; i<=numberChunks;i++){
+				chunkId = fileId + "-" + i;
+				System.out.println("for " + chunkId + "connect to port" + ": " + Peer.getMemory().confirmedChunks.get(chunkId));
+			}		
+		}
+		else {*/
+			if(createFile())
+				System.out.println("Local file restored");
+			else System.out.println("Errror occured: Local file not created");
+		//}
 	}
 	
 	public boolean createFile() {

@@ -24,7 +24,6 @@ public class MCListener implements Runnable {
 		// TODO Auto-generated constructor stub
 	}
 	 
-
 	 @Override
 		public void run() {
 		 byte[] buf = new byte[65000];
@@ -38,7 +37,7 @@ public class MCListener implements Runnable {
 			 DatagramPacket msgPacket = new DatagramPacket(buf, buf.length);
 			 //System.out.println(this.mcPort+"-"+this.mcAddress);
 			 clientSocket.receive(msgPacket);
-	         byte[] message = Arrays.copyOf(buf,msgPacket.getLength());
+			 byte[] message = Arrays.copyOf(buf,msgPacket.getLength());
 	         Peer.getExecutor().execute(new AnalizeMessageThread(message, msgPacket.getAddress()));
 	         
 			 }

@@ -12,6 +12,7 @@ public class Memory {
 	//key: fileId-ChunkNo String: fileId
 	public HashMap<String,String> chunksToRestore= new HashMap<String,String>();
 	public ConcurrentHashMap<String,Integer> savedOcurrences = new ConcurrentHashMap<String,Integer>();
+	public HashMap<String, Integer> confirmedChunks = new HashMap<String, Integer>(); //chunkid, port
 	
 	public int capacity = 999999999;
 	public int memoryUsed = 0;

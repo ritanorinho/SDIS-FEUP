@@ -22,14 +22,12 @@ public class WorkerThread implements Runnable {
 
 	@Override
 	public void run() {
-		// TODO Auto-generated method stub
 		
 		switch (channel) {
 		case "mdb":
 			try {
 				Peer.getMDBListener().message(this.message);
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			break;
@@ -38,7 +36,6 @@ public class WorkerThread implements Runnable {
 			try {
 				Peer.getMDRListener().message(this.message);
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			break;
@@ -48,7 +45,6 @@ public class WorkerThread implements Runnable {
 				Peer.getMCListener().message(this.message);
 				
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			break;

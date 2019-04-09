@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.rmi.AlreadyBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -28,7 +30,7 @@ import utils.Utils;
 
 public class Peer implements RMIInterface {
 
-	private static double protocolVersion;
+	private static double protocolVersion = 1.0;
 	private static int serverID;
 	private static String accessPoint;
 	private static volatile MCListener mcListener;
@@ -36,6 +38,9 @@ public class Peer implements RMIInterface {
 	private static volatile MDRListener mdrListener;
 	private static ScheduledThreadPoolExecutor executor;
 	private static Memory memory = new Memory();
+	private static int TCPSocketPort = 8010;
+	private static ServerSocket socket;
+	private static Socket client;
 
 	public Peer(InetAddress mcAddress, Integer mcPort, InetAddress mdbAddress, Integer mdbPort, InetAddress mdrAddress,
 			Integer mdrPort) throws IOException {
@@ -48,24 +53,18 @@ public class Peer implements RMIInterface {
 
 	public static void main(String args[]) throws InterruptedException, IOException, AlreadyBoundException {
 		System.setProperty("java.net.preferIPv4Stack", "true");
-		System.setProperty ("java.rmi.server.hostname", "localhost"); 
+		System.setProperty ("java.rmi.server.hostname", "localhost");
 
-		{
-			if (args.length != 9) {
-				System.out.println(
-						"ERROR: Peer format : Peer <PROTOCOL_VERSION> <SERVER_ID> <SERVICE_ACCESS_POINT> <MC_IP> <MC_Port> <MDB_IP> <MDB_PORT> <MDR_IP> <MDR_PORT> ");
-				return;
-			}
-			else
-				validateArgs(args);
-
-			executor.execute(mcListener);
-			executor.execute(mdbListener);
-			executor.execute(mdrListener);
-
-
+		if (args.length != 9) {
+			System.out.println("ERROR: Peer format : Peer <PROTOCOL_VERSION> <SERVER_ID> <SERVICE_ACCESS_POINT> <MC_IP> <MC_Port> <MDB_IP> <MDB_PORT> <MDR_IP> <MDR_PORT> ");
+			return;
 		}
-		
+
+		validateArgs(args);
+
+		executor.execute(mcListener);
+		executor.execute(mdbListener);
+		executor.execute(mdrListener);
 	}
 
 	private static void validateArgs(String[] args)
@@ -80,6 +79,8 @@ public class Peer implements RMIInterface {
 		protocolVersion = Double.parseDouble(args[0]);
 		serverID = Integer.parseInt(args[1]);
 		accessPoint = args[2];
+
+		TCPSocketPort += serverID;
 
 		Peer peer = new Peer(MCAddress, MCPort, MDBAddress, MDBPort, MDRAddress, MDRPort);
 		RMIInterface stub = (RMIInterface) UnicastRemoteObject.exportObject(peer, 0);
@@ -101,17 +102,7 @@ public class Peer implements RMIInterface {
 		}
 	}
 
-	public static Memory getMemory() {
-		return memory;
-	}
-
-	public static MDBListener getMDBListener() {
-		return mdbListener;
-	}
-
-	public static ScheduledThreadPoolExecutor getExecutor() {
-		return executor;
-	}
+	//protocols
 
 	@Override
 	public void backup(String filename, int repDegree) throws RemoteException, InterruptedException {
@@ -165,6 +156,8 @@ public class Peer implements RMIInterface {
 		String name= file.getName();
 		ArrayList<Chunk> chunks= new ArrayList<Chunk>();
 		FileInfo fileInfo=null;
+		String header = null;
+		
 		if (!memory.hasFileByName(name)) {
 			System.out.println(filename + "has never backed up!");
 			return;
@@ -178,21 +171,25 @@ public class Peer implements RMIInterface {
 					break;
 				}
 			}
-		for (int i = 0; i < chunks.size();i++) {
-			//byte[] header=Utils.getHeader("GETCHUNK", protocolVersion, serverID, fileInfo.getFileId(), chunks.get(i).getChunkNo(), -1);
-			String header = "GETCHUNK "+ protocolVersion + " "+ serverID + " " +  fileInfo.getFileId()+ " "+ chunks.get(i).getChunkNo() + "\r\n\r\n";
-			System.out.println("\n SENT: "+header);
+			for (int i = 0; i < chunks.size();i++) {
+				header = "GETCHUNK "+ protocolVersion + " "+ serverID + " " +  fileInfo.getFileId()+ " "+ chunks.get(i).getChunkNo();
+				header+= "\r\n\r\n";
+
+				byte[] message = header.getBytes();
+
+				System.out.println("\n SENT: "+header);
 				String channel = "mc";
-			try {
-				Peer.executor.execute(new WorkerThread(header.getBytes("US-ASCII"),channel));
-			} catch (UnsupportedEncodingException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				Peer.executor.execute(new WorkerThread(message,channel));
 			}
-		}
-		Peer.executor.schedule(new RestoreFileThread(fileInfo.getFilename(),fileInfo.getFileId(),chunks.size()),10,TimeUnit.SECONDS);
+			Peer.executor.schedule(new RestoreFileThread(fileInfo.getFilename(),fileInfo.getFileId(),chunks.size()),10,TimeUnit.SECONDS);		
 		}
 	}
+
+	public void askForChunks(String filename, String fileId, int chunkSize){
+		
+	}
+	
+
 	@Override
 	public void delete(String filename) throws RemoteException {
 		File file = new File(filename);
@@ -304,41 +301,52 @@ public class Peer implements RMIInterface {
 		
 	}
 
-	public static int getId() { return serverID;}
 
-	public static MCListener getMCListener() { return mcListener;}
+	//gets
 
-	public static MDRListener getMDRListener() {return mdrListener;}
+	public static double getProtocolVersion(){return protocolVersion;}
 
-	public static double getProtocolVersion(){return protocolVersion;} 
+	public static int getTCPPort(){return TCPSocketPort;}
+
+	public static Memory getMemory() { return memory; }
+
+	public static MDBListener getMDBListener() { return mdbListener; }
+
+	public static ScheduledThreadPoolExecutor getExecutor() { return executor; }
+
+	public static int getId() {return serverID; }
+
+	public static MCListener getMCListener() { return mcListener; }
+
+	public static MDRListener getMDRListener() { return mdrListener; }
 
 
-public static void deleteLocalStorage() {
-	String directory = "Peer"+Peer.getId();
-	File file = new File(directory);
-	if (!file.exists()) {
-		System.out.println(directory +" does not exist");
+	//utils
+	public static void deleteLocalStorage() {
+		String directory = "Peer"+Peer.getId();
+		File file = new File(directory);
+		if (!file.exists()) {
+			System.out.println(directory +" does not exist");
+		}
+		else System.out.println("exist");
 	}
-	else System.out.println("exist");
-}
 
+	public static List<String> sortChunksToDelete() {
+		ArrayList<String> chunksToSort = new ArrayList<String>();
+		for (String key : memory.savedChunks.keySet()){
+			int diff = memory.savedOcurrences.get(key)- memory.savedChunks.get(key).getReplicationDegree(); 
+			String chunk = key +":"+diff;
+			chunksToSort.add(chunk);
+		}
+		chunksToSort.sort((o1, o2) -> {
+			int chunk1 = Integer.valueOf(o1.split(":")[1]);
+			int chunk2 = Integer.valueOf(o2.split(":")[1]);
+			return Integer.compare(chunk1, chunk2);
+		});
 
-public static List<String> sortChunksToDelete() {
-	ArrayList<String> chunksToSort = new ArrayList<String>();
-	for (String key : memory.savedChunks.keySet()){
-		int diff = memory.savedOcurrences.get(key)- memory.savedChunks.get(key).getReplicationDegree(); 
-		String chunk = key +":"+diff;
-		chunksToSort.add(chunk);
+		List<String> returnList =chunksToSort;
+		Collections.reverse(returnList);
+		System.out.println(returnList);
+		return returnList;
 	}
-	chunksToSort.sort((o1, o2) -> {
-        int chunk1 = Integer.valueOf(o1.split(":")[1]);
-        int chunk2 = Integer.valueOf(o2.split(":")[1]);
-        return Integer.compare(chunk1, chunk2);
-    });
-
-	List<String> returnList =chunksToSort;
-	Collections.reverse(returnList);
-	System.out.println(returnList);
-	return returnList;
-}
 }

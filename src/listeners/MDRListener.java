@@ -13,7 +13,7 @@ import threads.AnalizeMessageThread;
 public class MDRListener implements Runnable{
 
 	private InetAddress mdrAddress;
-	private Integer mdrPort;
+	private Integer mdrPort; 
 
 	public MDRListener(InetAddress mdrAddress, Integer mdrPort) {
 			this.mdrAddress = mdrAddress;
@@ -32,9 +32,8 @@ public class MDRListener implements Runnable{
 			 DatagramPacket msgPacket = new DatagramPacket(buf, buf.length);
 			 //System.out.println(this.mdrPort+"-"+this.mdrAddress);
 	         clientSocket.receive(msgPacket);
-	         byte[] message = Arrays.copyOf(buf,msgPacket.getLength());
+			 byte[] message = Arrays.copyOf(buf,msgPacket.getLength());
 	         Peer.getExecutor().execute(new AnalizeMessageThread(message));
-	         //System.out.println("msg: "+msg);
 			 }
 		} catch (IOException e) {
 			

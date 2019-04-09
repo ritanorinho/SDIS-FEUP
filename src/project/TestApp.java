@@ -31,6 +31,7 @@ public class TestApp {
     RMIInterface stub=null;
 
     System.setProperty("java.net.preferIPv4Stack", "true");
+		//System.setProperty ("java.rmi.server.hostname", host);
 
     registry = LocateRegistry.getRegistry(host);
 
@@ -40,6 +41,7 @@ public class TestApp {
     catch(NotBoundException e){
       e.printStackTrace();
     }
+
 
 		switch (operation) {
       case "BACKUP":
