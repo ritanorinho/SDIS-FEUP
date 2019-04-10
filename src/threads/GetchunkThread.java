@@ -32,7 +32,13 @@ public class GetchunkThread implements Runnable {
 			return;
 		}
 		
-		int senderId = Integer.parseInt(messageArray[2]);
+		if(Peer.getProtocolVersion()==2.0)
+			sendChunkMulticast();
+		
+		else{
+			int senderId = Integer.parseInt(messageArray[2]);
+			if (Peer.getId() != senderId) 
+				confirmChunk();
 
 		if (Peer.getId() != senderId) {
 			if(Peer.getProtocolVersion()==1.0)

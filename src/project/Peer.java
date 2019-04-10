@@ -1,6 +1,8 @@
 package project;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
@@ -48,6 +50,7 @@ public class Peer implements RMIInterface {
 		mdbListener = new MDBListener(mdbAddress, mdbPort);
 		mdrListener = new MDRListener(mdrAddress, mdrPort);
 		executor = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(250);
+		loadMemory();
 	
 	}
 
@@ -108,13 +111,7 @@ public class Peer implements RMIInterface {
 	public void backup(String filename, int repDegree) throws RemoteException, InterruptedException {
 		File file = new File(filename);		
 		
-		String fileId = Utils.createFileId(file);
-		
-		if (memory.hasFileByID(fileId)){
-				System.out.println("This file has already backed up!");
-				return;
-			}
-			
+		String fileId = Utils.createFileId(file);			
 		FileInfo fileInfo = new FileInfo(file,filename,repDegree);
 		ArrayList<Chunk> chunks = fileInfo.getChunks();
 		String chunkId;
@@ -153,16 +150,15 @@ public class Peer implements RMIInterface {
 	@Override
 	public void restore(String filename) throws RemoteException {
 		File file = new File(filename);
-		String name= file.getName();
+		String fileId= Utils.createFileId(file);
 		ArrayList<Chunk> chunks= new ArrayList<Chunk>();
 		FileInfo fileInfo=null;
 		String header = null;
 		
-		if (!memory.hasFileByName(name)) {
+		if (!memory.hasFileByID(fileId)) {
 			System.out.println(filename + "has never backed up!");
 			return;
 		}else {
-			String fileId = Utils.createFileId(file);
 			System.out.println(fileId);
 			for (int i =0;i <memory.files.size();i++) {
 				if (memory.files.get(i).getFileId().equals(fileId)) {
@@ -242,7 +238,7 @@ public class Peer implements RMIInterface {
 					}
 
 					String[] splitKey = key.trim().split("-");
-					String filePath ="Peer"+Peer.getId()+"/"+"STORED"+"/"+ splitKey[0]+"/"+splitKey[1];
+					String filePath ="Peer"+Peer.getId()+"/"+"STORED"+"/"+ splitKey[0]+"/"+splitKey[1]+"-"+memory.savedChunks.get(key).getReplicationDegree();
 					System.out.println("filePath "+filePath);
 					File fileToDelete = new File(filePath);
 					boolean a=fileToDelete.delete();
@@ -318,15 +314,53 @@ public class Peer implements RMIInterface {
 	public static MDRListener getMDRListener() { return mdrListener; }
 
 
-	//utils
-	public static void deleteLocalStorage() {
-		String directory = "Peer"+Peer.getId();
-		File file = new File(directory);
-		if (!file.exists()) {
-			System.out.println(directory +" does not exist");
+	public static void loadMemory() {
+		String storedDirectory = "Peer"+Peer.getId()+"/STORED/";
+		File storedFile = new File(storedDirectory);
+		if (!storedFile.exists()) {
+			System.out.println("Peer "+Peer.getId()+" has no data in memory.");
 		}
-		else System.out.println("exist");
+		else {
+
+			String[] allFiles;
+			if (storedFile.isDirectory()) {
+					allFiles= storedFile.list();
+					for (int i = 0;i<allFiles.length;i++) {
+						String fileDirectory = storedDirectory +allFiles[i];
+						File file = new File(fileDirectory);
+						if (file.isDirectory()) {
+							String[] allChunks = file.list();
+							System.out.println(fileDirectory);
+							for (int j = 0;j<allChunks.length;j++) {
+								String chunkDirectory = fileDirectory+"/"+allChunks[j];
+								String[] splitChunkId = allChunks[j].trim().split("-");
+								int chunkNo = Integer.parseInt(splitChunkId[0]);
+								int replicationDegree = Integer.parseInt(splitChunkId[1]);
+								File chunkFile = new File(chunkDirectory);
+								byte[] content = new byte[(int) chunkFile.length()];
+								FileInputStream in;
+								try {
+									in = new FileInputStream(chunkFile);
+									in.read(content);
+								} catch (IOException e) {
+									// TODO Auto-generated catch block
+									e.printStackTrace();
+								}
+							
+								String chunkId = allFiles[i]+"-"+allChunks[j];
+								Chunk chunk = new Chunk(allFiles[i],chunkNo,content,(int) chunkFile.length(),chunkId,replicationDegree);
+								memory.savedChunks.put(chunkId, chunk);
+								System.out.println(chunkDirectory);
+								
+							}
+						}
+
+					}
+				 }
+			
+		}
 	}
+	
 
 	public static List<String> sortChunksToDelete() {
 		ArrayList<String> chunksToSort = new ArrayList<String>();

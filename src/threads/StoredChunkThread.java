@@ -35,7 +35,7 @@ public class StoredChunkThread implements Runnable {
 	
 
 	private  void createFileChunk() {
-		String filename = "Peer"+Peer.getId() +"/"+"STORED"+"/"+this.fileId+"/"+this.chunkNo;
+		String filename = "Peer"+Peer.getId() +"/"+"STORED"+"/"+this.fileId+"/"+this.chunkNo+"-"+this.replicationDegree;
 		System.out.println(filename);
 		try {
 			
@@ -103,3 +103,4 @@ public class StoredChunkThread implements Runnable {
 	}
 
 }
+		
