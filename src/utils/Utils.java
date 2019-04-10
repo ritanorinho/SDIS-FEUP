@@ -6,14 +6,11 @@ import java.security.MessageDigest;
 
 public class Utils {
 	
-	
-
 	public static String createFileId(File file) {
 		
 		String fileId = file.getName()+"."+String.valueOf(file.lastModified());
 		return sha256(fileId);
-		
-		
+
 	}
 	
 	public static final String sha256(String str) {
@@ -40,6 +37,7 @@ public class Utils {
 
 		return null;
 	}
+	
 	public static byte[] getHeader(String type, double protocolVersion,int serverID,String fileId, int chunkNo,int repDegree) {
 		
 		byte[] byteHeader=null;;
@@ -50,11 +48,10 @@ public class Utils {
 			byteHeader = header.getBytes("US-ASCII");
 			
 		} catch (UnsupportedEncodingException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+
 		return byteHeader;
-		
 	}
 
 }

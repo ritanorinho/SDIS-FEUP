@@ -32,22 +32,27 @@ public class GetchunkThread implements Runnable {
 			return;
 		}
 		
-		if(Peer.getProtocolVersion()==1.0)
-			sendChunkMulticast();
-		
-		else{
-			int senderId = Integer.parseInt(messageArray[2]);
-			if (Peer.getId() != senderId) 
-				confirmChunk();
+		int senderId = Integer.parseInt(messageArray[2]);
 
-				
+		if (Peer.getId() != senderId) {
+			if(Peer.getProtocolVersion()==1.0)
+				sendChunkMulticast();
+			
+			else{
+				int filedid = Integer.parseInt(chunkId.split("-")[1]);
+				int port = Peer.getTCPPort() + filedid;
+
+				confirmChunk(port);
+
+				System.out.println("Strting server for " + chunkId);
 				(new TCPRestoreServer(Peer.getTCPPort(), chunkId)).start();
+			}
 		}
 	}
 
-	public void confirmChunk(){
+	public void confirmChunk(int port){
 		try {
-			String storedMessage = "CONFIRMCHUNK "+Peer.getProtocolVersion()+" "+Peer.getId()+" "+ chunkId +" "+Peer.getTCPPort()+"\n\r\n\r";
+			String storedMessage = "CONFIRMCHUNK "+Peer.getProtocolVersion()+" "+Peer.getId()+" "+ chunkId +" "+port+"\n\r\n\r";
 			System.out.println(storedMessage);
 			Peer.getMCListener().message(storedMessage.getBytes("US-ASCII"));
 

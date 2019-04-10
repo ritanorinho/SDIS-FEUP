@@ -36,8 +36,6 @@ public class MDRListener implements Runnable{
 	         Peer.getExecutor().execute(new AnalizeMessageThread(message));
 			 }
 		} catch (IOException e) {
-			
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}     
 	}

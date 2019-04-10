@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -26,8 +25,6 @@ public class FileInfo {
 		this.replicationDegree=repDegree;
 		fileId();
 		calculateNumberChunks();
-		
-		// TODO Auto-generated constructor stub
 	}
 
 	public void calculateNumberChunks(){
@@ -56,44 +53,17 @@ public class FileInfo {
 			
 		
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}		
 		
 	
 	}
-	public ArrayList<Chunk> getChunks(){
-		return this.chunks;
-	}
 	
 	public void fileId() {
 		this.filename = this.file.getName();
-		this.fileId = Utils.createFileId(file);
-		
-	}
-	public String getFileId()
-	{
-		return this.fileId;
-	}
-	public String getFilename() {
-		return filename;
-	}
-
-	public void setFilename(String filename) {
-		this.filename = filename;
-	}
-
-	public String getFilePath() {
-		// TODO Auto-generated method stub
-		return this.filePath;
-	}
-
-	public int getReplicationDegree() {
-			// TODO Auto-generated method stub
-		return this.replicationDegree;
+		this.fileId = Utils.createFileId(file);	
 	}
 
 	public static void deleteFolder(File folder) {
@@ -109,5 +79,16 @@ public class FileInfo {
 		}
 		folder.delete();
 	}
+	
+	public ArrayList<Chunk> getChunks(){ return this.chunks; }
 
+	public String getFileId() { return this.fileId;}
+
+	public String getFilename() { return filename; }
+
+	public void setFilename(String filename) { this.filename = filename; }
+
+	public String getFilePath() { return this.filePath; }
+
+	public int getReplicationDegree() { return this.replicationDegree; 
 }

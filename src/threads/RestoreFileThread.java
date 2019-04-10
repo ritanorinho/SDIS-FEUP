@@ -46,11 +46,11 @@ public class RestoreFileThread implements Runnable {
 			InetAddress InetAddress	= Peer.getMemory().confirmedChunks.get(chunkId).getValue();
 			System.out.println("for chunk nº" + i + " connect to port" + ": " + Peer.getMemory().confirmedChunks.get(chunkId));
 
-			/*try {
+			try {
 				socket = new Socket(InetAddress, port);
 			} catch (IOException e) {
 				e.printStackTrace();
-			}*/
+			}
 
 		}
 	}

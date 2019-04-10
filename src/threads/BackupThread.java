@@ -19,28 +19,26 @@ public class BackupThread implements Runnable {
 		this.delay=1;
 		this.replicationDegree=repDegree;
 		
-		
-		// TODO Auto-generated constructor stub
 	}
+
 	@Override
 	public void run() {
 		int replicationState = Peer.getMemory().savedOcurrences.get(this.hashName);
+
 		 // if the number of confirmation messages it received up to the end 
 		 // of that interval is lower than the desired replication degree
 		int delta =this.replicationDegree-replicationState;
 		this.delay=this.delay* 2;
 		if (delta > 0) {
+
 			//it retransmits the backup message on the MDB channel, and 
 			//doubles the time interval for receiving confirmation messages		
 				try {
 					Peer.getMDBListener().message(this.message);
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 				
-
-			
 			this.attempt++;
 			System.out.println("delay "+this.delay + "attempt "+this.attempt);
 			
@@ -53,8 +51,7 @@ public class BackupThread implements Runnable {
 			}
 		}
 		else {
-			System.out.println("REPLICATION DEGREE REACHED!");
-			System.out.println("Replication degree "+ replicationState);
+			System.out.println("REPLICATION DEGREE REACHED: "+ replicationState);
 		}
 	}
 

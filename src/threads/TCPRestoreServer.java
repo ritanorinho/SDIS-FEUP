@@ -27,11 +27,10 @@ public class TCPRestoreServer extends Thread {
 
     @Override
     public void run() {
-        System.out.println("running");
 
         try {
             this.socket = new ServerSocket(port);
-            //socket.setSoTimeout(10000);
+            socket.setSoTimeout(10000);
 
             System.out.println("going to established");
 
