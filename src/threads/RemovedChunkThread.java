@@ -18,7 +18,6 @@ public class RemovedChunkThread implements Runnable {
 		this.chunkId=chunkId;
 		this.fileId = this.chunkId.trim().split("-")[0];
 		this.chunkNo = this.chunkId.trim().split("-")[1];
-		// TODO Auto-generated constructor stub
 	}
 
 	@Override
@@ -47,9 +46,9 @@ public class RemovedChunkThread implements Runnable {
 				bis.close();
 				
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+
 			String header ="PUTCHUNK 1.0 " +Peer.getId() + " " + this.fileId + " "
 					+this.chunkNo + " " + replicationDegree + "\r\n\r\n";
 			System.out.println("REMOVED "+header);
@@ -58,6 +57,7 @@ public class RemovedChunkThread implements Runnable {
 			System.arraycopy(body, 0, message, header.getBytes().length, body.length);
 			String channel = "mdb";
 			Peer.getExecutor().execute(new WorkerThread(message,channel));
+
 			// The initiator-peer collects the confirmation
 			// messages during a time interval of one second
 			Peer.getExecutor().schedule(new BackupThread(this.chunkId, message, replicationDegree), 1, TimeUnit.SECONDS);
@@ -67,8 +67,6 @@ public class RemovedChunkThread implements Runnable {
 			else {
 				System.out.println("The count doesn't drop below the desired replication degree of the chunk "+this.chunkNo);
 			}
-		// TODO Auto-generated method stub
-
 	}
 
 }

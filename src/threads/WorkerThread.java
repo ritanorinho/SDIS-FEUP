@@ -6,16 +6,12 @@ import project.Peer;
 
 public class WorkerThread implements Runnable {
 
-	
 	String channel;
 	byte[] message;
-
 
 	public WorkerThread(byte[] message, String channel) {
 		this.message=message;
 		this.channel=channel;
-		
-		// TODO Auto-generated constructor stub
 	}
 	
 	

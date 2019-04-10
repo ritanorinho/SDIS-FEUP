@@ -8,8 +8,7 @@ import java.rmi.registry.Registry;
 
 public class TestApp {
 
-	public TestApp() {
-	}
+	public TestApp() {}
 
 	
 	public static void main(String[] args) throws RemoteException, NotBoundException, InterruptedException {
@@ -20,7 +19,7 @@ public class TestApp {
 			return;
 		}else if (args.length >= 3) 	fileName = args[2];
 
-	String[] host_accessPoint = args[0].trim().split(":");
+	  String[] host_accessPoint = args[0].trim().split(":");
     String accessPoint = host_accessPoint[1];
     String host = host_accessPoint[0];
 		String operation = args[1];
@@ -54,7 +53,6 @@ public class TestApp {
 			try {
 				stub.backup(fileName, replicationDegree);
 			} catch (UnsupportedEncodingException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
         break;

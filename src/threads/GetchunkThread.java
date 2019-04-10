@@ -40,14 +40,23 @@ public class GetchunkThread implements Runnable {
 			if (Peer.getId() != senderId) 
 				confirmChunk();
 
-				
-				(new TCPRestoreServer(Peer.getTCPPort(), chunkId)).start();
+		if (Peer.getId() != senderId) {
+			if(Peer.getProtocolVersion()==1.0)
+				sendChunkMulticast();
+			
+			else{
+				int filedid = Integer.parseInt(chunkId.split("-")[1]);
+				int port = Peer.getTCPPort() + filedid;
+
+				confirmChunk(port);
+				(new TCPRestoreServer(port, chunkId)).start();
+			}
 		}
 	}
 
-	public void confirmChunk(){
+	public void confirmChunk(int port){
 		try {
-			String storedMessage = "CONFIRMCHUNK "+Peer.getProtocolVersion()+" "+Peer.getId()+" "+ chunkId +" "+Peer.getTCPPort()+"\n\r\n\r";
+			String storedMessage = "CONFIRMCHUNK "+Peer.getProtocolVersion()+" "+Peer.getId()+" "+ chunkId +" "+port+"\n\r\n\r";
 			System.out.println(storedMessage);
 			Peer.getMCListener().message(storedMessage.getBytes("US-ASCII"));
 
@@ -78,28 +87,5 @@ public class GetchunkThread implements Runnable {
 			Peer.getExecutor().schedule(new WorkerThread(message,channel), delay,
 					TimeUnit.MILLISECONDS);
 		}
-	}
-
-	public void sendByTCP(byte[] message) {
-		OutputStream os;
-		DataOutputStream dos;
-
-		try {
-			this.socket = new Socket(InetAddress, TCPSocketPort);
-
-			os = socket.getOutputStream();
-			dos = new DataOutputStream(os);
-			
-			dos.writeInt(message.length);
-			dos.write(message, 0, message.length);
-
-			this.socket.close();
-
-			System.out.println("sent by tcp");
-
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		
 	}
 }

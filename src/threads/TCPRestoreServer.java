@@ -8,6 +8,8 @@ import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+import project.Peer;
+
 public class TCPRestoreServer extends Thread {
 
     private ServerSocket socket;
@@ -27,28 +29,21 @@ public class TCPRestoreServer extends Thread {
 
     @Override
     public void run() {
-        System.out.println("running");
 
         try {
             this.socket = new ServerSocket(port);
-            //socket.setSoTimeout(10000);
-
-            System.out.println("going to established");
+            this.socket.setSoTimeout(20000);
 
             client = socket.accept();
-
-            System.out.println("connection established");
 
             outputStream = client.getOutputStream();
             dataOutputStream = new DataOutputStream(outputStream);
             
             this.socket.close();
-
-            System.out.println("closed connection");
-
             
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("Time out on " + Peer.getId() + ", port " + this.port);
+
         }
     }
 }

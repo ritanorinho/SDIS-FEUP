@@ -41,7 +41,7 @@ public class Peer implements RMIInterface {
 	private static volatile MDRListener mdrListener;
 	private static ScheduledThreadPoolExecutor executor;
 	private static Memory memory = new Memory();
-	private static int TCPSocketPort = 8010;
+	private static int TCPSocketPort;
 	private static ServerSocket socket;
 	private static Socket client;
 
@@ -84,7 +84,7 @@ public class Peer implements RMIInterface {
 		serverID = Integer.parseInt(args[1]);
 		accessPoint = args[2];
 
-		TCPSocketPort += serverID;
+		TCPSocketPort = serverID * 1000;
 
 		Peer peer = new Peer(MCAddress, MCPort, MDBAddress, MDBPort, MDRAddress, MDRPort);
 		RMIInterface stub = (RMIInterface) UnicastRemoteObject.exportObject(peer, 0);
@@ -208,7 +208,6 @@ public class Peer implements RMIInterface {
 			// messages during a time interval of one second
 			Peer.executor.schedule(new DeleteThread(message), 1, TimeUnit.SECONDS);
 		} catch (UnsupportedEncodingException e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		} 
 		
@@ -226,18 +225,20 @@ public class Peer implements RMIInterface {
 			for (Iterator<String> iterator = sortedChunks.iterator(); iterator.hasNext();) {
 				String[] splitString = iterator.next().trim().split(":");
 				String key = splitString[0];
+				
 				if (currentSpaceToFree>0) {
 					currentSpaceToFree-=memory.savedChunks.get(key).getChunkSize();
 					String header = "REMOVED 1.0 "+serverID+" "+ memory.savedChunks.get(key).getFileId() + " "+memory.savedChunks.get(key).getChunkNo()+"\r\n\r\n";
 					System.out.print(header);
+
 					try {
 						byte[] data = header.getBytes("US-ASCII");
 						String channel = "mc";
 						executor.execute(new WorkerThread(data,channel));
 					} catch (UnsupportedEncodingException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();	
 					}
+
 					String[] splitKey = key.trim().split("-");
 					String filePath ="Peer"+Peer.getId()+"/"+"STORED"+"/"+ splitKey[0]+"/"+splitKey[1]+"-"+memory.savedChunks.get(key).getReplicationDegree();
 					System.out.println("filePath "+filePath);
@@ -264,7 +265,7 @@ public class Peer implements RMIInterface {
 
 	@Override
 	public void state() throws RemoteException {
-		// TODO Auto-generated method stub
+
 		int i;
 		// Backup
 		System.out.println("\nPEER "+Peer.getId()+" STATE");
@@ -344,7 +345,6 @@ public class Peer implements RMIInterface {
 									in = new FileInputStream(chunkFile);
 									in.read(content);
 								} catch (IOException e) {
-									// TODO Auto-generated catch block
 									e.printStackTrace();
 								}
 							

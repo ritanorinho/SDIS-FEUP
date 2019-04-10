@@ -15,10 +15,10 @@ public class MDBListener implements Runnable {
 
 	private Integer mdbPort;
 	private InetAddress mdbAddress;
+
 	public MDBListener(InetAddress mdbAddress, Integer mdbPort) {
-			this.mdbAddress= mdbAddress;
-			this.mdbPort = mdbPort;
-		// TODO Auto-generated constructor stub
+		this.mdbAddress= mdbAddress;
+		this.mdbPort = mdbPort;
 	}
 	
 	
@@ -29,17 +29,18 @@ public class MDBListener implements Runnable {
 		try {
 			
 			clientSocket = new MulticastSocket(this.mdbPort);
-			 clientSocket.joinGroup(this.mdbAddress);
+			clientSocket.joinGroup(this.mdbAddress);
+
 			 while(true) {
-			 DatagramPacket msgPacket = new DatagramPacket(buf, buf.length);
-			 //System.out.println(this.mdbPort+"-"+this.mdbAddress);
-	         clientSocket.receive(msgPacket);
-	         
-	         byte[] message = Arrays.copyOf(buf,msgPacket.getLength());
-	         Peer.getExecutor().execute(new AnalizeMessageThread(message));
+				DatagramPacket msgPacket = new DatagramPacket(buf, buf.length);
+
+				clientSocket.receive(msgPacket);
+				
+				byte[] message = Arrays.copyOf(buf,msgPacket.getLength());
+				Peer.getExecutor().execute(new AnalizeMessageThread(message));
 			 }
+			 
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}     
 		
