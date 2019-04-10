@@ -8,8 +8,6 @@ import java.util.Arrays;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
-import com.sun.javafx.collections.MappingChange.Map;
-
 import javafx.util.Pair;
 import project.Peer;
 import utils.FileInfo;
