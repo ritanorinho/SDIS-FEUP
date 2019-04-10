@@ -85,6 +85,7 @@ public class RestoreFileThread implements Runnable {
             return Integer.compare(chunk1, chunk2);
         });
 		
+		@SuppressWarnings("resource")
 		FileOutputStream fos = new FileOutputStream(finalFile);
 		for (String key: sortedChunks) {
 
@@ -102,14 +103,12 @@ public class RestoreFileThread implements Runnable {
 			fos.write(content);
 			in.close();			
 			Peer.getMemory().chunksToRestore.remove(key);
-			
 		}
 		fos.close();
 		return true;
 		} catch (IOException e) {
 				e.printStackTrace();
 			}
-			
 			return false;
 
 	}
