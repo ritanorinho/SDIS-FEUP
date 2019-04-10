@@ -32,13 +32,13 @@ public class GetchunkThread implements Runnable {
 			return;
 		}
 		
-		if(Peer.getProtocolVersion()==2.0)
+		if(Peer.getProtocolVersion()==1.0)
 			sendChunkMulticast();
 		
 		else{
 			int senderId = Integer.parseInt(messageArray[2]);
 			if (Peer.getId() != senderId) 
-				confirmChunk();
+				//confirmChunk();
 
 		if (Peer.getId() != senderId) {
 			if(Peer.getProtocolVersion()==1.0)
@@ -52,6 +52,7 @@ public class GetchunkThread implements Runnable {
 				(new TCPRestoreServer(port, chunkId)).start();
 			}
 		}
+	}
 	}
 
 	public void confirmChunk(int port){

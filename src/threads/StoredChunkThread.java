@@ -84,23 +84,12 @@ public class StoredChunkThread implements Runnable {
 		}
 		else return;
 		}
-			
-			createFileChunk();
-			
-			try {
-				String storedMessage = "STORED "+this.version+" "+Peer.getId()+" "+this.fileId+" "+this.chunkNo+"\n\r\n\r";
-				System.out.println(storedMessage);
-				Peer.getMCListener().message(storedMessage.getBytes("US-ASCII"));
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		} else return;
-	}
-			
 
 	@Override
 	public void run() {
-	
+	for (int i =0;i<Peer.getMemory().files.size();i++) {
+		if (Peer.getMemory().files.get(i).getFileId().equals(fileId))return;
+	}
 		try {
 			Thread.sleep((long)(Math.random() * 1500));
 		} catch (InterruptedException e) {

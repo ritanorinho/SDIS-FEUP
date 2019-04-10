@@ -132,7 +132,7 @@ public class AnalizeMessageThread implements Runnable {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-
+			System.out.println("----0"+Peer.getMemory().chunksToRestore.size());
 			Peer.getMemory().chunksToRestore.put(chunkId, messageArray[3]);
 		}
 

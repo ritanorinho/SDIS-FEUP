@@ -1,14 +1,17 @@
 package project;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.rmi.AlreadyBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -52,6 +55,7 @@ public class Peer implements RMIInterface {
 		mdrListener = new MDRListener(mdrAddress, mdrPort);
 		executor = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(250);
 		loadMemory();
+		loadOccurrences();
 	
 	}
 
@@ -358,10 +362,36 @@ public class Peer implements RMIInterface {
 
 					}
 				 }
-			
 		}
 	}
 	
+	public static void loadOccurrences() {
+		String storedDirectory = "Peer"+Peer.getId()+"/SAVED/savedOccurrences.txt";
+		File storedFile = new File(storedDirectory);
+		if (!storedFile.exists()) {
+			System.out.println("Peer "+Peer.getId()+" has no data in memory.");
+		}
+		else
+		{
+			FileInputStream in;
+			try {
+				in = new FileInputStream(storedFile);
+				BufferedReader buf = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
+				 String line;
+		            
+				 while ((line = buf.readLine()) != null) {
+					 String[] splitLine = line.trim().split(" ");
+					 String chunkId = splitLine[0].trim();
+					 int occurrences= Integer.parseInt(splitLine[1]);
+					memory.savedOcurrences.put(chunkId, occurrences);
+		            }
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			
+		}
+		
+	}
 
 	public static List<String> sortChunksToDelete() {
 		ArrayList<String> chunksToSort = new ArrayList<String>();

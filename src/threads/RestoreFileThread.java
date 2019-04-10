@@ -25,6 +25,7 @@ public class RestoreFileThread implements Runnable {
 	
 	@Override
 	public void run() {
+		
 		if(Peer.getProtocolVersion()==1.0){
 			if(createFile())
 				System.out.println("Local file restored");
@@ -55,6 +56,7 @@ public class RestoreFileThread implements Runnable {
 	}
 
 	public boolean createFile() {
+		
 		String filename = "Peer"+Peer.getId() +"/"+"RESTORED"+"/"+this.filename;
 		File finalFile= new File(filename);
 		HashMap<String,String> requiredChunks = Peer.getMemory().chunksToRestore;
@@ -64,7 +66,6 @@ public class RestoreFileThread implements Runnable {
 		}else {
 		try {		
 			
-		
 		if (!finalFile.exists()) {
 			finalFile.getParentFile().mkdirs();
 			finalFile.createNewFile();
