@@ -5,6 +5,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
+import java.util.Arrays;
 
 import project.Peer;
 
@@ -81,6 +82,23 @@ public class Utils {
 			e.printStackTrace();
 		}
 		
+	}
+
+	public static String[] byteArrayToStringArray(byte[] array){
+		String string = new String(array, 0, array.length);
+		return string.trim().split("\\s+");
+	}
+
+	public static byte[] getBody(byte [] messageBytes) {
+		int i;
+		for (i =0; i< messageBytes.length-4;i++) {
+			if (messageBytes[i] == 0xD && messageBytes[i+1]== 0xA && messageBytes[i+2]== 0xD && messageBytes[i+3]== 0xA) {
+				break;
+			}
+		}
+		
+		byte[] body = Arrays.copyOfRange(messageBytes,i+4,messageBytes.length);		
+		return body;
 	}
 
 }

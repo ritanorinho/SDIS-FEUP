@@ -26,10 +26,6 @@ public class GetchunkThread implements Runnable {
 
 	@Override
 	public void run() {
-
-		System.out.println("Running chunk thread");
-
-
 		if (!Peer.getMemory().savedChunks.containsKey(chunkId)) {
 			System.out.println("This peer doesn't contain this chunk: "+chunkId);
 			return;
@@ -47,16 +43,17 @@ public class GetchunkThread implements Runnable {
 				int filedid = Integer.parseInt(chunkId.split("-")[1]);
 				int port = Peer.getTCPPort() + filedid;
 
-				confirmChunk(port);
+				sendConfirmChunk(port);
 				(new TCPRestoreServer(port, chunkId, message)).start();
 			}
 		}
 	}
 
-	public void confirmChunk(int port){
+	public void sendConfirmChunk(int port){
 		try {
 			String storedMessage = "CONFIRMCHUNK "+Peer.getProtocolVersion()+" "+Peer.getId()+" "+ chunkId +" "+port+"\n\r\n\r";
-			System.out.println(storedMessage);
+			System.out.println("SENDER ID: " + messageArray[2] + " PEER ID: " + Peer.getId()
+								+ "\n" + storedMessage);
 			Peer.getMCListener().message(storedMessage.getBytes("US-ASCII"));
 
 		} catch (IOException e) {

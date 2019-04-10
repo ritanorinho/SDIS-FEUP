@@ -44,6 +44,8 @@ public class TCPRestoreServer extends Thread {
             dataOutputStream = new DataOutputStream(outputStream);
 
             dataOutputStream.writeInt(message.length);
+            dataOutputStream.write(message);
+
             
             System.out.println("sent");
 
