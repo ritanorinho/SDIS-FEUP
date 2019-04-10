@@ -33,6 +33,7 @@ public class MCListener implements Runnable {
             clientSocket.joinGroup(this.mcAddress);
 
             while (true) {
+            	
                 DatagramPacket msgPacket = new DatagramPacket(buf, buf.length);
                 clientSocket.receive(msgPacket);
                 byte[] message = Arrays.copyOf(buf, msgPacket.getLength());
@@ -45,7 +46,7 @@ public class MCListener implements Runnable {
     }
 
     public int message(byte[] message) throws IOException {
-
+    	
         DatagramSocket mcSocket = new DatagramSocket();
         DatagramPacket packet = new DatagramPacket(message, message.length, mcAddress, mcPort);
         mcSocket.send(packet);

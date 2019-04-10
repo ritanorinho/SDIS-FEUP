@@ -56,8 +56,11 @@ public class Peer implements RMIInterface {
 		executor = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(250);
 		loadMemory();
 		loadOccurrences();
+		
 	
 	}
+
+	
 
 	public static void main(String args[]) throws InterruptedException, IOException, AlreadyBoundException {
 		System.setProperty("java.net.preferIPv4Stack", "true");
@@ -73,6 +76,7 @@ public class Peer implements RMIInterface {
 		executor.execute(mcListener);
 		executor.execute(mdbListener);
 		executor.execute(mdrListener);
+		alive();
 	}
 
 	private static void validateArgs(String[] args)
@@ -251,6 +255,7 @@ public class Peer implements RMIInterface {
 					System.out.println("delete "+a);
 					iterator.remove();	
 					Peer.getMemory().savedOcurrences.put(key,Peer.getMemory().savedOcurrences.get(key)-1);
+					Utils.savedOccurrencesFile();
 					Peer.getMemory().savedChunks.remove(key);
 				}
 					
@@ -299,7 +304,22 @@ public class Peer implements RMIInterface {
 		System.out.println("The amount of storage used to backup the chunks: "+memory.memoryUsed);
 		
 	}
-
+	public static void alive() {
+		
+		String aliveMessage = "ALIVE "+protocolVersion + " " + serverID+" "+"\r\n\r\n";
+		System.out.println("\nSENT: "+aliveMessage);
+		try {
+			byte[] byteMessage = aliveMessage.getBytes("US-ASCII");
+			String channel ="mc";
+			executor.execute(new WorkerThread(byteMessage,channel));
+			
+		} catch (UnsupportedEncodingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		// TODO Auto-generated method stub
+		
+	}
 
 	//gets
 
@@ -381,6 +401,7 @@ public class Peer implements RMIInterface {
 					 String[] splitLine = line.trim().split(" ");
 					 String chunkId = splitLine[0].trim();
 					 int occurrences= Integer.parseInt(splitLine[1]);
+					 System.out.println("----"+occurrences);
 					memory.savedOcurrences.put(chunkId, occurrences);
 		            }
 			} catch (IOException e) {

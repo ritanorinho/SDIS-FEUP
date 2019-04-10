@@ -3,6 +3,7 @@ package threads;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.util.Arrays;
 import java.util.Random;
@@ -27,17 +28,19 @@ public class AnalizeMessageThread implements Runnable {
 
 		if(messageArray.length>4)
 			this.chunkId = this.messageArray[3] + "-" + this.messageArray[4];
-		else this.chunkId = this.messageArray[3];
+		else if (messageArray.length >= 3)this.chunkId = this.messageArray[3];
 	}
 
 	public AnalizeMessageThread(byte[] message, InetAddress adress) {
+		
 		this.messageBytes = message;
 		this.message = new String(this.messageBytes, 0, this.messageBytes.length);
 		this.messageArray = this.message.trim().split("\\s+");
 		if(messageArray.length>4)
 			this.chunkId = this.messageArray[3] + "-" + this.messageArray[4];
-		else this.chunkId = this.messageArray[3];
+		else if (messageArray.length > 3) this.chunkId = this.messageArray[3];
 		this.InetAddress = adress;
+		
 
 	}
 
@@ -66,8 +69,28 @@ public class AnalizeMessageThread implements Runnable {
 		case "CONFIRMCHUNK":
 			confirmChunk();
 			break;
+		case "ALIVE":
+			alive();
+			break;
 		default:
 		}
+	}
+
+	private void alive() {
+		int senderId = Integer.parseInt(this.messageArray[2]);
+		if (senderId != Peer.getId()) {
+			System.out.println("Deleted chunks size " +Peer.getMemory().deletedFiles.size());
+			for (int i = 0;i< Peer.getMemory().deletedFiles.size();i++) {
+				String deletedMessage = "DELETE " + this.messageArray[1] + " " + Peer.getId() + " " + Peer.getMemory().deletedFiles.get(i) + "\r\n\r\n";
+				try {
+					Peer.getExecutor().execute(new DeleteThread(deletedMessage.getBytes("US-ASCII")));
+				} catch (UnsupportedEncodingException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+		
 	}
 
 	private synchronized void stored() {
@@ -102,10 +125,11 @@ public class AnalizeMessageThread implements Runnable {
 	}
 
 	private synchronized void delete() {
+		System.out.println("......");
 
 		String fileId = messageArray[3];
+		System.out.println(fileId);
 		Peer.getMemory().removeChunks(fileId);
-
 		String localDirPath = "Peer" + Peer.getId() + "/STORED/" + fileId;
 		File localDir = new File(localDirPath);
 		FileInfo.deleteFolder(localDir);

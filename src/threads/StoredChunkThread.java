@@ -70,7 +70,6 @@ public class StoredChunkThread implements Runnable {
 		Peer.getMemory().savedOcurrences.put(this.chunkId, Peer.getMemory().savedOcurrences.get(this.chunkId) + 1);
 		Utils.savedOccurrencesFile();
 		Peer.getMemory().updateMemoryUsed(this.data.length);	
-		
 		createFileChunk();
 		
 		try {
@@ -82,13 +81,16 @@ public class StoredChunkThread implements Runnable {
 			e.printStackTrace();
 		}
 		}
-		else return;
+		else {
+			System.out.println("SAVED OCC"+Peer.getMemory().savedOcurrences.get(this.chunkId));
+		}
 		}
 
 	@Override
 	public void run() {
 	for (int i =0;i<Peer.getMemory().files.size();i++) {
-		if (Peer.getMemory().files.get(i).getFileId().equals(fileId))return;
+		if (Peer.getMemory().files.get(i).getFileId().equals(fileId))
+			return;
 	}
 		try {
 			Thread.sleep((long)(Math.random() * 1500));

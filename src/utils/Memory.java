@@ -7,6 +7,7 @@ import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javafx.util.Pair;
+import project.Peer;
 
 public class Memory {
 	public ArrayList<FileInfo> files = new ArrayList<FileInfo>(); //key: fileId-ChunkNo
@@ -14,8 +15,7 @@ public class Memory {
 	public HashMap<String,String> chunksToRestore= new HashMap<String,String>();
 	public ConcurrentHashMap<String,Integer> savedOcurrences = new ConcurrentHashMap<String,Integer>();
 	public HashMap<String, Pair<Integer,InetAddress>> confirmedChunks = new HashMap<String, Pair<Integer,InetAddress>>(); //chunkid < port, address>
-
-
+	public ArrayList<String> deletedFiles= new ArrayList<String>();
 	public int capacity = 999999999;
 	public int memoryUsed = 0;
 	public int availableCapacity= capacity - memoryUsed;
@@ -40,23 +40,34 @@ public class Memory {
 	}
 
 	public void removeChunks(String fileId) {
-
+		System.out.println("remove chunks 1");
 		for(int i=0; i<files.size();i++){
 			if (files.get(i).getFileId().equals(fileId))
 				files.remove(i);
 		}
-
+		System.out.println("remove chunks 2");
 		for (Entry<String, Integer> entry : savedOcurrences.entrySet()) {
 		   if(entry.getKey().split("-")[0].equals(fileId)){
 			   savedOcurrences.remove(entry.getKey());
+			   Utils.savedOccurrencesFile();
 		   }
 		}
-
+		System.out.println("remove chunks 3");
 		for (Entry<String, Chunk> entry : savedChunks.entrySet()) {
+			System.out.println(savedChunks.size());
+			System.out.println(entry.getKey().split("-")[0]+" "+fileId);
 			if(entry.getKey().split("-")[0].equals(fileId)){
+				System.out.println("abbc");
 				savedChunks.remove(entry.getKey());
+				System.out.println("abbc1");
+				System.out.println(deletedFiles.contains(fileId));
+				if (!deletedFiles.contains(fileId)) deletedFiles.add(fileId);
+				System.out.println("abbc3");
+				System.out.println(savedChunks.size());
 			}
+			System.out.println("fora if");	
 		 }
+		System.out.println("remove chunks 4");
 
 	}
 	
