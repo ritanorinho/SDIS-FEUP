@@ -50,7 +50,7 @@ public class Peer implements RMIInterface {
 		mdbListener = new MDBListener(mdbAddress, mdbPort);
 		mdrListener = new MDRListener(mdrAddress, mdrPort);
 		executor = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(250);
-		restoreMemory();
+		loadMemory();
 	
 	}
 
@@ -313,7 +313,7 @@ public class Peer implements RMIInterface {
 	public static MDRListener getMDRListener() { return mdrListener; }
 
 
-	public static void restoreMemory() {
+	public static void loadMemory() {
 		String storedDirectory = "Peer"+Peer.getId()+"/STORED/";
 		File storedFile = new File(storedDirectory);
 		if (!storedFile.exists()) {
