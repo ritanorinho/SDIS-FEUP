@@ -35,7 +35,7 @@ public class StoredChunkThread implements Runnable {
 	
 
 	private  void createFileChunk() {
-		String filename = "Peer"+Peer.getId() +"/"+"STORED"+"/"+this.fileId+"/"+this.chunkNo;
+		String filename = "Peer"+Peer.getId() +"/"+"STORED"+"/"+this.fileId+"/"+this.chunkNo+"-"+this.replicationDegree;
 		System.out.println(filename);
 		try {
 			
@@ -59,7 +59,7 @@ public class StoredChunkThread implements Runnable {
 
 	private  void saveChunk() {
 		
-			System.out.println(Peer.getMemory().savedOcurrences.get(this.chunkId)+" "+this.replicationDegree);
+			//System.out.println(Peer.getMemory().savedOcurrences.get(this.chunkId)+" "+this.replicationDegree);
 		if (version.equals("2.0") && Peer.getMemory().savedOcurrences.get(this.chunkId) >= this.replicationDegree)
 		{
 			System.out.println("new version");
@@ -70,7 +70,6 @@ public class StoredChunkThread implements Runnable {
 		if (!Peer.getMemory().savedChunks.containsKey(this.chunkId)) {
 		Peer.getMemory().savedChunks.put(this.chunkId, chunk);
 		Peer.getMemory().savedOcurrences.put(this.chunkId, Peer.getMemory().savedOcurrences.get(this.chunkId) + 1);
-		System.out.println( Peer.getMemory().savedOcurrences.get(this.chunkId)+" "+this.replicationDegree);
 		Peer.getMemory().updateMemoryUsed(this.data.length);	
 		
 		createFileChunk();
@@ -90,13 +89,17 @@ public class StoredChunkThread implements Runnable {
 
 	@Override
 	public void run() {
-	
+		for (int i =0;i<Peer.getMemory().files.size();i++) {
+			if (Peer.getMemory().files.get(i).getFileId().equals(fileId))
+				return;
+		}
 	try {
 		Thread.sleep((long)(Math.random() * 1500));
 	} catch (InterruptedException e) {
 		// TODO Auto-generated catch block
 		e.printStackTrace();
 	}finally{
+		
 		if (Peer.getId()==this.senderId) return;
 		if(Peer.getMemory().getAvailableCapacity()>=this.data.length) {	
 				saveChunk();					
@@ -105,7 +108,7 @@ public class StoredChunkThread implements Runnable {
 				System.out.println("There isn't enough disk space to save this chunk\n");
 				return;
 			}
+		}
 	}
-	}
-
 }
+		
