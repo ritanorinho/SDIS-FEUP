@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -13,7 +15,7 @@ public class RestoreFileThread implements Runnable {
 	private String filename;
 	private String fileId;
 	private int numberChunks;
-	private byte[] message;
+	private Socket socket;
 
 	public RestoreFileThread(String filename, String fileId, int numberChunks) {
 		this.filename = filename;
@@ -23,22 +25,36 @@ public class RestoreFileThread implements Runnable {
 	
 	@Override
 	public void run() {
-
 		
-		/*if(Peer.getProtocolVersion()!=1.0){
-			String chunkId;
-			for(int i=1; i<=numberChunks;i++){
-				chunkId = fileId + "-" + i;
-				System.out.println("for " + chunkId + "connect to port" + ": " + Peer.getMemory().confirmedChunks.get(chunkId));
-			}		
-		}
-		else {*/
+		if(Peer.getProtocolVersion()==1.0){
 			if(createFile())
 				System.out.println("Local file restored");
 			else System.out.println("Errror occured: Local file not created");
-		//}
+				
+		}
+		else {
+			getChunks();
+		}
 	}
 	
+	public void getChunks(){
+		String chunkId;
+
+		for(int i=1; i<=numberChunks;i++){
+			chunkId = fileId + "-" + i;
+			int port = Peer.getMemory().confirmedChunks.get(chunkId).getKey();
+			InetAddress InetAddress	= Peer.getMemory().confirmedChunks.get(chunkId).getValue();
+			System.out.println("for chunk nº" + i + " connect to port" + ": " + Peer.getMemory().confirmedChunks.get(chunkId));
+
+			try {
+				socket = new Socket(InetAddress, port);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+
+		}
+	}
+
 	public boolean createFile() {
 		String filename = "Peer"+Peer.getId() +"/"+"RESTORED"+"/"+this.filename;
 		File finalFile= new File(filename);

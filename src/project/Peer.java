@@ -184,10 +184,6 @@ public class Peer implements RMIInterface {
 			Peer.executor.schedule(new RestoreFileThread(fileInfo.getFilename(),fileInfo.getFileId(),chunks.size()),10,TimeUnit.SECONDS);		
 		}
 	}
-
-	public void askForChunks(String filename, String fileId, int chunkSize){
-		
-	}
 	
 
 	@Override
