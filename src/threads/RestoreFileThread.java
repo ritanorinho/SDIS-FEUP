@@ -28,7 +28,7 @@ public class RestoreFileThread implements Runnable {
 	@Override
 	public void run() {
 		
-		if(Peer.getProtocolVersion()==1.0){
+		if(Peer.getProtocolVersion()==2.0){
 			if(createFile())
 				System.out.println("Local file restored");
 			else

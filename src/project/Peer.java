@@ -336,7 +336,6 @@ public class Peer implements RMIInterface {
 						File file = new File(fileDirectory);
 						if (file.isDirectory()) {
 							String[] allChunks = file.list();
-							System.out.println(fileDirectory);
 							for (int j = 0;j<allChunks.length;j++) {
 								String chunkDirectory = fileDirectory+"/"+allChunks[j];
 								String[] splitChunkId = allChunks[j].trim().split("-");
@@ -351,9 +350,8 @@ public class Peer implements RMIInterface {
 								} catch (IOException e) {
 									e.printStackTrace();
 								}
-							
-								String chunkId = allFiles[i]+"-"+allChunks[j];
-								Chunk chunk = new Chunk(allFiles[i],chunkNo,content,(int) chunkFile.length(),chunkId,replicationDegree);
+								String chunkId = allFiles[i].trim()+"-"+chunkNo;
+								Chunk chunk = new Chunk(allFiles[i].trim(),chunkNo,content,(int) chunkFile.length(),chunkId.trim(),replicationDegree);
 								memory.savedChunks.put(chunkId, chunk);
 								System.out.println(chunkDirectory);
 								

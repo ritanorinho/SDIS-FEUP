@@ -145,6 +145,10 @@ public class AnalizeMessageThread implements Runnable {
 		Random random = new Random();
 		int delay = random.nextInt(401);
 		int senderId = Integer.parseInt(messageArray[2]);
+		for (String key : Peer.getMemory().savedChunks.keySet()) {
+			System.out.println(key + " "+chunkId);
+			System.out.println(key.equals(chunkId));
+		}
 		if (Peer.getId() != senderId && Peer.getMemory().savedChunks.containsKey(chunkId)) {
 			Peer.getExecutor().schedule(new GetchunkThread(messageArray), delay, TimeUnit.MILLISECONDS);
 		}
