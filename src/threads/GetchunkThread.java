@@ -32,7 +32,7 @@ public class GetchunkThread implements Runnable {
 			return;
 		}
 		
-		if(Peer.getProtocolVersion()==1.0)
+		if(Peer.getProtocolVersion()==2.0)
 			sendChunkMulticast();
 		
 		else{
@@ -41,7 +41,7 @@ public class GetchunkThread implements Runnable {
 				//confirmChunk();
 
 		if (Peer.getId() != senderId) {
-			if(Peer.getProtocolVersion()==1.0)
+			if(Peer.getProtocolVersion()==2.0)
 				sendChunkMulticast();
 			
 			else{
