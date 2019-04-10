@@ -17,7 +17,6 @@ public class Memory {
 	public ConcurrentHashMap<String,Integer> savedOcurrences = new ConcurrentHashMap<String,Integer>();
 	public HashMap<String, Pair<Integer,InetAddress>> confirmedChunks = new HashMap<String, Pair<Integer,InetAddress>>(); //chunkid < port, address>
 
-
 	
 	public int capacity = 999999999;
 	public int memoryUsed = 0;

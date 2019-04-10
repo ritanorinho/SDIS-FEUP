@@ -20,20 +20,24 @@ public class AnalizeMessageThread implements Runnable {
 	InetAddress InetAddress;
 
 	public AnalizeMessageThread(byte[] message) {
-
 		this.messageBytes = message;
 		this.message = new String(this.messageBytes, 0, this.messageBytes.length);
 		this.messageArray = this.message.trim().split("\\s+");
-		this.chunkId = this.messageArray[3] + "-" + this.messageArray[4];
+
+		if(messageArray.length>4)
+			this.chunkId = this.messageArray[3] + "-" + this.messageArray[4];
+		else this.chunkId = this.messageArray[3];
 	}
 
 	public AnalizeMessageThread(byte[] message, InetAddress adress) {
-
 		this.messageBytes = message;
 		this.message = new String(this.messageBytes, 0, this.messageBytes.length);
 		this.messageArray = this.message.trim().split("\\s+");
-		this.chunkId = this.messageArray[3] + "-" + this.messageArray[4];
+		if(messageArray.length>4)
+			this.chunkId = this.messageArray[3] + "-" + this.messageArray[4];
+		else this.chunkId = this.messageArray[3];
 		this.InetAddress = adress;
+
 	}
 
 	@Override
@@ -57,8 +61,10 @@ public class AnalizeMessageThread implements Runnable {
 			break;
 		case "REMOVED":
 			removed();
+			break;
 		case "CONFIRMCHUNK":
 			confirmChunk();
+			break;
 		default:
 		}
 	}
@@ -95,7 +101,6 @@ public class AnalizeMessageThread implements Runnable {
 	private synchronized void delete() {
 
 		String fileId = messageArray[3];
-
 		Peer.getMemory().removeChunks(fileId);
 
 		String localDirPath = "Peer" + Peer.getId() + "/STORED/" + fileId;
