@@ -11,6 +11,7 @@ import java.util.concurrent.TimeUnit;
 import javafx.util.Pair;
 import project.Peer;
 import utils.FileInfo;
+import utils.Utils;
 
 public class AnalizeMessageThread implements Runnable {
 	String message;
@@ -74,6 +75,7 @@ public class AnalizeMessageThread implements Runnable {
 		int senderId = Integer.parseInt(messageArray[2]);
 		if (Peer.getMemory().savedOcurrences.containsKey(chunkId) && Peer.getId() != senderId) {
 			Peer.getMemory().savedOcurrences.put(chunkId, Peer.getMemory().savedOcurrences.get(chunkId) + 1);
+			Utils.savedOccurrencesFile();
 		}
 	}
 
@@ -87,6 +89,7 @@ public class AnalizeMessageThread implements Runnable {
 		if (Peer.getId() != id && !Peer.getMemory().savedChunks.containsKey(chunkId)) {
 			if (!Peer.getMemory().savedOcurrences.containsKey(chunkId)) {
 				Peer.getMemory().savedOcurrences.put(chunkId, 0);
+				Utils.savedOccurrencesFile();
 			}
 			String storedMessage = messageArray[1] + " " + messageArray[2] + " " + messageArray[3] + " "
 					+ messageArray[4];
@@ -153,6 +156,7 @@ public class AnalizeMessageThread implements Runnable {
 		int senderId = Integer.parseInt(this.messageArray[2].trim());
 		if (senderId != Peer.getId()) {
 			Peer.getMemory().savedOcurrences.put(chunkId, Peer.getMemory().savedOcurrences.get(chunkId) - 1);
+			Utils.savedOccurrencesFile();
 
 			Random random = new Random();
 			int delay = random.nextInt(401);

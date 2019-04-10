@@ -1,8 +1,12 @@
 package utils;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
+
+import project.Peer;
 
 public class Utils {
 	
@@ -54,6 +58,31 @@ public class Utils {
 			e.printStackTrace();
 		}
 		return byteHeader;
+		
+	}
+	
+	public static void savedOccurrencesFile() {
+		try {
+		String filename = "Peer"+Peer.getId() +"/"+"SAVED"+"/"+"savedOccurrences.txt";
+		File savedOcurrencesfile= new File(filename);
+		if (!savedOcurrencesfile.exists()) {
+			savedOcurrencesfile.getParentFile().mkdirs();
+		savedOcurrencesfile.createNewFile();
+		}
+		FileOutputStream fos = new FileOutputStream(savedOcurrencesfile);
+		for(String key: Peer.getMemory().savedOcurrences.keySet()) {
+		
+				
+				String content = key + " "+Peer.getMemory().savedOcurrences.get(key)+"\n";
+				byte[] byteContent= content.getBytes();
+				fos.write(byteContent);
+			
+		}
+		fos.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 	}
 

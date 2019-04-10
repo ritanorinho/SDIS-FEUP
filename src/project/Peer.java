@@ -3,6 +3,7 @@ package project;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
@@ -130,6 +131,7 @@ public class Peer implements RMIInterface {
 
 			if (!memory.savedOcurrences.containsKey(chunkId)) {
 				memory.savedOcurrences.put(chunkId, 0);
+				Utils.savedOccurrencesFile();
 			}
 
 			byte[] body = chunks.get(i).getData();
