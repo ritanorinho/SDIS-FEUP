@@ -109,6 +109,8 @@ public class AnalizeMessageThread implements Runnable {
 		String localDirPath = "Peer" + Peer.getId() + "/STORED/" + fileId;
 		File localDir = new File(localDirPath);
 		FileInfo.deleteFolder(localDir);
+
+		System.out.println("Deleted chunks of file: " + fileId);
 	}
 
 	private void chunk() {
