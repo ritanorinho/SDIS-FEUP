@@ -5,12 +5,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
-import java.util.Arrays;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import javafx.util.Pair;
 import project.Peer;
+import utils.Chunk;
 import utils.FileInfo;
 import utils.Utils;
 
@@ -20,13 +20,14 @@ public class AnalizeMessageThread implements Runnable {
 	byte[] messageBytes;
 	String chunkId;
 	InetAddress InetAddress;
+	int senderId;
 
 	public AnalizeMessageThread(byte[] message) {
 		this.messageBytes = message;
 		this.message = new String(this.messageBytes, 0, this.messageBytes.length);
-		this.messageArray = this.message.trim().split("\\s+");
+		this.messageArray = Utils.byteArrayToStringArray(message);
 
-		if(messageArray.length>4)
+		if (messageArray.length > 4)
 			this.chunkId = this.messageArray[3] + "-" + this.messageArray[4];
 		else if (messageArray.length >= 3)this.chunkId = this.messageArray[3];
 	}
@@ -36,7 +37,7 @@ public class AnalizeMessageThread implements Runnable {
 		this.messageBytes = message;
 		this.message = new String(this.messageBytes, 0, this.messageBytes.length);
 		this.messageArray = this.message.trim().split("\\s+");
-		if(messageArray.length>4)
+		if (messageArray.length > 4)
 			this.chunkId = this.messageArray[3] + "-" + this.messageArray[4];
 		else if (messageArray.length > 3) this.chunkId = this.messageArray[3];
 		this.InetAddress = adress;
@@ -95,7 +96,6 @@ public class AnalizeMessageThread implements Runnable {
 
 	private synchronized void stored() {
 		String chunkId = messageArray[3] + "-" + messageArray[4];
-		int senderId = Integer.parseInt(messageArray[2]);
 		if (Peer.getMemory().savedOcurrences.containsKey(chunkId) && Peer.getId() != senderId) {
 			Peer.getMemory().savedOcurrences.put(chunkId, Peer.getMemory().savedOcurrences.get(chunkId) + 1);
 			Utils.savedOccurrencesFile();
@@ -104,7 +104,6 @@ public class AnalizeMessageThread implements Runnable {
 
 	private synchronized void putchunk() {
 
-		System.out.println("SENDER ID: " + messageArray[2] + " PEER ID: " + Peer.getId());
 		Integer id = Integer.parseInt(messageArray[2]);
 		Random random = new Random();
 		int delay = random.nextInt(401);
@@ -116,8 +115,8 @@ public class AnalizeMessageThread implements Runnable {
 			}
 			String storedMessage = messageArray[1] + " " + messageArray[2] + " " + messageArray[3] + " "
 					+ messageArray[4];
-			System.out.println(storedMessage);
-			byte[] data = getBody();
+			System.out.println("SENDER ID: " + messageArray[2] + " PEER ID: " + Peer.getId() + "\n" + storedMessage);
+			byte[] data = Utils.getBody(this.messageBytes);
 			Peer.getExecutor().schedule(
 					new StoredChunkThread(storedMessage.getBytes(), data, Integer.parseInt(messageArray[5])), delay,
 					TimeUnit.MILLISECONDS);
@@ -139,27 +138,10 @@ public class AnalizeMessageThread implements Runnable {
 
 	private void chunk() {
 
-		int senderId = Integer.parseInt(messageArray[2]);
-
 		if (Peer.getId() == senderId) {
 
-			String chunkPath = "Peer" + Peer.getId() + "/" + "CHUNK" + "/" + messageArray[3] + "/" + messageArray[4];
-			File chunkFile = new File(chunkPath);
-			try {
-				if (!chunkFile.exists()) {
-					chunkFile.getParentFile().mkdirs();
-					chunkFile.createNewFile();
-				}
-				byte[] content = getBody();
-				FileOutputStream fos;
-				fos = new FileOutputStream(chunkFile);
-				fos.write(content);
-				fos.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			System.out.println("----0"+Peer.getMemory().chunksToRestore.size());
-			Peer.getMemory().chunksToRestore.put(chunkId, messageArray[3]);
+			if (Chunk.processChunk(this.messageBytes, Peer.getId()))
+				Peer.getMemory().chunksToRestore.put(chunkId, messageArray[3]);
 		}
 
 	}
@@ -170,11 +152,7 @@ public class AnalizeMessageThread implements Runnable {
 
 		Random random = new Random();
 		int delay = random.nextInt(401);
-		int senderId = Integer.parseInt(messageArray[2]);
-		for (String key : Peer.getMemory().savedChunks.keySet()) {
-			System.out.println(key + " "+chunkId);
-			System.out.println(key.equals(chunkId));
-		}
+
 		if (Peer.getId() != senderId && Peer.getMemory().savedChunks.containsKey(chunkId)) {
 			Peer.getExecutor().schedule(new GetchunkThread(messageArray), delay, TimeUnit.MILLISECONDS);
 		}
@@ -183,7 +161,6 @@ public class AnalizeMessageThread implements Runnable {
 
 	private void removed() {
 
-		int senderId = Integer.parseInt(this.messageArray[2].trim());
 		if (senderId != Peer.getId()) {
 			Peer.getMemory().savedOcurrences.put(chunkId, Peer.getMemory().savedOcurrences.get(chunkId) - 1);
 			Utils.savedOccurrencesFile();
@@ -196,26 +173,14 @@ public class AnalizeMessageThread implements Runnable {
 	}
 
 	private void confirmChunk() {
-		int senderId = Integer.parseInt(this.messageArray[2].trim());
+
 		String chunkid = messageArray[3].trim();
 		int port = Integer.parseInt(this.messageArray[4].trim());
 		if (senderId != Peer.getId() && !Peer.getMemory().confirmedChunks.containsKey(chunkid)) {
-		
-			Peer.getMemory().confirmedChunks.put(chunkid, new Pair<>(port,this.InetAddress));
-		}
-	
-}
 
-	private byte[] getBody() {
-		int i;
-		for (i =0; i< this.messageBytes.length-4;i++) {
-			if (this.messageBytes[i] == 0xD && this.messageBytes[i+1]== 0xA && this.messageBytes[i+2]== 0xD && this.messageBytes[i+3]== 0xA) {
-				break;
-			}
+			Peer.getMemory().confirmedChunks.put(chunkid, new Pair<>(port, this.InetAddress));
 		}
-		
-		byte[] body = Arrays.copyOfRange(this.messageBytes,i+4,this.messageBytes.length);		
-		return body;
+
 	}
 
 }
