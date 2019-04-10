@@ -76,7 +76,8 @@ public class Peer implements RMIInterface {
 		executor.execute(mcListener);
 		executor.execute(mdbListener);
 		executor.execute(mdrListener);
-		alive();
+		if (protocolVersion == 2.0) //delete enhancement
+			alive();
 	}
 
 	private static void validateArgs(String[] args)
@@ -396,6 +397,7 @@ public class Peer implements RMIInterface {
 							String chunkId = allFiles[i].trim() + "-" + chunkNo;
 							Chunk chunk = new Chunk(allFiles[i].trim(), chunkNo, content, (int) chunkFile.length(),
 									chunkId.trim(), replicationDegree);
+							if(!memory.savedChunks.containsKey(chunkId))
 							memory.savedChunks.put(chunkId, chunk);
 							System.out.println(chunkDirectory);
 
@@ -425,6 +427,7 @@ public class Peer implements RMIInterface {
 					 String chunkId = splitLine[0].trim();
 					 int occurrences= Integer.parseInt(splitLine[1]);
 					 System.out.println("----"+occurrences);
+					 if(!memory.savedOcurrences.containsKey(chunkId))
 					memory.savedOcurrences.put(chunkId, occurrences);
 				}
 			} catch (IOException e) {

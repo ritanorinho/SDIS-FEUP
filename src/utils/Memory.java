@@ -48,20 +48,19 @@ public class Memory {
 		System.out.println("remove chunks 2");
 		for (Entry<String, Integer> entry : savedOcurrences.entrySet()) {
 		   if(entry.getKey().split("-")[0].equals(fileId)){
+			   if (!deletedFiles.contains(fileId)) deletedFiles.add(fileId);
 			   savedOcurrences.remove(entry.getKey());
 			   Utils.savedOccurrencesFile();
 		   }
 		}
 		System.out.println("remove chunks 3");
-		for (Entry<String, Chunk> entry : savedChunks.entrySet()) {
+		for (String key: savedChunks.keySet()) {
 			System.out.println(savedChunks.size());
-			System.out.println(entry.getKey().split("-")[0]+" "+fileId);
-			if(entry.getKey().split("-")[0].equals(fileId)){
+			if(key.split("-")[0].equals(fileId)){
 				System.out.println("abbc");
-				savedChunks.remove(entry.getKey());
+				System.out.println("---"+key);
+				savedChunks.remove(key);
 				System.out.println("abbc1");
-				System.out.println(deletedFiles.contains(fileId));
-				if (!deletedFiles.contains(fileId)) deletedFiles.add(fileId);
 				System.out.println("abbc3");
 				System.out.println(savedChunks.size());
 			}

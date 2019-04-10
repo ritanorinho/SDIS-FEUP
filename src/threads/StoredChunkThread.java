@@ -82,7 +82,7 @@ public class StoredChunkThread implements Runnable {
 		}
 		}
 		else {
-			System.out.println("SAVED OCC"+Peer.getMemory().savedOcurrences.get(this.chunkId));
+		return;
 		}
 		}
 
