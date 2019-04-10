@@ -27,32 +27,30 @@ public class GetchunkThread implements Runnable {
 	@Override
 	public void run() {
 
+		System.out.println("Running chunk thread");
+
+
 		if (!Peer.getMemory().savedChunks.containsKey(chunkId)) {
 			System.out.println("This peer doesn't contain this chunk: "+chunkId);
 			return;
 		}
 		
-		if(Peer.getProtocolVersion()==1.0)
-			sendChunkMulticast();
-		
-		else{
-			int senderId = Integer.parseInt(messageArray[2]);
-			if (Peer.getId() != senderId) 
-				//confirmChunk();
+		int senderId = Integer.parseInt(messageArray[2]);
 
 		if (Peer.getId() != senderId) {
+			byte[] message = chunkMessage();
+
 			if(Peer.getProtocolVersion()==1.0)
-				sendChunkMulticast();
+				sendChunkMulticast(message);
 			
 			else{
 				int filedid = Integer.parseInt(chunkId.split("-")[1]);
 				int port = Peer.getTCPPort() + filedid;
 
 				confirmChunk(port);
-				(new TCPRestoreServer(port, chunkId)).start();
+				(new TCPRestoreServer(port, chunkId, message)).start();
 			}
 		}
-	}
 	}
 
 	public void confirmChunk(int port){
@@ -68,11 +66,7 @@ public class GetchunkThread implements Runnable {
 	}
 
 
-	public void sendChunkMulticast(){
-		String channel ="mdr";
-		Random random = new Random();
-		int delay = random.nextInt(401);
-		int senderId = Integer.parseInt(messageArray[2]);
+	public byte[] chunkMessage(){
 
 		byte[] chunkData = Peer.getMemory().savedChunks.get(chunkId).getData();
 	
@@ -83,6 +77,15 @@ public class GetchunkThread implements Runnable {
 
 		System.arraycopy(data, 0, message, 0, data.length);
 		System.arraycopy(chunkData, 0, message, data.length, chunkData.length);
+
+		return message;
+	}
+
+	public void sendChunkMulticast(byte[] message){
+		String channel ="mdr";
+		Random random = new Random();
+		int delay = random.nextInt(401);
+		int senderId = Integer.parseInt(messageArray[2]);
 		
 		if (Peer.getId() != senderId ){	
 			Peer.getExecutor().schedule(new WorkerThread(message,channel), delay,

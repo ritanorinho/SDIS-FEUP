@@ -20,11 +20,12 @@ public class TCPRestoreServer extends Thread {
     private DataOutputStream dataOutputStream;
     private InputStream inputStream;
     private DataInputStream dataInputStream;
+    private byte[] message;
 
-    TCPRestoreServer(int port, String chunkid) {
+    TCPRestoreServer(int port, String chunkid, byte[] message) {
         this.port = port;
         this.chunkid = chunkid;
-        System.out.println(port);
+        this.message = message;
     }
 
     @Override
@@ -32,14 +33,21 @@ public class TCPRestoreServer extends Thread {
 
         try {
             this.socket = new ServerSocket(port);
-            this.socket.setSoTimeout(20000);
+            this.socket.setSoTimeout(10000);
 
-            client = socket.accept();
+            client = socket.accept(); 
+
+            System.out.println("accepted");
+
 
             outputStream = client.getOutputStream();
             dataOutputStream = new DataOutputStream(outputStream);
+
+            dataOutputStream.writeInt(message.length);
             
-            this.socket.close();
+            System.out.println("sent");
+
+            //this.socket.close();
             
         } catch (IOException e) {
             System.out.println("Time out on " + Peer.getId() + ", port " + this.port);
