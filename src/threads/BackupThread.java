@@ -51,7 +51,8 @@ public class BackupThread implements Runnable {
 				System.out.println("PUTCHUNK THREAD: reached the maximum number of retransmissions per chunk");
 			}
 		} else {
-			System.out.println("REPLICATION DEGREE REACHED: " + replicationState);
+			String noChunk= hashName.split("-")[1];
+			System.out.println("CHUNK NO " + noChunk+ ": REPLICATION DEGREE ACHIEVED: " + replicationState + "\n");
 		}
 	}
 

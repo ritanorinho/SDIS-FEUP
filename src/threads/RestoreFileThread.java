@@ -71,6 +71,8 @@ public class RestoreFileThread implements Runnable {
 			}
 
 		}
+
+		System.out.println();
 	}
 
 	public void markChunk(String chunkId, byte[] received) {

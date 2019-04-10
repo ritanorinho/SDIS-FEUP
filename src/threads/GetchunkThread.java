@@ -43,23 +43,24 @@ public class GetchunkThread implements Runnable {
 				int filedid = Integer.parseInt(chunkId.split("-")[1]);
 				int port = Peer.getTCPPort() + filedid;
 
-				sendConfirmChunk(port);
-				(new TCPRestoreServer(port, chunkId, message)).start();
+				String confMsg = sendConfirmChunk(port);
+				(new TCPRestoreServer(port, chunkId, message, confMsg)).start();
 			}
 		}
 	}
 
-	public void sendConfirmChunk(int port){
+	public String sendConfirmChunk(int port){
+		String storedMessage = null;
+
 		try {
-			String storedMessage = "CONFIRMCHUNK "+Peer.getProtocolVersion()+" "+Peer.getId()+" "+ chunkId +" "+port+"\n\r\n\r";
-			System.out.println("SENDER ID: " + messageArray[2] + " PEER ID: " + Peer.getId()
-								+ "\n" + storedMessage);
+			storedMessage = "CONFIRMCHUNK "+Peer.getProtocolVersion()+" "+Peer.getId()+" "+ chunkId +" "+port+"\n\r\n\r";
 			Peer.getMCListener().message(storedMessage.getBytes("US-ASCII"));
 
 		} catch (IOException e) {
 			e.printStackTrace();
-			return;
 		}
+
+		return storedMessage;
 	}
 
 
