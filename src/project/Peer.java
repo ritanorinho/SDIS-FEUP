@@ -343,7 +343,6 @@ public class Peer implements RMIInterface {
 									in = new FileInputStream(chunkFile);
 									in.read(content);
 								} catch (IOException e) {
-									// TODO Auto-generated catch block
 									e.printStackTrace();
 								}
 							
