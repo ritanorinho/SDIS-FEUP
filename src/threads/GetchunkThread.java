@@ -43,9 +43,7 @@ public class GetchunkThread implements Runnable {
 				int port = Peer.getTCPPort() + filedid;
 
 				confirmChunk(port);
-
-				System.out.println("Strting server for " + chunkId);
-				(new TCPRestoreServer(Peer.getTCPPort(), chunkId)).start();
+				(new TCPRestoreServer(port, chunkId)).start();
 			}
 		}
 	}
@@ -83,28 +81,5 @@ public class GetchunkThread implements Runnable {
 			Peer.getExecutor().schedule(new WorkerThread(message,channel), delay,
 					TimeUnit.MILLISECONDS);
 		}
-	}
-
-	public void sendByTCP(byte[] message) {
-		OutputStream os;
-		DataOutputStream dos;
-
-		try {
-			this.socket = new Socket(InetAddress, TCPSocketPort);
-
-			os = socket.getOutputStream();
-			dos = new DataOutputStream(os);
-			
-			dos.writeInt(message.length);
-			dos.write(message, 0, message.length);
-
-			this.socket.close();
-
-			System.out.println("sent by tcp");
-
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		
 	}
 }

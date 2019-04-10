@@ -90,5 +90,6 @@ public class FileInfo {
 
 	public String getFilePath() { return this.filePath; }
 
-	public int getReplicationDegree() { return this.replicationDegree; 
+	public int getReplicationDegree() { return this.replicationDegree; }
+
 }
