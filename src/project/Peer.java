@@ -3,14 +3,10 @@ package project;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.rmi.AlreadyBoundException;
 import java.rmi.RemoteException;
@@ -45,8 +41,6 @@ public class Peer implements RMIInterface {
 	private static ScheduledThreadPoolExecutor executor;
 	private static Memory memory = new Memory();
 	private static int TCPSocketPort;
-	private static ServerSocket socket;
-	private static Socket client;
 
 	public Peer(InetAddress mcAddress, Integer mcPort, InetAddress mdbAddress, Integer mdbPort, InetAddress mdrAddress,
 			Integer mdrPort) throws IOException {
@@ -54,8 +48,7 @@ public class Peer implements RMIInterface {
 		mdbListener = new MDBListener(mdbAddress, mdbPort);
 		mdrListener = new MDRListener(mdrAddress, mdrPort);
 		executor = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(250);
-		loadMemory();
-		loadOccurrences();
+		
 
 	}
 
@@ -76,6 +69,8 @@ public class Peer implements RMIInterface {
 		executor.execute(mcListener);
 		executor.execute(mdbListener);
 		executor.execute(mdrListener);
+		loadMemory();
+		loadOccurrences();
 		if (protocolVersion == 2.0) //delete enhancement
 			alive();
 	}
@@ -121,7 +116,7 @@ public class Peer implements RMIInterface {
 	public void backup(String filename, int repDegree) throws RemoteException, InterruptedException {
 		File file = new File(filename);
 
-		String fileId = Utils.createFileId(file);
+		
 		FileInfo fileInfo = new FileInfo(file, filename, repDegree);
 		ArrayList<Chunk> chunks = fileInfo.getChunks();
 		String chunkId;
@@ -257,10 +252,8 @@ public class Peer implements RMIInterface {
 					String[] splitKey = key.trim().split("-");
 					String filePath = "Peer" + Peer.getId() + "/" + "STORED" + "/" + splitKey[0] + "/" + splitKey[1]
 							+ "-" + memory.savedChunks.get(key).getReplicationDegree();
-					System.out.println("filePath " + filePath);
 					File fileToDelete = new File(filePath);
-					boolean a=fileToDelete.delete();
-					System.out.println("delete "+a);
+					fileToDelete.delete();
 					iterator.remove();	
 					Peer.getMemory().savedOcurrences.put(key,Peer.getMemory().savedOcurrences.get(key)-1);
 					Utils.savedOccurrencesFile();
@@ -269,7 +262,7 @@ public class Peer implements RMIInterface {
 
 				Peer.getMemory().capacity = space;
 				Peer.getMemory().memoryUsed = Peer.getMemory().getUsedMemory();
-				System.out.println("CAPACITY" + Peer.getMemory().capacity + " " + Peer.getMemory().memoryUsed);
+				System.out.println("CAPACITY " + Peer.getMemory().capacity + " " + Peer.getMemory().memoryUsed);
 			}
 		} else {
 			System.out.println("\nPeer " + Peer.getId() + " doesn't have space to free!");
@@ -391,6 +384,7 @@ public class Peer implements RMIInterface {
 							try {
 								in = new FileInputStream(chunkFile);
 								in.read(content);
+								in.close();
 							} catch (IOException e) {
 								e.printStackTrace();
 							}
@@ -399,15 +393,12 @@ public class Peer implements RMIInterface {
 									chunkId.trim(), replicationDegree);
 							if(!memory.savedChunks.containsKey(chunkId))
 							memory.savedChunks.put(chunkId, chunk);
-							System.out.println(chunkDirectory);
-
 						}
 					}
 
 				}
 			}
 		}
-		System.out.println();
 	}
 
 	public static void loadOccurrences() {
@@ -426,10 +417,10 @@ public class Peer implements RMIInterface {
 					 String[] splitLine = line.trim().split(" ");
 					 String chunkId = splitLine[0].trim();
 					 int occurrences= Integer.parseInt(splitLine[1]);
-					 System.out.println("----"+occurrences);
 					 if(!memory.savedOcurrences.containsKey(chunkId))
 					memory.savedOcurrences.put(chunkId, occurrences);
 				}
+				 buf.close();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -453,7 +444,6 @@ public class Peer implements RMIInterface {
 
 		List<String> returnList = chunksToSort;
 		Collections.reverse(returnList);
-		System.out.println(returnList);
 		return returnList;
 	}
 }

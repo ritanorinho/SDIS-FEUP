@@ -1,8 +1,6 @@
 package threads;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.util.Random;
@@ -29,7 +27,7 @@ public class AnalizeMessageThread implements Runnable {
 
 		if (messageArray.length > 4)
 			this.chunkId = this.messageArray[3] + "-" + this.messageArray[4];
-		else if (messageArray.length >= 3)this.chunkId = this.messageArray[3];
+		else if (messageArray.length > 3)this.chunkId = this.messageArray[3];
 	}
 
 	public AnalizeMessageThread(byte[] message, InetAddress adress) {
@@ -124,13 +122,13 @@ public class AnalizeMessageThread implements Runnable {
 	}
 
 	private synchronized void delete() {
-		System.out.println("......");
 
 		String fileId = messageArray[3];
 		System.out.println(fileId);
 		Peer.getMemory().removeChunks(fileId);
 		String localDirPath = "Peer" + Peer.getId() + "/STORED/" + fileId;
 		File localDir = new File(localDirPath);
+		System.out.println(localDirPath);
 		FileInfo.deleteFolder(localDir);
 
 		System.out.println("Deleted chunks of file: " + fileId);
@@ -138,11 +136,10 @@ public class AnalizeMessageThread implements Runnable {
 
 	private void chunk() {
 
-		if (Peer.getId() == senderId) {
-
+		
+			System.out.println(Peer.getId()+" "+senderId);
 			if (Chunk.processChunk(this.messageBytes, Peer.getId()))
 				Peer.getMemory().chunksToRestore.put(chunkId, messageArray[3]);
-		}
 
 	}
 

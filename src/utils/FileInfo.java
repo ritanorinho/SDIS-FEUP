@@ -77,7 +77,9 @@ public class FileInfo {
 				}
 			}
 		}
+		
 		folder.delete();
+		
 	}
 	
 	public ArrayList<Chunk> getChunks(){ return this.chunks; }

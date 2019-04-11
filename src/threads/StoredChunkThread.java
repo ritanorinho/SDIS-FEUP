@@ -54,14 +54,9 @@ public class StoredChunkThread implements Runnable {
 	}
 
 	private  void saveChunk() {
-		
-		System.out.println(Peer.getMemory().savedOcurrences.get(this.chunkId)+" "+this.replicationDegree);
 
-		if (version.equals("2.0") && Peer.getMemory().savedOcurrences.get(this.chunkId) >= this.replicationDegree) {
-			System.out.println("new version");
-			System.out.println("Replication degree rechead");
-			return;
-		}
+		
+
 
 		Chunk chunk = new Chunk(this.fileId,Integer.parseInt(this.chunkNo),this.data,this.data.length,this.chunkId,this.replicationDegree);
 
@@ -74,7 +69,7 @@ public class StoredChunkThread implements Runnable {
 		
 		try {
 			String storedMessage = "STORED "+this.version+" "+Peer.getId()+" "+this.fileId+" "+this.chunkNo+"\n\r\n\r";
-			System.out.println(storedMessage);
+			System.out.println("\nSENT "+storedMessage);
 			Peer.getMCListener().message(storedMessage.getBytes("US-ASCII"));
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -92,11 +87,20 @@ public class StoredChunkThread implements Runnable {
 		if (Peer.getMemory().files.get(i).getFileId().equals(fileId))
 			return;
 	}
+	if (version.equals("2.0")) {
+		System.out.println("version");
 		try {
 			Thread.sleep((long)(Math.random() * 1500));
 		} catch (InterruptedException e) {
 			e.printStackTrace();
-		}finally{
+		}
+		if(Peer.getMemory().savedOcurrences.get(this.chunkId) >= this.replicationDegree) {
+		System.out.println("new version");
+		System.out.println("Replication degree rechead");
+		return;
+		}
+	
+	}
 			if (Peer.getId()==this.senderId) return;
 			if(Peer.getMemory().getAvailableCapacity()>=this.data.length) {	
 					saveChunk();					
@@ -107,6 +111,4 @@ public class StoredChunkThread implements Runnable {
 				}
 		}
 	}
-
-}
 		

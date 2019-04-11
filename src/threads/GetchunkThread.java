@@ -1,22 +1,16 @@
 package threads;
 
-import java.io.DataOutputStream;
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.Socket;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
-import java.io.OutputStream;
 
 import project.Peer;
 
 public class GetchunkThread implements Runnable {
 	private String[] messageArray;
 	private String chunkId;
-	private InetAddress InetAddress;
-	private Socket socket;
-	private int TCPSocketPort;
+
 
 	public GetchunkThread(String[] msg) {
 		this.messageArray = msg;
@@ -67,6 +61,7 @@ public class GetchunkThread implements Runnable {
 	public byte[] chunkMessage(){
 
 		byte[] chunkData = Peer.getMemory().savedChunks.get(chunkId).getData();
+		System.out.println("size: "+Peer.getMemory().savedChunks.size());
 	
 		String restoredChunk = "CHUNK " + messageArray[1] + " " + messageArray[2] + " " + messageArray[3] + " "
 				+ messageArray[4] + "\r\n\r\n";
@@ -84,6 +79,7 @@ public class GetchunkThread implements Runnable {
 		Random random = new Random();
 		int delay = random.nextInt(401);
 		int senderId = Integer.parseInt(messageArray[2]);
+		System.out.println("sender id "+senderId);
 		
 		if (Peer.getId() != senderId ){	
 			Peer.getExecutor().schedule(new WorkerThread(message,channel), delay,

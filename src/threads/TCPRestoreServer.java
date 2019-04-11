@@ -6,7 +6,6 @@ import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-import project.Peer;
 
 public class TCPRestoreServer extends Thread {
 
