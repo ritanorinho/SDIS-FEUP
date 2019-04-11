@@ -177,7 +177,7 @@ public class Peer implements RMIInterface {
 			}
 			for (int i = 0; i < chunks.size(); i++) {
 				header = "GETCHUNK " + protocolVersion + " " + serverID + " " + fileInfo.getFileId() + " "
-						+ chunks.get(i).getChunkNo();
+						+ chunks.get(i).getChunkNo() + " ";
 				header += "\r\n\r\n";
 
 				byte[] message = header.getBytes();
@@ -201,7 +201,7 @@ public class Peer implements RMIInterface {
 			return;
 		}
 
-		String header = "DELETE " + protocolVersion + " " + serverID + " " + fileInfo.getFileId() + "\r\n\r\n";
+		String header = "DELETE " + protocolVersion + " " + serverID + " " + fileInfo.getFileId() + " " + "\r\n\r\n";
 		System.out.println("SENT: " + header);
 
 		byte[] data;
@@ -238,7 +238,7 @@ public class Peer implements RMIInterface {
 				if (currentSpaceToFree > 0) {
 					currentSpaceToFree -= memory.savedChunks.get(key).getChunkSize();
 					String header = "REMOVED 1.0 " + serverID + " " + memory.savedChunks.get(key).getFileId() + " "
-							+ memory.savedChunks.get(key).getChunkNo() + "\r\n\r\n";
+							+ memory.savedChunks.get(key).getChunkNo() + " " + "\r\n\r\n";
 					System.out.print(header);
 
 					try {
@@ -313,15 +313,11 @@ public class Peer implements RMIInterface {
 			executor.execute(new WorkerThread(byteMessage,channel));
 			
 		} catch (UnsupportedEncodingException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		// TODO Auto-generated method stub
 		
 	}
 
-
-	//gets
 
 	// gets
 

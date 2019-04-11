@@ -47,7 +47,7 @@ public class GetchunkThread implements Runnable {
 		String storedMessage = null;
 
 		try {
-			storedMessage = "CONFIRMCHUNK "+Peer.getProtocolVersion()+" "+Peer.getId()+" "+ chunkId +" "+port+"\n\r\n\r";
+			storedMessage = "CONFIRMCHUNK "+Peer.getProtocolVersion()+" "+Peer.getId()+" "+ chunkId +" "+port+"\r\n\r\n";
 			Peer.getMCListener().message(storedMessage.getBytes("US-ASCII"));
 
 		} catch (IOException e) {
@@ -64,7 +64,7 @@ public class GetchunkThread implements Runnable {
 		System.out.println("size: "+Peer.getMemory().savedChunks.size());
 	
 		String restoredChunk = "CHUNK " + messageArray[1] + " " + messageArray[2] + " " + messageArray[3] + " "
-				+ messageArray[4] + "\r\n\r\n";
+				+ messageArray[4] + " " + "\r\n\r\n";
 		byte[] data = restoredChunk.getBytes();
 		byte[] message = new byte[data.length + chunkData.length];
 

@@ -48,7 +48,7 @@ public class Utils {
 		byte[] byteHeader=null;;
 		try {
 			String header = type+" " + protocolVersion + " " + serverID + " " + fileId + " "
-					+ chunkNo + " " + repDegree + "\r\n\r\n";
+					+ chunkNo + " " + repDegree + " " + "\r\n\r\n";
 			
 			byteHeader = header.getBytes("US-ASCII");
 			
@@ -78,7 +78,6 @@ public class Utils {
 		}
 		fos.close();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
