@@ -134,7 +134,6 @@ public class AnalizeMessageThread implements Runnable {
 	}
 
 	private void chunk() {
-
 		
 			System.out.println(Peer.getId()+" "+senderId);
 			if (Chunk.processChunk(this.messageBytes, Peer.getId()))
