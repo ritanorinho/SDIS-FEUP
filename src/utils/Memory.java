@@ -55,14 +55,15 @@ public class Memory {
 			if(entry.getKey().split("-")[0].equals(fileId)){
 				savedChunks.remove(entry.getKey());
 			}
-		 }		
+		 }
+		
 	}
 	
 	public void updateMemoryUsed(int memory) {
 		this.memoryUsed+=memory; 
 	}
 	public int getAvailableCapacity() {
-		return this.capacity-this.memoryUsed;
+		return this.capacity-getUsedMemory();
 	}
 	
 	public int getUsedMemory() {
