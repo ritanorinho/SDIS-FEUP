@@ -34,7 +34,8 @@ public class AnalizeMessageThread implements Runnable {
 		
 		this.messageBytes = message;
 		this.message = new String(this.messageBytes, 0, this.messageBytes.length);
-		this.messageArray = this.message.trim().split("\\s+");
+		this.messageArray = Utils.byteArrayToStringArray(message);
+		
 		if (messageArray.length > 4)
 			this.chunkId = this.messageArray[3] + "-" + this.messageArray[4];
 		else if (messageArray.length > 3) this.chunkId = this.messageArray[3];

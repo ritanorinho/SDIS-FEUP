@@ -9,6 +9,7 @@ import java.util.Arrays;
 
 import project.Peer;
 import threads.AnalizeMessageThread;
+import utils.Utils;
 
 
 public class MDBListener implements Runnable {
@@ -37,7 +38,7 @@ public class MDBListener implements Runnable {
 				clientSocket.receive(msgPacket);
 				
 				byte[] message = Arrays.copyOf(buf,msgPacket.getLength());
-				Peer.getExecutor().execute(new AnalizeMessageThread(message));
+				Peer.getExecutor().execute(new AnalizeMessageThread(message, msgPacket.getAddress()));
 			 }
 			 
 		} catch (IOException e) {
@@ -54,5 +55,13 @@ public class MDBListener implements Runnable {
 		mcSocket.close();
 		 return 0;
 	 }
+
+	 public boolean validMessage(byte[] message){
+        String type = Utils.byteArrayToStringArray(message)[0];
+
+        if(type.equals("PUTCHUNK"))
+            return true;
+        else return false;
+    } 
 
 }

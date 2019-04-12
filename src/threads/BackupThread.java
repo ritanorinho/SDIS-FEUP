@@ -24,6 +24,8 @@ public class BackupThread implements Runnable {
 
 	@Override
 	public void run() {
+		String noChunk= hashName.split("-")[1];
+
 		int replicationState = Peer.getMemory().savedOcurrences.get(this.hashName);
 
 		// if the number of confirmation messages it received up to the end
@@ -46,10 +48,9 @@ public class BackupThread implements Runnable {
 			}
 
 			else {
-				System.out.println("PUTCHUNK THREAD: reached the maximum number of retransmissions per chunk");
+				System.out.println("CHUNK NO " + noChunk+ ": reached the maximum number of retransmissions per chunk");
 			}
 		} else {
-			String noChunk= hashName.split("-")[1];
 			System.out.println("CHUNK NO " + noChunk+ ": REPLICATION DEGREE ACHIEVED: " + replicationState + "\n");
 		}
 	}

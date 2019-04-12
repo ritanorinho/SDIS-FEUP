@@ -8,6 +8,7 @@ import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.util.Arrays;
 
+import utils.Utils;
 import project.Peer;
 import threads.*;
 
@@ -37,7 +38,10 @@ public class MCListener implements Runnable {
                 DatagramPacket msgPacket = new DatagramPacket(buf, buf.length);
                 clientSocket.receive(msgPacket);
                 byte[] message = Arrays.copyOf(buf, msgPacket.getLength());
-                Peer.getExecutor().execute(new AnalizeMessageThread(message, msgPacket.getAddress()));
+
+                if(validMessage(message))
+                    Peer.getExecutor().execute(new AnalizeMessageThread(message, msgPacket.getAddress()));
+                else System.out.println("Ignoring message...");    
 
             }
         } catch (IOException e) {
@@ -52,6 +56,14 @@ public class MCListener implements Runnable {
         mcSocket.send(packet);
         mcSocket.close();
         return 0;
+    }
+
+    public boolean validMessage(byte[] message){
+        String type = Utils.byteArrayToStringArray(message)[0];
+
+        if(type.equals("CONFIRMCHUNK") || type.equals("STORED") || type.equals("DELETE") || type.equals("GETCHUNK") || type.equals("REMOVED"))
+            return true;
+        else return false;
     }
 
 }

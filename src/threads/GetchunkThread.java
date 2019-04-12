@@ -66,6 +66,7 @@ public class GetchunkThread implements Runnable {
 	
 		String restoredChunk = "CHUNK " + messageArray[1] + " " + messageArray[2] + " " + messageArray[3] + " "
 				+ messageArray[4] + " " + "\r\n\r\n";
+		System.out.println(restoredChunk);		
 		byte[] data = restoredChunk.getBytes();
 		byte[] message = new byte[data.length + chunkData.length];
 

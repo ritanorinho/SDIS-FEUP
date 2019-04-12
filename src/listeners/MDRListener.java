@@ -9,6 +9,7 @@ import java.util.Arrays;
 
 import project.Peer;
 import threads.AnalizeMessageThread;
+import utils.Utils;
 
 public class MDRListener implements Runnable{
 
@@ -33,7 +34,7 @@ public class MDRListener implements Runnable{
 
 			 clientSocket.receive(msgPacket);
 			 byte[] message = Arrays.copyOf(buf,msgPacket.getLength());
-	         Peer.getExecutor().execute(new AnalizeMessageThread(message));
+	         Peer.getExecutor().execute(new AnalizeMessageThread(message, msgPacket.getAddress()));
 			 }
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -46,5 +47,13 @@ public class MDRListener implements Runnable{
 		mcSocket.close();
 		 return 0;
 	 }
+
+	 public boolean validMessage(byte[] message){
+        String type = Utils.byteArrayToStringArray(message)[0];
+
+        if(type.equals("GETCHUNK"))
+            return true;
+        else return false;
+    } 
 
 }
