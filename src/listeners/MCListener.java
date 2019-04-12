@@ -61,7 +61,7 @@ public class MCListener implements Runnable {
     public boolean validMessage(byte[] message){
         String type = Utils.byteArrayToStringArray(message)[0];
 
-        if(type.equals("CONFIRMCHUNK") || type.equals("STORED") || type.equals("DELETE") || type.equals("GETCHUNK") || type.equals("REMOVED"))
+        if(type.equals("CONFIRMCHUNK") || type.equals("STORED") || type.equals("DELETE") || type.equals("GETCHUNK") || type.equals("REMOVED") || type.equals("ALIVE"))
             return true;
         else return false;
     }
