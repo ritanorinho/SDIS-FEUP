@@ -27,7 +27,6 @@ public class AnalizeMessageThread implements Runnable {
 		this.messageArray = Utils.byteArrayToStringArray(message);
 		this.version = Double.parseDouble(messageArray[1]);
 
-
 		if (messageArray.length > 4)
 			this.chunkId = this.messageArray[3] + "-" + this.messageArray[4];
 		else if (messageArray.length > 3)this.chunkId = this.messageArray[3];
@@ -51,6 +50,11 @@ public class AnalizeMessageThread implements Runnable {
 	@Override
 	public void run() {
 		String messageType = this.message.trim().split("\\s+")[0];
+
+		if(!isVersionSupported()){
+			return;
+		}
+
 		switch (messageType) {
 		case "PUTCHUNK":
 			putchunk();
@@ -78,6 +82,12 @@ public class AnalizeMessageThread implements Runnable {
 			break;
 		default:
 		}
+	}
+
+	private boolean isVersionSupported(){
+		if(this.version > Peer.getProtocolVersion())
+			return false;
+		return true;
 	}
 
 	private void alive() {
