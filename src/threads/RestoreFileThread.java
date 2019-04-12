@@ -48,7 +48,7 @@ public class RestoreFileThread implements Runnable {
 			int port = Peer.getMemory().confirmedChunks.get(chunkId).getKey();
 			InetAddress InetAddress = Peer.getMemory().confirmedChunks.get(chunkId).getValue();
 			System.out.println(
-					"for chunk nº" + i + " connect to port" + ": " + Peer.getMemory().confirmedChunks.get(chunkId));
+					"for chunk no" + i + " connect to port" + ": " + Peer.getMemory().confirmedChunks.get(chunkId).getKey());
 
 			try {
 				// new socket
