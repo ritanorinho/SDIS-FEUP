@@ -215,13 +215,8 @@ public class Peer implements RMIInterface {
 			String channel = "mc";
 			Peer.executor.execute(new WorkerThread(data, channel));
 
-			// The initiator-peer collects the confirmation
-			// messages during a time interval of one second
-			Peer.getMCListener().message(message);
 		} catch (UnsupportedEncodingException e1) {
 			e1.printStackTrace();
-		} catch(IOException e2){
-			e2.printStackTrace();
 		}
 	}
 

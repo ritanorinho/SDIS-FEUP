@@ -19,7 +19,6 @@ public class MCListener implements Runnable {
     public MCListener(InetAddress mcAddress, Integer mcPort) {
         this.mcAddress = mcAddress;
         this.mcPort = mcPort;
-
     }
 
     public MCListener() {}

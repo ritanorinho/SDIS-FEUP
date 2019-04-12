@@ -38,6 +38,11 @@ public class MDBListener implements Runnable {
 				clientSocket.receive(msgPacket);
 				
 				byte[] message = Arrays.copyOf(buf,msgPacket.getLength());
+
+                if(validMessage(message))
+                    Peer.getExecutor().execute(new AnalizeMessageThread(message, msgPacket.getAddress()));
+				else System.out.println("Ignoring message...");  
+				
 				Peer.getExecutor().execute(new AnalizeMessageThread(message, msgPacket.getAddress()));
 			 }
 			 
