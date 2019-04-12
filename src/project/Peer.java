@@ -32,7 +32,7 @@ import utils.Utils;
 
 public class Peer implements RMIInterface {
 
-	private static double protocolVersion = 1.0;
+	private static double protocolVersion;
 	private static int serverID;
 	private static String accessPoint;
 	private static volatile MCListener mcListener;
@@ -107,17 +107,16 @@ public class Peer implements RMIInterface {
 	// protocols
 
 	@Override
-	public void backup(String filename, int repDegree) throws RemoteException, InterruptedException {
+	public void backup(String filename, int repDegree, boolean enhancement) throws RemoteException, InterruptedException {
 		File file = new File(filename);
-
-		
 		FileInfo fileInfo = new FileInfo(file, filename, repDegree);
 		ArrayList<Chunk> chunks = fileInfo.getChunks();
 		String chunkId;
+		double workingVersion = getWorkingVersion(enhancement);
 
 		for (int i = 0; i < chunks.size(); i++) {
 
-			byte[] header = Utils.getHeader("PUTCHUNK", protocolVersion, serverID, fileInfo.getFileId(),
+			byte[] header = Utils.getHeader("PUTCHUNK", workingVersion, serverID, fileInfo.getFileId(),
 					chunks.get(i).getChunkNo(), repDegree);
 			String headerString = new String(header, 0, header.length);
 
@@ -341,6 +340,18 @@ public class Peer implements RMIInterface {
 
 	public static MDRListener getMDRListener() {
 		return mdrListener;
+	}
+
+	public double getWorkingVersion(boolean enhancement){
+		double ret;
+
+			if(enhancement && protocolVersion==1.0)
+				ret = -1;
+			if(!enhancement && protocolVersion==1.1)
+				ret = 1.0;
+			else ret = protocolVersion;
+
+		return ret;	
 	}
 
 	public static void loadMemory() {

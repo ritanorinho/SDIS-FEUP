@@ -52,11 +52,24 @@ public class TestApp {
         fileName = args[2];
         replicationDegree = Integer.parseInt(args[3]);
 			try {
-				stub.backup(fileName, replicationDegree);
+				stub.backup(fileName, replicationDegree, false);
 			} catch (UnsupportedEncodingException e) {
 				e.printStackTrace();
 			}
         break;
+      case "BACKUPENH":
+        if (args.length != 4) {
+          System.out.println("ERROR: TestApp parameters must be: <peer_ap> BACKUP <file> <replicationDegree> ");
+          return;
+        }
+        fileName = args[2];
+        replicationDegree = Integer.parseInt(args[3]);
+			try {
+				stub.backup(fileName, replicationDegree, true);
+			} catch (UnsupportedEncodingException e) {
+				e.printStackTrace();
+			}
+        break;  
 
       case "RESTORE":
         if (args.length != 3) {

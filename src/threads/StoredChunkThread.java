@@ -88,8 +88,7 @@ public class StoredChunkThread implements Runnable {
 				e.printStackTrace();
 			}
 			if (Peer.getMemory().savedOcurrences.get(this.chunkId) >= this.replicationDegree) {
-				System.out.println("BACKUP ENHANCEMENT");
-				System.out.println("Replication degree rechead");
+				System.out.println("BACKUP ENHANCEMENT: Replication degree rechead");
 				return;
 			}
 

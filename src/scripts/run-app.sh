@@ -6,10 +6,16 @@ then
 elif [ "$2" = "BACKUP" ]
 then
 	java project/TestApp localhost:Peer$1 $2 $3 $4
+elif [ "$2" = "BACKUPENH" ]
+then
+	java project/TestApp localhost:Peer$1 $2 $3 $4
 elif [ "$2" = "STATE" ]
 then
 	java project/TestApp localhost:Peer$1 $2
-else
+elif [ "$2" = "DELETE" ]
+then
 	java project/TestApp localhost:Peer$1 $2 $3
-
+elif [ "$2" = "RESTORE" ]
+then
+	java project/TestApp localhost:Peer$1 $2 $3
 fi

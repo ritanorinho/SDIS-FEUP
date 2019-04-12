@@ -19,11 +19,14 @@ public class AnalizeMessageThread implements Runnable {
 	String chunkId;
 	InetAddress InetAddress;
 	int senderId;
+	double version;
 
 	public AnalizeMessageThread(byte[] message) {
 		this.messageBytes = message;
 		this.message = new String(this.messageBytes, 0, this.messageBytes.length);
 		this.messageArray = Utils.byteArrayToStringArray(message);
+		this.version = Double.parseDouble(messageArray[1]);
+
 
 		if (messageArray.length > 4)
 			this.chunkId = this.messageArray[3] + "-" + this.messageArray[4];
@@ -35,6 +38,7 @@ public class AnalizeMessageThread implements Runnable {
 		this.messageBytes = message;
 		this.message = new String(this.messageBytes, 0, this.messageBytes.length);
 		this.messageArray = Utils.byteArrayToStringArray(message);
+		this.version = Double.parseDouble(messageArray[1]);
 
 		if (messageArray.length > 4)
 			this.chunkId = this.messageArray[3] + "-" + this.messageArray[4];
