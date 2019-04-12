@@ -31,12 +31,13 @@ public class GetchunkThread implements Runnable {
 		int senderId = Integer.parseInt(messageArray[2]);
 
 		if (Peer.getId() != senderId) {
-			byte[] message = chunkMessage();
+			String msg = "";
+			byte[] message = chunkMessage(msg);
 
-			if(this.senderVersion==1.0)
+			if(this.senderVersion==1.0){
 				sendChunkMulticast(message);
-			
-			else{
+				System.out.println(msg);		
+			}else{
 				int port = this.attributePort();
 				this.sendConfirmChunk(port);
 				(new TCPRestoreServer(port, chunkId, message)).start();
@@ -61,13 +62,12 @@ public class GetchunkThread implements Runnable {
 	}
 
 
-	public byte[] chunkMessage(){
+	public byte[] chunkMessage(String restoredChunk){
 
 		byte[] chunkData = Peer.getMemory().savedChunks.get(chunkId).getData();
 	
-		String restoredChunk = "CHUNK " + messageArray[1] + " " + messageArray[2] + " " + messageArray[3] + " "
+		restoredChunk = "CHUNK " + messageArray[1] + " " + messageArray[2] + " " + messageArray[3] + " "
 				+ messageArray[4] + " " + "\r\n\r\n";
-		System.out.println(restoredChunk);		
 		byte[] data = restoredChunk.getBytes();
 		byte[] message = new byte[data.length + chunkData.length];
 
