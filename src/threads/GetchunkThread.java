@@ -61,7 +61,6 @@ public class GetchunkThread implements Runnable {
 	public byte[] chunkMessage(){
 
 		byte[] chunkData = Peer.getMemory().savedChunks.get(chunkId).getData();
-		System.out.println("size: "+Peer.getMemory().savedChunks.size());
 	
 		String restoredChunk = "CHUNK " + messageArray[1] + " " + messageArray[2] + " " + messageArray[3] + " "
 				+ messageArray[4] + " " + "\r\n\r\n";
@@ -78,9 +77,7 @@ public class GetchunkThread implements Runnable {
 		String channel ="mdr";
 		Random random = new Random();
 		int delay = random.nextInt(401);
-		int senderId = Integer.parseInt(messageArray[2]);
-		System.out.println("sender id "+senderId);
-		
+		int senderId = Integer.parseInt(messageArray[2]);	
 		if (Peer.getId() != senderId ){	
 			Peer.getExecutor().schedule(new WorkerThread(message,channel), delay,
 					TimeUnit.MILLISECONDS);

@@ -30,7 +30,6 @@ public class RemovedChunkThread implements Runnable {
 		
 		if (Peer.getMemory().savedChunks.containsKey(this.chunkId)) {
 			replicationDegree = Peer.getMemory().savedChunks.get(this.chunkId).getReplicationDegree();
-			System.out.println("replication degree "+replicationDegree+" "+Peer.getMemory().savedOcurrences.get(this.chunkId));
 			if (Peer.getMemory().savedOcurrences.get(this.chunkId) < replicationDegree) {
 			
 			String filePath = "Peer"+Peer.getId()+"/"+"STORED"+"/"+this.fileId+"/"+this.chunkNo+"-"+replicationDegree;
@@ -49,9 +48,9 @@ public class RemovedChunkThread implements Runnable {
 				e.printStackTrace();
 			}
 
-			String header ="PUTCHUNK 1.0 " +Peer.getId() + " " + this.fileId + " "
+			String header ="PUTCHUNK " +Peer.getProtocolVersion()+" "+Peer.getId() + " " + this.fileId + " "
 					+this.chunkNo + " " + replicationDegree + " " + "\r\n\r\n";
-			System.out.println("REMOVED "+header);
+			System.out.println("\nREMOVED "+header);
 			byte[] message = new byte[header.getBytes().length+body.length];
 			System.arraycopy(header.getBytes(), 0, message, 0, header.getBytes().length);
 			System.arraycopy(body, 0, message, header.getBytes().length, body.length);
@@ -60,9 +59,7 @@ public class RemovedChunkThread implements Runnable {
 
 			// The initiator-peer collects the confirmation
 			// messages during a time interval of one second
-			Peer.getExecutor().schedule(new BackupThread(this.chunkId, message, replicationDegree), 1, TimeUnit.SECONDS);
-			
-			
+			Peer.getExecutor().schedule(new BackupThread(this.chunkId, message, replicationDegree), 1, TimeUnit.SECONDS);	
 		}
 			else {
 				System.out.println("The count doesn't drop below the desired replication degree of the chunk "+this.chunkNo);

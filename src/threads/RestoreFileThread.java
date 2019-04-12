@@ -71,8 +71,6 @@ public class RestoreFileThread implements Runnable {
 			}
 
 		}
-
-		System.out.println();
 	}
 
 	public void markChunk(String chunkId, byte[] received) {
@@ -88,28 +86,27 @@ public class RestoreFileThread implements Runnable {
 		String filename = "Peer" + Peer.getId() + "/" + "RESTORED" + "/" + this.filename;
 		File finalFile = new File(filename);
 		HashMap<String, String> requiredChunks = Peer.getMemory().chunksToRestore;
-		if (requiredChunks.size() < this.numberChunks) {
+		ArrayList<String> sortedChunks = new ArrayList<String>();
+		for (String key : requiredChunks.keySet()) {
+			if (requiredChunks.get(key).equals(this.fileId))
+				sortedChunks.add(key);
+		}
+
+		sortedChunks.sort((o1, o2) -> {
+			int chunk1 = Integer.valueOf(o1.split("-")[1]);
+			int chunk2 = Integer.valueOf(o2.split("-")[1]);
+			return Integer.compare(chunk1, chunk2);
+		});
+		
+		if (sortedChunks.size() < this.numberChunks) {
 			System.out.println("Could not find all the chunks needed to restore the requested file\n");
 			return false;
 		} else {
 			try {
-
 				if (!finalFile.exists()) {
 					finalFile.getParentFile().mkdirs();
 					finalFile.createNewFile();
-				}
-
-				ArrayList<String> sortedChunks = new ArrayList<String>();
-				for (String key : requiredChunks.keySet()) {
-					if (requiredChunks.get(key).equals(this.fileId))
-						sortedChunks.add(key);
-				}
-
-				sortedChunks.sort((o1, o2) -> {
-					int chunk1 = Integer.valueOf(o1.split("-")[1]);
-					int chunk2 = Integer.valueOf(o2.split("-")[1]);
-					return Integer.compare(chunk1, chunk2);
-				});
+				}		
 
 				@SuppressWarnings("resource")
 				FileOutputStream fos = new FileOutputStream(finalFile);

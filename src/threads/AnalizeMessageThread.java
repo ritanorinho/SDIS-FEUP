@@ -78,9 +78,9 @@ public class AnalizeMessageThread implements Runnable {
 	private void alive() {
 		int senderId = Integer.parseInt(this.messageArray[2]);
 		if (senderId != Peer.getId()) {
-			System.out.println("Deleted chunks size " +Peer.getMemory().deletedFiles.size());
 			for (int i = 0;i< Peer.getMemory().deletedFiles.size();i++) {
 				String deletedMessage = "DELETE " + this.messageArray[1] + " " + Peer.getId() + " " + Peer.getMemory().deletedFiles.get(i) + " " + "\r\n\r\n";
+				System.out.println("\n SENT "+deletedMessage);
 				try {
 					Peer.getExecutor().execute(new WorkerThread(deletedMessage.getBytes("US-ASCII"),"mc"));
 				} catch (UnsupportedEncodingException e) {
@@ -112,7 +112,6 @@ public class AnalizeMessageThread implements Runnable {
 			}
 			String storedMessage = messageArray[1] + " " + messageArray[2] + " " + messageArray[3] + " "
 					+ messageArray[4];
-			System.out.println("SENDER ID: " + messageArray[2] + " PEER ID: " + Peer.getId() + "\n" + storedMessage);
 			byte[] data = Utils.getBody(this.messageBytes);
 			Peer.getExecutor().schedule(
 					new StoredChunkThread(storedMessage.getBytes(), data, Integer.parseInt(messageArray[5])), delay,
@@ -123,11 +122,9 @@ public class AnalizeMessageThread implements Runnable {
 	private synchronized void delete() {
 
 		String fileId = messageArray[3];
-		System.out.println(fileId);
 		Peer.getMemory().removeChunks(fileId);
 		String localDirPath = "Peer" + Peer.getId() + "/STORED/" + fileId;
 		File localDir = new File(localDirPath);
-		System.out.println(localDirPath);
 		FileInfo.deleteFolder(localDir);
 
 		System.out.println("Deleted chunks of file: " + fileId);
@@ -135,7 +132,6 @@ public class AnalizeMessageThread implements Runnable {
 
 	private void chunk() {
 		
-			System.out.println(Peer.getId()+" "+senderId);
 			if (Chunk.processChunk(this.messageBytes, Peer.getId()))
 				Peer.getMemory().chunksToRestore.put(chunkId, messageArray[3]);
 
@@ -157,11 +153,8 @@ public class AnalizeMessageThread implements Runnable {
 	private void removed() {
 
 		if (senderId != Peer.getId()) {
-			System.out.println("before "+Peer.getMemory().savedOcurrences.get(chunkId));
 			Peer.getMemory().savedOcurrences.put(chunkId, Peer.getMemory().savedOcurrences.get(chunkId) - 1);
-			System.out.println("removed " +Peer.getMemory().savedOcurrences.get(chunkId));
 			Utils.savedOccurrencesFile();
-
 			Random random = new Random();
 			int delay = random.nextInt(401);
 			Peer.getExecutor().schedule(new RemovedChunkThread(chunkId), delay, TimeUnit.MILLISECONDS);

@@ -52,7 +52,6 @@ public class Memory {
 		   }
 		}		
 		for(Entry<String, Chunk> entry : savedChunks.entrySet())  {
-			System.out.println(savedChunks.size());
 			if(entry.getKey().split("-")[0].equals(fileId)){
 				savedChunks.remove(entry.getKey());
 			}

@@ -237,7 +237,7 @@ public class Peer implements RMIInterface {
 
 				if (currentSpaceToFree > 0) {
 					currentSpaceToFree -= memory.savedChunks.get(key).getChunkSize();
-					String header = "REMOVED 1.0 " + serverID + " " + memory.savedChunks.get(key).getFileId() + " "
+					String header = "REMOVED " + protocolVersion+" "+serverID + " " + memory.savedChunks.get(key).getFileId() + " "
 							+ memory.savedChunks.get(key).getChunkNo() + " " + "\r\n\r\n";
 					System.out.print(header);
 
@@ -256,7 +256,6 @@ public class Peer implements RMIInterface {
 					fileToDelete.delete();
 					iterator.remove();	
 					Peer.getMemory().savedOcurrences.put(key,Peer.getMemory().savedOcurrences.get(key)-1);
-					System.out.println("peer"+Peer.getMemory().savedOcurrences.get(key));
 					Utils.savedOccurrencesFile();
 					Peer.getMemory().savedChunks.remove(key);
 				}
@@ -360,6 +359,7 @@ public class Peer implements RMIInterface {
 		File storedFile = new File(storedDirectory);
 		if (!storedFile.exists()) {
 			System.out.println("Peer " + Peer.getId() + " has no data in memory.");
+			return;
 		} else {
 
 			String[] allFiles;
