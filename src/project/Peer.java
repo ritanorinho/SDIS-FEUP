@@ -40,7 +40,6 @@ public class Peer implements RMIInterface {
 	private static volatile MDRListener mdrListener;
 	private static ScheduledThreadPoolExecutor executor;
 	private static Memory memory = new Memory();
-	private static int TCPSocketPort;
 
 	public Peer(InetAddress mcAddress, Integer mcPort, InetAddress mdbAddress, Integer mdbPort, InetAddress mdrAddress,
 			Integer mdrPort) throws IOException {
@@ -48,11 +47,8 @@ public class Peer implements RMIInterface {
 		mdbListener = new MDBListener(mdbAddress, mdbPort);
 		mdrListener = new MDRListener(mdrAddress, mdrPort);
 		executor = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(250);
-		
 
 	}
-
-	
 
 	public static void main(String args[]) throws InterruptedException, IOException, AlreadyBoundException {
 		System.setProperty("java.net.preferIPv4Stack", "true");
@@ -87,8 +83,6 @@ public class Peer implements RMIInterface {
 		protocolVersion = Double.parseDouble(args[0]);
 		serverID = Integer.parseInt(args[1]);
 		accessPoint = args[2];
-
-		TCPSocketPort = serverID * 1000;
 
 		Peer peer = new Peer(MCAddress, MCPort, MDBAddress, MDBPort, MDRAddress, MDRPort);
 		RMIInterface stub = (RMIInterface) UnicastRemoteObject.exportObject(peer, 0);
@@ -323,10 +317,6 @@ public class Peer implements RMIInterface {
 
 	public static double getProtocolVersion() {
 		return protocolVersion;
-	}
-
-	public static int getTCPPort() {
-		return TCPSocketPort;
 	}
 
 	public static Memory getMemory() {
