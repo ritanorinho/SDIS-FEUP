@@ -157,7 +157,9 @@ public class AnalizeMessageThread implements Runnable {
 	private void removed() {
 
 		if (senderId != Peer.getId()) {
+			System.out.println("before "+Peer.getMemory().savedOcurrences.get(chunkId));
 			Peer.getMemory().savedOcurrences.put(chunkId, Peer.getMemory().savedOcurrences.get(chunkId) - 1);
+			System.out.println("removed " +Peer.getMemory().savedOcurrences.get(chunkId));
 			Utils.savedOccurrencesFile();
 
 			Random random = new Random();

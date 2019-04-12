@@ -256,6 +256,7 @@ public class Peer implements RMIInterface {
 					fileToDelete.delete();
 					iterator.remove();	
 					Peer.getMemory().savedOcurrences.put(key,Peer.getMemory().savedOcurrences.get(key)-1);
+					System.out.println("peer"+Peer.getMemory().savedOcurrences.get(key));
 					Utils.savedOccurrencesFile();
 					Peer.getMemory().savedChunks.remove(key);
 				}

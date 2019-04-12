@@ -59,8 +59,6 @@ public class StoredChunkThread implements Runnable {
 
 		if (!Peer.getMemory().savedChunks.containsKey(this.chunkId)) {
 			Peer.getMemory().savedChunks.put(this.chunkId, chunk);
-			Peer.getMemory().savedOcurrences.put(this.chunkId, Peer.getMemory().savedOcurrences.get(this.chunkId) + 1);
-			Utils.savedOccurrencesFile();
 			Peer.getMemory().updateMemoryUsed(this.data.length);
 			createFileChunk();
 
