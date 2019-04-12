@@ -15,19 +15,18 @@ public class TCPRestoreServer extends Thread {
     private OutputStream outputStream;
     private DataOutputStream dataOutputStream;
     private byte[] message;
-    private String confirmMsg;
 
-    TCPRestoreServer(int port, String chunkid, byte[] message, String confirmMsg) {
-        this.port = port;
+    TCPRestoreServer(int port, String chunkid, byte[] message) {
         this.message = message;
-        this.confirmMsg = confirmMsg;
+        this.port = port;
     }
 
     @Override
     public void run() {
 
+
         try {
-            this.socket = new ServerSocket(port);
+            this.socket = new ServerSocket(this.port);
             this.socket.setSoTimeout(10000);
 
             client = socket.accept(); 
@@ -38,10 +37,9 @@ public class TCPRestoreServer extends Thread {
             dataOutputStream.writeInt(message.length);
             dataOutputStream.write(message);
 
-            System.out.println(confirmMsg);
-
             this.socket.close();
             
         } catch (IOException e) {}
     }
+
 }

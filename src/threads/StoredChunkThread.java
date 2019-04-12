@@ -82,14 +82,12 @@ public class StoredChunkThread implements Runnable {
 				return;
 		}
 		if (version.equals("2.0")) {
-			System.out.println("version");
 			try {
 				Thread.sleep((long) (Math.random() * 1500));
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
 			if (Peer.getMemory().savedOcurrences.get(this.chunkId) >= this.replicationDegree) {
-				System.out.println("new version");
 				System.out.println("Replication degree rechead");
 				return;
 			}

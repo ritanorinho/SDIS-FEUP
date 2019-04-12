@@ -1,6 +1,7 @@
 package threads;
 
 import java.io.IOException;
+import java.net.ServerSocket;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
@@ -20,6 +21,7 @@ public class GetchunkThread implements Runnable {
 
 	@Override
 	public void run() {
+
 		if (!Peer.getMemory().savedChunks.containsKey(chunkId)) {
 			System.out.println("This peer doesn't contain this chunk: "+chunkId);
 			return;
@@ -34,11 +36,9 @@ public class GetchunkThread implements Runnable {
 				sendChunkMulticast(message);
 			
 			else{
-				int filedid = Integer.parseInt(chunkId.split("-")[1]);
-				int port = Peer.getTCPPort() + filedid;
-
-				String confMsg = sendConfirmChunk(port);
-				(new TCPRestoreServer(port, chunkId, message, confMsg)).start();
+				int port = this.attributePort();
+				this.sendConfirmChunk(port);
+				(new TCPRestoreServer(port, chunkId, message)).start();
 			}
 		}
 	}
@@ -49,6 +49,8 @@ public class GetchunkThread implements Runnable {
 		try {
 			storedMessage = "CONFIRMCHUNK "+Peer.getProtocolVersion()+" "+Peer.getId()+" "+ chunkId +" "+port+"\r\n\r\n";
 			Peer.getMCListener().message(storedMessage.getBytes("US-ASCII"));
+			System.out.println(storedMessage);
+
 
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -86,4 +88,27 @@ public class GetchunkThread implements Runnable {
 					TimeUnit.MILLISECONDS);
 		}
 	}
+
+	public int attributePort(){
+		Random random = new Random();
+		int port;
+
+        do{
+            port = random.nextInt(1000)+8000;
+        }
+		while(isPortInUse(port));
+		
+		return port;
+    }
+
+    public boolean isPortInUse(int port){
+        boolean result = true;
+
+        try {
+            (new ServerSocket(port)).close();
+            result = false;
+        } catch (IOException e) {}
+
+        return result;
+    }
 }
