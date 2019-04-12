@@ -81,7 +81,7 @@ public class StoredChunkThread implements Runnable {
 			if (Peer.getMemory().files.get(i).getFileId().equals(fileId))
 				return;
 		}
-		if (version.equals("2.0")) {
+		if (version.equals("1.1")) {
 			try {
 				Thread.sleep((long) (Math.random() * 1500));
 			} catch (InterruptedException e) {

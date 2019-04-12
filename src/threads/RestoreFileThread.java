@@ -30,7 +30,7 @@ public class RestoreFileThread implements Runnable {
 	@Override
 	public void run() {
 
-		if (Peer.getProtocolVersion() == 2.0)
+		if (Peer.getProtocolVersion() == 1.1)
 			getChunks();
 
 		if (createFile())

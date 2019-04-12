@@ -67,7 +67,7 @@ public class Peer implements RMIInterface {
 		executor.execute(mdrListener);
 		loadMemory();
 		loadOccurrences();
-		if (protocolVersion == 2.0) //delete enhancement
+		if (protocolVersion == 1.1) //delete enhancement
 			alive();
 	}
 
