@@ -11,11 +11,12 @@ import project.Peer;
 public class GetchunkThread implements Runnable {
 	private String[] messageArray;
 	private String chunkId;
-
+	private double senderVersion;
 
 	public GetchunkThread(String[] msg) {
 		this.messageArray = msg;
 		this.chunkId = messageArray[3] + "-" + messageArray[4];
+		this.senderVersion = Double.parseDouble(messageArray[1]);
 	}
 
 
@@ -32,7 +33,7 @@ public class GetchunkThread implements Runnable {
 		if (Peer.getId() != senderId) {
 			byte[] message = chunkMessage();
 
-			if(Peer.getProtocolVersion()==1.0)
+			if(this.senderVersion==1.0)
 				sendChunkMulticast(message);
 			
 			else{
@@ -47,7 +48,7 @@ public class GetchunkThread implements Runnable {
 		String storedMessage = null;
 
 		try {
-			storedMessage = "CONFIRMCHUNK "+Peer.getProtocolVersion()+" "+Peer.getId()+" "+ chunkId +" "+port+"\r\n\r\n";
+			storedMessage = "CONFIRMCHUNK "+this.senderVersion+" "+Peer.getId()+" "+ chunkId +" "+port+"\r\n\r\n";
 			Peer.getMCListener().message(storedMessage.getBytes("US-ASCII"));
 			System.out.println(storedMessage);
 

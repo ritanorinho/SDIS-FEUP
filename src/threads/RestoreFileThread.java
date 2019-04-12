@@ -20,24 +20,25 @@ public class RestoreFileThread implements Runnable {
 	private String fileId;
 	private int numberChunks;
 	private Socket socket;
+	private double workingVersion;
 
-	public RestoreFileThread(String filename, String fileId, int numberChunks) {
+	public RestoreFileThread(String filename, String fileId, int numberChunks, double workingVersion) {
 		this.filename = filename;
 		this.fileId = fileId;
 		this.numberChunks = numberChunks;
+		this.workingVersion = workingVersion;
 	}
 
 	@Override
 	public void run() {
 
-		if (Peer.getProtocolVersion() == 1.1)
+		if (workingVersion == 1.1)
 			getChunks();
 
 		if (createFile())
 			System.out.println("Local file restored");
 		else
 			System.out.println("Errror occured: Local file not created");
-
 	}
 
 	public void getChunks() {

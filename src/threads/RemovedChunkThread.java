@@ -60,11 +60,10 @@ public class RemovedChunkThread implements Runnable {
 			// The initiator-peer collects the confirmation
 			// messages during a time interval of one second
 			Peer.getExecutor().schedule(new BackupThread(this.chunkId, message, replicationDegree), 1, TimeUnit.SECONDS);	
-		}
+			}
 			else {
 				System.out.println("The count doesn't drop below the desired replication degree of the chunk "+this.chunkNo);
 			}
+		}
 	}
-
-}
 }

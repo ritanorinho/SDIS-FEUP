@@ -114,6 +114,11 @@ public class Peer implements RMIInterface {
 		String chunkId;
 		double workingVersion = getWorkingVersion(enhancement);
 
+		if(workingVersion<0){
+			System.out.println("This version does not support this opperation");
+		 return;
+		}
+
 		for (int i = 0; i < chunks.size(); i++) {
 
 			byte[] header = Utils.getHeader("PUTCHUNK", workingVersion, serverID, fileInfo.getFileId(),
@@ -149,12 +154,18 @@ public class Peer implements RMIInterface {
 	}
 
 	@Override
-	public void restore(String filename) throws RemoteException {
+	public void restore(String filename, boolean enhancement) throws RemoteException {
 		File file = new File(filename);
 		String fileId = Utils.createFileId(file);
 		ArrayList<Chunk> chunks = new ArrayList<Chunk>();
 		FileInfo fileInfo = null;
 		String header = null;
+		double workingVersion = getWorkingVersion(enhancement);
+
+		if(workingVersion<0){
+			System.out.println("This version does not support this opperation");
+		 return;
+		}
 
 		if (!memory.hasFileByID(fileId)) {
 			System.out.println(filename + "has never backed up!");
@@ -169,9 +180,8 @@ public class Peer implements RMIInterface {
 				}
 			}
 			for (int i = 0; i < chunks.size(); i++) {
-				header = "GETCHUNK " + protocolVersion + " " + serverID + " " + fileInfo.getFileId() + " "
-						+ chunks.get(i).getChunkNo() + " ";
-				header += "\r\n\r\n";
+				header = "GETCHUNK " + workingVersion + " " + serverID + " " + fileInfo.getFileId() + " "
+						+ chunks.get(i).getChunkNo() + " " + "\r\n\r\n";
 
 				byte[] message = header.getBytes();
 
@@ -179,7 +189,7 @@ public class Peer implements RMIInterface {
 				String channel = "mc";
 				Peer.executor.execute(new WorkerThread(message, channel));
 			}
-			Peer.executor.schedule(new RestoreFileThread(fileInfo.getFilename(), fileInfo.getFileId(), chunks.size()),
+			Peer.executor.schedule(new RestoreFileThread(fileInfo.getFilename(), fileInfo.getFileId(), chunks.size(),workingVersion),
 					10, TimeUnit.SECONDS);
 		}
 	}
@@ -213,7 +223,6 @@ public class Peer implements RMIInterface {
 		} catch(IOException e2){
 			e2.printStackTrace();
 		}
-
 	}
 
 	@Override
@@ -347,7 +356,7 @@ public class Peer implements RMIInterface {
 
 			if(enhancement && protocolVersion==1.0)
 				ret = -1;
-			if(!enhancement && protocolVersion==1.1)
+			else if(!enhancement && protocolVersion==1.1)
 				ret = 1.0;
 			else ret = protocolVersion;
 

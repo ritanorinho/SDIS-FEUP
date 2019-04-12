@@ -18,4 +18,10 @@ then
 elif [ "$2" = "RESTORE" ]
 then
 	java project/TestApp localhost:Peer$1 $2 $3
+elif [ "$2" = "DELETEENH" ]
+then
+	java project/TestApp localhost:Peer$1 $2 $3
+elif [ "$2" = "RESTOREENH" ]
+then
+	java project/TestApp localhost:Peer$1 $2 $3
 fi

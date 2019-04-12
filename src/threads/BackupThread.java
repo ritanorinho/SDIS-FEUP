@@ -44,6 +44,7 @@ public class BackupThread implements Runnable {
 
 			this.attempt++;
 			if (this.attempt < this.MAX_ATTEMPT) { // This procedure is repeated up to a maximum number of five times
+				System.out.println("Attemp " + this.attempt+ ": Resending for chunk no: " + noChunk);
 				Peer.getExecutor().schedule(this, this.delay, TimeUnit.SECONDS);
 			}
 

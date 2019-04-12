@@ -79,7 +79,18 @@ public class TestApp {
         
         replicationDegree = 3;
         fileName = args[2];
-        stub.restore(fileName);
+        stub.restore(fileName, false);
+        break;
+
+        case "RESTOREENH":
+        if (args.length != 3) {
+          System.out.println("ERROR: TestApp parameters must be: <peer_ap> RESTORE <file> ");
+          return;
+        }
+        
+        replicationDegree = 3;
+        fileName = args[2];
+        stub.restore(fileName, true);
         break;
 
       case "DELETE":
