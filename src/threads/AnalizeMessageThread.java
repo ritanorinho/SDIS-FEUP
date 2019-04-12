@@ -6,10 +6,10 @@ import java.net.InetAddress;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
-import javafx.util.Pair;
 import project.Peer;
 import utils.Chunk;
 import utils.FileInfo;
+import utils.Pair;
 import utils.Utils;
 
 public class AnalizeMessageThread implements Runnable {
@@ -168,7 +168,7 @@ public class AnalizeMessageThread implements Runnable {
 		String chunkid = messageArray[3].trim();
 		int port = Integer.parseInt(this.messageArray[4].trim());
 		if (senderId != Peer.getId() && !Peer.getMemory().confirmedChunks.containsKey(chunkid)) {
-			Peer.getMemory().confirmedChunks.put(chunkid, new Pair<>(port, this.InetAddress));
+			Peer.getMemory().confirmedChunks.put(chunkid, new Pair(port, this.InetAddress));
 		}
 
 	}

@@ -1,19 +1,17 @@
 package utils;
 
-import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
-import javafx.util.Pair;
 
 public class Memory {
 	public ArrayList<FileInfo> files = new ArrayList<FileInfo>(); //key: fileId-ChunkNo
 	public ConcurrentHashMap<String,Chunk> savedChunks= new ConcurrentHashMap<String,Chunk>(); //key: fileId-ChunkNo String: fileId
 	public HashMap<String,String> chunksToRestore= new HashMap<String,String>();
 	public ConcurrentHashMap<String,Integer> savedOcurrences = new ConcurrentHashMap<String,Integer>();
-	public HashMap<String, Pair<Integer,InetAddress>> confirmedChunks = new HashMap<String, Pair<Integer,InetAddress>>(); //chunkid < port, address>
+	public HashMap<String, Pair> confirmedChunks = new HashMap<String, Pair>(); //chunkid < port, address>
 	public ArrayList<String> deletedFiles= new ArrayList<String>();
 	public int capacity = 999999999;
 	public int memoryUsed = 0;
