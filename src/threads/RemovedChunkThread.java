@@ -32,35 +32,35 @@ public class RemovedChunkThread implements Runnable {
 			replicationDegree = Peer.getMemory().savedChunks.get(this.chunkId).getReplicationDegree();
 			if (Peer.getMemory().savedOcurrences.get(this.chunkId) < replicationDegree) {
 			
-			String filePath = "Peer"+Peer.getId()+"/"+"STORED"+"/"+this.fileId+"/"+this.chunkNo+"-"+replicationDegree;
-			File file = new File(filePath);
-			FileInputStream fis;
-			try {
-				fis = new FileInputStream(file);
-				BufferedInputStream bis = new BufferedInputStream(fis);
-				while((size=bis.read(content))>0) {
-					body = Arrays.copyOf(content, size);
-					content = new byte[64000];
+				String filePath = "Peer"+Peer.getId()+"/"+"STORED"+"/"+this.fileId+"/"+this.chunkNo+"-"+replicationDegree;
+				File file = new File(filePath);
+				FileInputStream fis;
+				try {
+					fis = new FileInputStream(file);
+					BufferedInputStream bis = new BufferedInputStream(fis);
+					while((size=bis.read(content))>0) {
+						body = Arrays.copyOf(content, size);
+						content = new byte[64000];
+					}
+					bis.close();
+					
+				} catch (IOException e) {
+					e.printStackTrace();
 				}
-				bis.close();
-				
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
 
-			String header ="PUTCHUNK " +Peer.getProtocolVersion()+" "+Peer.getId() + " " + this.fileId + " "
-					+this.chunkNo + " " + replicationDegree + " " + "\r\n\r\n";
-			System.out.println("\nREMOVED "+header);
-			byte[] message = new byte[header.getBytes().length+body.length];
-			System.arraycopy(header.getBytes(), 0, message, 0, header.getBytes().length);
-			System.arraycopy(body, 0, message, header.getBytes().length, body.length);
-			String channel = "mdb";
-			Peer.getExecutor().execute(new WorkerThread(message,channel));
+				String header ="PUTCHUNK " +Peer.getProtocolVersion()+" "+Peer.getId() + " " + this.fileId + " "
+						+this.chunkNo + " " + replicationDegree + " " + "\r\n\r\n";
+				System.out.println("\nREMOVED "+header);
+				byte[] message = new byte[header.getBytes().length+body.length];
+				System.arraycopy(header.getBytes(), 0, message, 0, header.getBytes().length);
+				System.arraycopy(body, 0, message, header.getBytes().length, body.length);
+				String channel = "mdb";
+				Peer.getExecutor().execute(new WorkerThread(message,channel));
 
-			// The initiator-peer collects the confirmation
-			// messages during a time interval of one second
-			Peer.getExecutor().schedule(new BackupThread(this.chunkId, message, replicationDegree), 1, TimeUnit.SECONDS);	
-			}
+				// The initiator-peer collects the confirmation
+				// messages during a time interval of one second
+				Peer.getExecutor().schedule(new BackupThread(this.chunkId, message, replicationDegree), 1, TimeUnit.SECONDS);	
+				}
 			else {
 				System.out.println("The count doesn't drop below the desired replication degree of the chunk "+this.chunkNo);
 			}

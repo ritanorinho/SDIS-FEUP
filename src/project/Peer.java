@@ -257,13 +257,12 @@ public class Peer implements RMIInterface {
 					Peer.getMemory().savedChunks.remove(key);
 				}
 
-				Peer.getMemory().capacity = space;
-				Peer.getMemory().memoryUsed = Peer.getMemory().getUsedMemory();
-				System.out.println("CAPACITY " + Peer.getMemory().capacity + " " + Peer.getMemory().memoryUsed);
 			}
-		} else {
-			System.out.println("\nPeer " + Peer.getId() + " doesn't have space to free!");
 		}
+
+		Peer.getMemory().capacity = space;
+		Peer.getMemory().memoryUsed = Peer.getMemory().getUsedMemory();
+		System.out.println("Memory used: " + Peer.getMemory().memoryUsed + " of " + Peer.getMemory().capacity);
 
 	}
 
