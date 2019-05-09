@@ -21,9 +21,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import listeners.MCListener;
-import listeners.MDBListener;
-import listeners.MDRListener;
 import threads.*;
 import utils.Chunk;
 import utils.FileInfo;
@@ -35,17 +32,17 @@ public class Peer implements RMIInterface {
 	private static double protocolVersion;
 	private static int serverID;
 	private static String accessPoint;
-	private static volatile MCListener mcListener;
-	private static volatile MDBListener mdbListener;
-	private static volatile MDRListener mdrListener;
+	private static volatile int tcpPort;
+	private static volatile InetAddress tcpAddress;
 	private static ScheduledThreadPoolExecutor executor;
+	private static Socket socket;
 	private static Memory memory = new Memory();
 
-	public Peer(InetAddress mcAddress, Integer mcPort, InetAddress mdbAddress, Integer mdbPort, InetAddress mdrAddress,
-			Integer mdrPort) throws IOException {
-		mcListener = new MCListener(mcAddress, mcPort);
-		mdbListener = new MDBListener(mdbAddress, mdbPort);
-		mdrListener = new MDRListener(mdrAddress, mdrPort);
+	public Peer(Integer tcpPort, InetAddress tcpAddress) throws IOException {
+		
+		this.tcpPort = tcpPort;
+		this.tcpAddress = tcpAddress;
+		this.socket = new Socket(tcpAddress,tcpPort);
 		executor = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(250);
 
 	}
@@ -54,17 +51,13 @@ public class Peer implements RMIInterface {
 		System.setProperty("java.net.preferIPv4Stack", "true");
 		System.setProperty("java.rmi.server.hostname", "localhost");
 
-		if (args.length != 9) {
-			System.out.println(
-					"ERROR: Peer format : Peer <PROTOCOL_VERSION> <SERVER_ID> <SERVICE_ACCESS_POINT> <MC_IP> <MC_Port> <MDB_IP> <MDB_PORT> <MDR_IP> <MDR_PORT> ");
+		if (args.length != 5) {
+				System.out.println(
+					"ERROR: Peer format : Peer <PROTOCOL_VERSION> <SERVER_ID> <SERVICE_ACCESS_POINT> <TCP_IP> <TCP_PORT>");
 			return;
 		}
 
 		validateArgs(args);
-
-		executor.execute(mcListener);
-		executor.execute(mdbListener);
-		executor.execute(mdrListener);
 		loadMemory();
 		loadOccurrences();
 		if (protocolVersion == 1.1) //delete enhancement
@@ -74,17 +67,13 @@ public class Peer implements RMIInterface {
 	private static void validateArgs(String[] args)
 			throws RemoteException, InterruptedException, IOException, AlreadyBoundException {
 
-		InetAddress MCAddress = InetAddress.getByName(args[3]);
-		Integer MCPort = Integer.parseInt(args[4]);
-		InetAddress MDBAddress = InetAddress.getByName(args[5]);
-		Integer MDBPort = Integer.parseInt(args[6]);
-		InetAddress MDRAddress = InetAddress.getByName(args[7]);
-		Integer MDRPort = Integer.parseInt(args[8]);
+		InetAddress tcpAddress = InetAddress.getByName(args[3]);
+		Integer tcpPort = Integer.parseInt(args[4]);
 		protocolVersion = Double.parseDouble(args[0]);
 		serverID = Integer.parseInt(args[1]);
 		accessPoint = args[2];
 
-		Peer peer = new Peer(MCAddress, MCPort, MDBAddress, MDBPort, MDRAddress, MDRPort);
+		Peer peer = new Peer(tcpAddress, tcpPort);
 		RMIInterface stub = (RMIInterface) UnicastRemoteObject.exportObject(peer, 0);
 
 		Registry registry;

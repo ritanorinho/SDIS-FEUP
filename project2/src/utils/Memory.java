@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
+import java.net.Socket;
 
 
 public class Memory {
@@ -12,6 +13,7 @@ public class Memory {
 	public HashMap<String,String> chunksToRestore= new HashMap<String,String>();
 	public ConcurrentHashMap<String,Integer> savedOcurrences = new ConcurrentHashMap<String,Integer>();
 	public HashMap<String, Pair> confirmedChunks = new HashMap<String, Pair>(); //chunkid < port, address>
+	public HashMap<String, Socket> conections = new HashMap<String, Socket>();
 	public ArrayList<String> deletedFiles= new ArrayList<String>();
 	public int capacity = 999999999;
 	public int memoryUsed = 0;
