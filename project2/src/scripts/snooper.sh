@@ -1,0 +1,1 @@
+java -Djava.net.preferIPv4Stack=true -jar McastSnooper.jar 224.0.0.15:8001 224.0.0.16:8002 224.0.0.17:8003
