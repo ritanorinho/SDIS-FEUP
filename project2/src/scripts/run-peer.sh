@@ -1,1 +1,1 @@
-java project/Peer $1 $2 Peer$2 224.0.0.15 8001 224.0.0.16 8002 224.0.0.17 8003
+java project/Peer $1 $2 Peer$2 127.0.0.1 6789

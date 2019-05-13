@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.ServerSocket;
+
+
 import java.net.UnknownHostException;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
@@ -11,11 +13,13 @@ import utils.Memory;
 
 import java.util.concurrent.Executors;
 
-public class Server  
+public class Server
 {
     private static ServerSocket serverSocket;
     private static ScheduledThreadPoolExecutor executor;
     private static Memory memory;
+    private static InetAddress tcp_addr;
+    private static int tcp_port;
 
     public static void main(String args[])
     {
@@ -27,7 +31,6 @@ public class Server
 
         executor = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(250);
 
-        InetAddress tcp_addr;
 
         try
         {
@@ -39,7 +42,7 @@ public class Server
             return;
         }
         
-        int tcp_port = Integer.parseInt(args[1]);
+        tcp_port = Integer.parseInt(args[1]);
 
         try
         {
@@ -51,8 +54,9 @@ public class Server
             return;
         }
 
-        executor.execute(new TCPThread(port, chunkid, message));
-    }
+     executor.execute(new TCPThread("start"));
+
+}
 
     public static ServerSocket getServerSocket()
     {
@@ -63,4 +67,7 @@ public class Server
     {
         return memory;
     }
+
+    
+
 }

@@ -20,12 +20,16 @@ import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.BufferedWriter;
 
 import threads.*;
 import utils.Chunk;
 import utils.FileInfo;
 import utils.Memory;
 import utils.Utils;
+import java.net.Socket;
 
 public class Peer implements RMIInterface {
 
@@ -39,10 +43,10 @@ public class Peer implements RMIInterface {
 	private static Memory memory = new Memory();
 
 	public Peer(Integer tcpPort, InetAddress tcpAddress) throws IOException {
-		
+
 		this.tcpPort = tcpPort;
 		this.tcpAddress = tcpAddress;
-		this.socket = new Socket(tcpAddress,tcpPort);
+		this.socket = new Socket(tcpAddress, tcpPort);
 		executor = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(250);
 
 	}
@@ -50,9 +54,8 @@ public class Peer implements RMIInterface {
 	public static void main(String args[]) throws InterruptedException, IOException, AlreadyBoundException {
 		System.setProperty("java.net.preferIPv4Stack", "true");
 		System.setProperty("java.rmi.server.hostname", "localhost");
-
 		if (args.length != 5) {
-				System.out.println(
+			System.out.println(
 					"ERROR: Peer format : Peer <PROTOCOL_VERSION> <SERVER_ID> <SERVICE_ACCESS_POINT> <TCP_IP> <TCP_PORT>");
 			return;
 		}
@@ -60,7 +63,7 @@ public class Peer implements RMIInterface {
 		validateArgs(args);
 		loadMemory();
 		loadOccurrences();
-		if (protocolVersion == 1.1) //delete enhancement
+		if (protocolVersion == 1.1) // delete enhancement
 			alive();
 	}
 
@@ -73,7 +76,7 @@ public class Peer implements RMIInterface {
 		serverID = Integer.parseInt(args[1]);
 		accessPoint = args[2];
 
-		Peer peer = new Peer(tcpAddress, tcpPort);
+		Peer peer = new Peer(tcpPort, tcpAddress);
 		RMIInterface stub = (RMIInterface) UnicastRemoteObject.exportObject(peer, 0);
 
 		Registry registry;
@@ -96,49 +99,67 @@ public class Peer implements RMIInterface {
 	// protocols
 
 	@Override
-	public void backup(String filename, int repDegree, boolean enhancement) throws RemoteException, InterruptedException {
-		File file = new File(filename);
-		FileInfo fileInfo = new FileInfo(file, filename, repDegree);
-		ArrayList<Chunk> chunks = fileInfo.getChunks();
-		String chunkId;
-		double workingVersion = getWorkingVersion(enhancement);
+	public void backup(String filename, int repDegree, boolean enhancement)
+			throws RemoteException, InterruptedException {
+		try {
+			OutputStream os = socket.getOutputStream();
+			OutputStreamWriter osw = new OutputStreamWriter(os);
+			BufferedWriter bw = new BufferedWriter(osw);
 
-		if(workingVersion<0){
-			System.out.println("This version does not support this opperation");
-		 return;
-		}
+			String number = "2";
 
-		for (int i = 0; i < chunks.size(); i++) {
+			String sendMessage = number + "\n";
+			bw.write(sendMessage);
+			bw.flush();
+			System.out.println("Message sent to the server : " + sendMessage);
+		} catch (IOException exception) {
 
-			byte[] header = Utils.getHeader("PUTCHUNK", workingVersion, serverID, fileInfo.getFileId(),
-					chunks.get(i).getChunkNo(), repDegree);
-			String headerString = new String(header, 0, header.length);
-
-			System.out.println("SENT: " + headerString);
-
-			chunkId = fileInfo.getFileId() + "-" + chunks.get(i).getChunkNo();
-
-			if (!memory.hasFileByID(fileInfo.getFileId()))
-				memory.files.add(fileInfo);
-
-			if (!memory.savedOcurrences.containsKey(chunkId)) {
-				memory.savedOcurrences.put(chunkId, 0);
-				Utils.savedOccurrencesFile();
+		} finally {
+			try {
+				socket.close();
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
-
-			byte[] body = chunks.get(i).getData();
-			byte[] message = new byte[header.length + body.length];
-			System.arraycopy(header, 0, message, 0, header.length);
-			System.arraycopy(body, 0, message, header.length, body.length);
-
-			String channel = "mdb";
-			Peer.executor.execute(new WorkerThread(message, channel));
-
-			// The initiator-peer collects the confirmation
-			// messages during a time interval of one second
-			Peer.executor.schedule(new BackupThread(chunkId, message, repDegree), 1, TimeUnit.SECONDS);
-
 		}
+
+		/*
+		 * File file = new File(filename); FileInfo fileInfo = new FileInfo(file,
+		 * filename, repDegree); ArrayList<Chunk> chunks = fileInfo.getChunks(); String
+		 * chunkId; double workingVersion = getWorkingVersion(enhancement);
+		 * 
+		 * if(workingVersion<0){
+		 * System.out.println("This version does not support this opperation"); return;
+		 * }
+		 * 
+		 * for (int i = 0; i < chunks.size(); i++) {
+		 * 
+		 * byte[] header = Utils.getHeader("PUTCHUNK", workingVersion, serverID,
+		 * fileInfo.getFileId(), chunks.get(i).getChunkNo(), repDegree); String
+		 * headerString = new String(header, 0, header.length);
+		 * 
+		 * System.out.println("SENT: " + headerString);
+		 * 
+		 * chunkId = fileInfo.getFileId() + "-" + chunks.get(i).getChunkNo();
+		 * 
+		 * if (!memory.hasFileByID(fileInfo.getFileId())) memory.files.add(fileInfo);
+		 * 
+		 * if (!memory.savedOcurrences.containsKey(chunkId)) {
+		 * memory.savedOcurrences.put(chunkId, 0); Utils.savedOccurrencesFile(); }
+		 * 
+		 * byte[] body = chunks.get(i).getData(); byte[] message = new
+		 * byte[header.length + body.length]; System.arraycopy(header, 0, message, 0,
+		 * header.length); System.arraycopy(body, 0, message, header.length,
+		 * body.length);
+		 * 
+		 * String channel = "mdb"; Peer.executor.execute(new WorkerThread(message,
+		 * channel));
+		 * 
+		 * // The initiator-peer collects the confirmation // messages during a time
+		 * interval of one second Peer.executor.schedule(new BackupThread(chunkId,
+		 * message, repDegree), 1, TimeUnit.SECONDS);
+		 * 
+		 * }
+		 */
 
 	}
 
@@ -151,9 +172,9 @@ public class Peer implements RMIInterface {
 		String header = null;
 		double workingVersion = getWorkingVersion(enhancement);
 
-		if(workingVersion<0){
+		if (workingVersion < 0) {
 			System.out.println("This version does not support this opperation");
-		 return;
+			return;
 		}
 
 		if (!memory.hasFileByID(fileId)) {
@@ -178,7 +199,8 @@ public class Peer implements RMIInterface {
 				String channel = "mc";
 				Peer.executor.execute(new WorkerThread(message, channel));
 			}
-			Peer.executor.schedule(new RestoreFileThread(fileInfo.getFilename(), fileInfo.getFileId(), chunks.size(),workingVersion),
+			Peer.executor.schedule(
+					new RestoreFileThread(fileInfo.getFilename(), fileInfo.getFileId(), chunks.size(), workingVersion),
 					10, TimeUnit.SECONDS);
 		}
 	}
@@ -223,8 +245,9 @@ public class Peer implements RMIInterface {
 
 				if (currentSpaceToFree > 0) {
 					currentSpaceToFree -= memory.savedChunks.get(key).getChunkSize();
-					String header = "REMOVED " + protocolVersion+" "+serverID + " " + memory.savedChunks.get(key).getFileId() + " "
-							+ memory.savedChunks.get(key).getChunkNo() + " " + "\r\n\r\n";
+					String header = "REMOVED " + protocolVersion + " " + serverID + " "
+							+ memory.savedChunks.get(key).getFileId() + " " + memory.savedChunks.get(key).getChunkNo()
+							+ " " + "\r\n\r\n";
 					System.out.print(header);
 
 					try {
@@ -240,8 +263,8 @@ public class Peer implements RMIInterface {
 							+ "-" + memory.savedChunks.get(key).getReplicationDegree();
 					File fileToDelete = new File(filePath);
 					fileToDelete.delete();
-					iterator.remove();	
-					Peer.getMemory().savedOcurrences.put(key,Peer.getMemory().savedOcurrences.get(key)-1);
+					iterator.remove();
+					Peer.getMemory().savedOcurrences.put(key, Peer.getMemory().savedOcurrences.get(key) - 1);
 					Utils.savedOccurrencesFile();
 					Peer.getMemory().savedChunks.remove(key);
 				}
@@ -282,27 +305,27 @@ public class Peer implements RMIInterface {
 			System.out.println("--Perceived replication degree: " + memory.savedOcurrences.get(key));
 
 		}
-		
-		//Storage capacity
-		System.out.println("\nThe maximum amount of disk space that can be used to store chunks: "+memory.capacity);
-		System.out.println("The amount of storage used to backup the chunks: "+memory.memoryUsed);
-		
+
+		// Storage capacity
+		System.out.println("\nThe maximum amount of disk space that can be used to store chunks: " + memory.capacity);
+		System.out.println("The amount of storage used to backup the chunks: " + memory.memoryUsed);
+
 	}
+
 	public static void alive() {
-		
-		String aliveMessage = "ALIVE "+protocolVersion + " " + serverID+" "+"\r\n\r\n";
-		System.out.println("\nSENT: "+aliveMessage);
+
+		String aliveMessage = "ALIVE " + protocolVersion + " " + serverID + " " + "\r\n\r\n";
+		System.out.println("\nSENT: " + aliveMessage);
 		try {
 			byte[] byteMessage = aliveMessage.getBytes("US-ASCII");
-			String channel ="mc";
-			executor.execute(new WorkerThread(byteMessage,channel));
-			
+			String channel = "mc";
+			executor.execute(new WorkerThread(byteMessage, channel));
+
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
 		}
-		
-	}
 
+	}
 
 	// gets
 
@@ -314,10 +337,6 @@ public class Peer implements RMIInterface {
 		return memory;
 	}
 
-	public static MDBListener getMDBListener() {
-		return mdbListener;
-	}
-
 	public static ScheduledThreadPoolExecutor getExecutor() {
 		return executor;
 	}
@@ -326,24 +345,17 @@ public class Peer implements RMIInterface {
 		return serverID;
 	}
 
-	public static MCListener getMCListener() {
-		return mcListener;
-	}
-
-	public static MDRListener getMDRListener() {
-		return mdrListener;
-	}
-
-	public double getWorkingVersion(boolean enhancement){
+	public double getWorkingVersion(boolean enhancement) {
 		double ret;
 
-			if(enhancement && protocolVersion==1.0)
-				ret = -1;
-			else if(!enhancement && protocolVersion==1.1)
-				ret = 1.0;
-			else ret = protocolVersion;
+		if (enhancement && protocolVersion == 1.0)
+			ret = -1;
+		else if (!enhancement && protocolVersion == 1.1)
+			ret = 1.0;
+		else
+			ret = protocolVersion;
 
-		return ret;	
+		return ret;
 	}
 
 	public static void loadMemory() {
@@ -381,8 +393,8 @@ public class Peer implements RMIInterface {
 							String chunkId = allFiles[i].trim() + "-" + chunkNo;
 							Chunk chunk = new Chunk(allFiles[i].trim(), chunkNo, content, (int) chunkFile.length(),
 									chunkId.trim(), replicationDegree);
-							if(!memory.savedChunks.containsKey(chunkId))
-							memory.savedChunks.put(chunkId, chunk);
+							if (!memory.savedChunks.containsKey(chunkId))
+								memory.savedChunks.put(chunkId, chunk);
 						}
 					}
 
@@ -401,16 +413,16 @@ public class Peer implements RMIInterface {
 			try {
 				in = new FileInputStream(storedFile);
 				BufferedReader buf = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
-				 String line;
-		            
-				 while ((line = buf.readLine()) != null) {
-					 String[] splitLine = line.trim().split(" ");
-					 String chunkId = splitLine[0].trim();
-					 int occurrences= Integer.parseInt(splitLine[1]);
-					 if(!memory.savedOcurrences.containsKey(chunkId))
-					memory.savedOcurrences.put(chunkId, occurrences);
+				String line;
+
+				while ((line = buf.readLine()) != null) {
+					String[] splitLine = line.trim().split(" ");
+					String chunkId = splitLine[0].trim();
+					int occurrences = Integer.parseInt(splitLine[1]);
+					if (!memory.savedOcurrences.containsKey(chunkId))
+						memory.savedOcurrences.put(chunkId, occurrences);
 				}
-				 buf.close();
+				buf.close();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
