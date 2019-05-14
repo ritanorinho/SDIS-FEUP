@@ -62,78 +62,8 @@ public class Server
 
         serverSocket.setEnabledCipherSuites(new String[] {"TLS_DH_anon_WITH_AES_128_CBC_SHA"});
 
-        /*
-        try 
-        {
-            //Security.setProperty("ssl.ServerSocketFactory.provider", "oops");
-
-            ServerSocketFactory ssocketFactory = SSLServerSocketFactory.getDefault();
-
-            serverSocket = (SSLServerSocket) ssocketFactory.createServerSocket(tcp_port, 30, tcp_addr);
-
-            
-
-            SSLServerSocket sslListener = (SSLServerSocket) serverSocket;
-            sslListener.setNeedClientAuth(true);
-            sslListener.setEnabledCipherSuites(
-            new String[] { "TLS_DHE_DSS_WITH_AES_256_CBC_SHA256" });
-            sslListener.setEnabledProtocols(
-            new String[] { "TLSv1.2" });
-
-            serverSocket.setNeedClientAuth(true);
-
-        } 
-        catch (Exception e) 
-        {
-            System.out.println("Couldn't create ssl server socket");
-            e.printStackTrace();
-            return;
-        } 
-
-        /*
-        finally 
-        {
-            // restore the security properties
-        
-            if (reservedSSFacProvider == null)
-                reservedSSFacProvider = "";
-            
-            Security.setProperty("ssl.ServerSocketFactory.provider", reservedSSFacProvider); 
-        } */
-
     executor.execute(new TCPThread("start"));
 }
-
-private static ServerSocketFactory getServerSocketFactory(String type) 
-{
-    if (type.equals("TLS")) {
-        SSLServerSocketFactory ssf = null;
-        try {
-            // set up key manager to do server authentication
-            SSLContext ctx;
-            KeyManagerFactory kmf;
-            KeyStore ks;
-            char[] passphrase = "passphrase".toCharArray();
-
-            ctx = SSLContext.getInstance("TLS");
-            kmf = KeyManagerFactory.getInstance("SunX509");
-            ks = KeyStore.getInstance("JKS");
-
-            ks.load(new FileInputStream("testkeys"), passphrase);
-            kmf.init(ks, passphrase);
-            ctx.init(kmf.getKeyManagers(), null, null);
-
-            ssf = ctx.getServerSocketFactory();
-            return ssf;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    } else {
-        return ServerSocketFactory.getDefault();
-    }
-    return null;
-}
-
 
     public static SSLServerSocket getServerSocket()
     {

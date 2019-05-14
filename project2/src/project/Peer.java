@@ -22,7 +22,9 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.io.BufferedWriter;
+import java.io.DataOutputStream;
 
 import threads.*;
 import utils.Chunk;
@@ -47,61 +49,21 @@ public class Peer implements RMIInterface {
 	private static SSLSocket socket;
 	private static Memory memory = new Memory();
 
-	public Peer(Integer tcpPort, InetAddress tcpAddress) throws IOException 
-	{
+	public Peer(Integer tcpPort, InetAddress tcpAddress) throws IOException {
 		this.tcpPort = tcpPort;
 		this.tcpAddress = tcpAddress;
 
-        SSLSocketFactory ssf = (SSLSocketFactory) SSLSocketFactory.getDefault();  
-        
-        try 
-        {  
-            socket = (SSLSocket) ssf.createSocket(tcpAddress, tcpPort);  
-        }  
-        catch(IOException e) 
-        {  
-            System.out.println("Peer - Failed to create SSLSocket");  
-            e.getMessage();  
-            return;  
-		} 
-		socket.setEnabledCipherSuites(new String[] {"TLS_DH_anon_WITH_AES_128_CBC_SHA"});
+		SSLSocketFactory ssf = (SSLSocketFactory) SSLSocketFactory.getDefault();
+
+		try {
+			socket = (SSLSocket) ssf.createSocket(tcpAddress, tcpPort);
+		} catch (IOException e) {
+			System.out.println("Peer - Failed to create SSLSocket");
+			e.getMessage();
+			return;
+		}
+		socket.setEnabledCipherSuites(new String[] { "TLS_DH_anon_WITH_AES_128_CBC_SHA" });
 		socket.startHandshake();
-
-
-		/*
-		try 
-        {
-			//Security.setProperty("ssl.ServerSocketFactory.provider", "oops");
-			
-			SSLSocketFactory factory = (SSLSocketFactory)SSLSocketFactory.getDefault();
-			
-			try
-			{
-				socket =  factory.createSocket(tcpAddress, tcpPort);
-				((SSLSocket) socket).setEnabledCipherSuites(
-				  new String[] { "TLS_DHE_DSS_WITH_AES_256_CBC_SHA256" });
-				((SSLSocket) socket).setEnabledProtocols(
-				  new String[] { "TLSv1.2" });
-				 
-				SSLParameters sslParams = new SSLParameters();
-				sslParams.setEndpointIdentificationAlgorithm("HTTPS");
-				((SSLSocket) socket).setSSLParameters(sslParams);
-			}
-			catch(Exception e)
-			{
-				e.printStackTrace();
-			}
-
-        } 
-        catch (Exception e) 
-        {
-            System.out.println("Couldn't create ssl server socket");
-            e.printStackTrace();
-            return;
-        } 
-		
-		((SSLSocket)socket).startHandshake(); */
-		
 		executor = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(250);
 	}
 
@@ -153,58 +115,58 @@ public class Peer implements RMIInterface {
 	// protocols
 
 	@Override
-	public void backup(String filename, int repDegree, boolean enhancement)
-			throws RemoteException, InterruptedException {
-	
-			try
-			{
-				BufferedReader input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-				System.out.println(input.readLine());
+	public void backup(String filename, int repDegree, boolean enhancement) throws RemoteException, InterruptedException {
+
+		File file = new File(filename);
+		FileInfo fileInfo = new FileInfo(file, filename, repDegree);
+		ArrayList<Chunk> chunks = fileInfo.getChunks();
+		String chunkId;
+		double workingVersion = getWorkingVersion(enhancement);
+
+		if (workingVersion < 0) {
+			System.out.println("This version does not support this opperation");
+			return;
+		}
+
+		for (int i = 0; i < chunks.size(); i++) {
+
+			byte[] header = Utils.getHeader("PUTCHUNK", workingVersion, serverID, fileInfo.getFileId(),
+					chunks.get(i).getChunkNo(), repDegree);
+			String headerString = new String(header, 0, header.length);
+
+			System.out.println("SENT: " + headerString);
+
+			chunkId = fileInfo.getFileId() + "-" + chunks.get(i).getChunkNo();
+
+			if (!memory.hasFileByID(fileInfo.getFileId()))
+				memory.files.add(fileInfo);
+
+			if (!memory.savedOcurrences.containsKey(chunkId)) {
+				memory.savedOcurrences.put(chunkId, 0);
+				Utils.savedOccurrencesFile();
 			}
-			catch(IOException e)
-			{
+
+			byte[] body = chunks.get(i).getData();
+			byte[] message = new byte[header.length + body.length];
+			System.arraycopy(header, 0, message, 0, header.length);
+			System.arraycopy(body, 0, message, header.length, body.length);
+			OutputStream outputStream;
+			DataOutputStream dataOutputStream;
+		
+			try {
+				outputStream = socket.getOutputStream();
+				dataOutputStream = new DataOutputStream(outputStream);
+				dataOutputStream.writeInt(body.length);
+				dataOutputStream.write(body);
+				
+				System.out.println("length "+body.length);
+
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 
-		
-		/*
-		 * File file = new File(filename); FileInfo fileInfo = new FileInfo(file,
-		 * filename, repDegree); ArrayList<Chunk> chunks = fileInfo.getChunks(); String
-		 * chunkId; double workingVersion = getWorkingVersion(enhancement);
-		 * 
-		 * if(workingVersion<0){
-		 * System.out.println("This version does not support this opperation"); return;
-		 * }
-		 * 
-		 * for (int i = 0; i < chunks.size(); i++) {
-		 * 
-		 * byte[] header = Utils.getHeader("PUTCHUNK", workingVersion, serverID,
-		 * fileInfo.getFileId(), chunks.get(i).getChunkNo(), repDegree); String
-		 * headerString = new String(header, 0, header.length);
-		 * 
-		 * System.out.println("SENT: " + headerString);
-		 * 
-		 * chunkId = fileInfo.getFileId() + "-" + chunks.get(i).getChunkNo();
-		 * 
-		 * if (!memory.hasFileByID(fileInfo.getFileId())) memory.files.add(fileInfo);
-		 * 
-		 * if (!memory.savedOcurrences.containsKey(chunkId)) {
-		 * memory.savedOcurrences.put(chunkId, 0); Utils.savedOccurrencesFile(); }
-		 * 
-		 * byte[] body = chunks.get(i).getData(); byte[] message = new
-		 * byte[header.length + body.length]; System.arraycopy(header, 0, message, 0,
-		 * header.length); System.arraycopy(body, 0, message, header.length,
-		 * body.length);
-		 * 
-		 * String channel = "mdb"; Peer.executor.execute(new WorkerThread(message,
-		 * channel));
-		 * 
-		 * // The initiator-peer collects the confirmation // messages during a time
-		 * interval of one second Peer.executor.schedule(new BackupThread(chunkId,
-		 * message, repDegree), 1, TimeUnit.SECONDS);
-		 * 
-		 * }
-		 */
+		}
 
 	}
 
@@ -245,8 +207,8 @@ public class Peer implements RMIInterface {
 				Peer.executor.execute(new WorkerThread(message, channel));
 			}
 			Peer.executor.schedule(
-					new RestoreFileThread(fileInfo.getFilename(), fileInfo.getFileId(), chunks.size(), workingVersion),
-					10, TimeUnit.SECONDS);
+					new RestoreFileThread(fileInfo.getFilename(), fileInfo.getFileId(), chunks.size(), workingVersion), 10,
+					TimeUnit.SECONDS);
 		}
 	}
 
@@ -290,9 +252,8 @@ public class Peer implements RMIInterface {
 
 				if (currentSpaceToFree > 0) {
 					currentSpaceToFree -= memory.savedChunks.get(key).getChunkSize();
-					String header = "REMOVED " + protocolVersion + " " + serverID + " "
-							+ memory.savedChunks.get(key).getFileId() + " " + memory.savedChunks.get(key).getChunkNo()
-							+ " " + "\r\n\r\n";
+					String header = "REMOVED " + protocolVersion + " " + serverID + " " + memory.savedChunks.get(key).getFileId()
+							+ " " + memory.savedChunks.get(key).getChunkNo() + " " + "\r\n\r\n";
 					System.out.print(header);
 
 					try {
@@ -304,8 +265,8 @@ public class Peer implements RMIInterface {
 					}
 
 					String[] splitKey = key.trim().split("-");
-					String filePath = "Peer" + Peer.getId() + "/" + "STORED" + "/" + splitKey[0] + "/" + splitKey[1]
-							+ "-" + memory.savedChunks.get(key).getReplicationDegree();
+					String filePath = "Peer" + Peer.getId() + "/" + "STORED" + "/" + splitKey[0] + "/" + splitKey[1] + "-"
+							+ memory.savedChunks.get(key).getReplicationDegree();
 					File fileToDelete = new File(filePath);
 					fileToDelete.delete();
 					iterator.remove();
@@ -436,8 +397,8 @@ public class Peer implements RMIInterface {
 								e.printStackTrace();
 							}
 							String chunkId = allFiles[i].trim() + "-" + chunkNo;
-							Chunk chunk = new Chunk(allFiles[i].trim(), chunkNo, content, (int) chunkFile.length(),
-									chunkId.trim(), replicationDegree);
+							Chunk chunk = new Chunk(allFiles[i].trim(), chunkNo, content, (int) chunkFile.length(), chunkId.trim(),
+									replicationDegree);
 							if (!memory.savedChunks.containsKey(chunkId))
 								memory.savedChunks.put(chunkId, chunk);
 						}
