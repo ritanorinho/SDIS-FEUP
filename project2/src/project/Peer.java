@@ -31,6 +31,11 @@ import utils.Memory;
 import utils.Utils;
 import java.net.Socket;
 
+import javax.net.ssl.SSLParameters;
+import javax.net.ssl.SSLSocket;
+import javax.net.SocketFactory;
+import javax.net.ssl.SSLSocketFactory;
+
 public class Peer implements RMIInterface {
 
 	private static double protocolVersion;
@@ -39,16 +44,65 @@ public class Peer implements RMIInterface {
 	private static volatile int tcpPort;
 	private static volatile InetAddress tcpAddress;
 	private static ScheduledThreadPoolExecutor executor;
-	private static Socket socket;
+	private static SSLSocket socket;
 	private static Memory memory = new Memory();
 
-	public Peer(Integer tcpPort, InetAddress tcpAddress) throws IOException {
-
+	public Peer(Integer tcpPort, InetAddress tcpAddress) throws IOException 
+	{
 		this.tcpPort = tcpPort;
 		this.tcpAddress = tcpAddress;
-		this.socket = new Socket(tcpAddress, tcpPort);
-		executor = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(250);
 
+        SSLSocketFactory ssf = (SSLSocketFactory) SSLSocketFactory.getDefault();  
+        
+        try 
+        {  
+            socket = (SSLSocket) ssf.createSocket(tcpAddress, tcpPort);  
+        }  
+        catch(IOException e) 
+        {  
+            System.out.println("Peer - Failed to create SSLSocket");  
+            e.getMessage();  
+            return;  
+		} 
+		
+		socket.startHandshake();
+
+
+		/*
+		try 
+        {
+			//Security.setProperty("ssl.ServerSocketFactory.provider", "oops");
+			
+			SSLSocketFactory factory = (SSLSocketFactory)SSLSocketFactory.getDefault();
+			
+			try
+			{
+				socket =  factory.createSocket(tcpAddress, tcpPort);
+				((SSLSocket) socket).setEnabledCipherSuites(
+				  new String[] { "TLS_DHE_DSS_WITH_AES_256_CBC_SHA256" });
+				((SSLSocket) socket).setEnabledProtocols(
+				  new String[] { "TLSv1.2" });
+				 
+				SSLParameters sslParams = new SSLParameters();
+				sslParams.setEndpointIdentificationAlgorithm("HTTPS");
+				((SSLSocket) socket).setSSLParameters(sslParams);
+			}
+			catch(Exception e)
+			{
+				e.printStackTrace();
+			}
+
+        } 
+        catch (Exception e) 
+        {
+            System.out.println("Couldn't create ssl server socket");
+            e.printStackTrace();
+            return;
+        } 
+		
+		((SSLSocket)socket).startHandshake(); */
+		
+		executor = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(250);
 	}
 
 	public static void main(String args[]) throws InterruptedException, IOException, AlreadyBoundException {
@@ -101,27 +155,19 @@ public class Peer implements RMIInterface {
 	@Override
 	public void backup(String filename, int repDegree, boolean enhancement)
 			throws RemoteException, InterruptedException {
-		try {
-			OutputStream os = socket.getOutputStream();
-			OutputStreamWriter osw = new OutputStreamWriter(os);
-			BufferedWriter bw = new BufferedWriter(osw);
+		
 
-			String number = "2";
-
-			String sendMessage = number + "\n";
-			bw.write(sendMessage);
-			bw.flush();
-			System.out.println("Message sent to the server : " + sendMessage);
-		} catch (IOException exception) {
-
-		} finally {
-			try {
-				socket.close();
-			} catch (Exception e) {
+			try
+			{
+				BufferedReader input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+				System.out.println(input.readLine());
+			}
+			catch(IOException e)
+			{
 				e.printStackTrace();
 			}
-		}
 
+		
 		/*
 		 * File file = new File(filename); FileInfo fileInfo = new FileInfo(file,
 		 * filename, repDegree); ArrayList<Chunk> chunks = fileInfo.getChunks(); String

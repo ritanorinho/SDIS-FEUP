@@ -1,39 +1,44 @@
 package project;
 
 import java.io.IOException;
-import java.net.ServerSocket;
 import java.net.Socket;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.io.BufferedReader;
+import javax.net.ssl.SSLServerSocket;
 
-public class TCPThread extends Thread {
-    ServerSocket serverSocket;
+public class TCPThread extends Thread 
+{
+    private SSLServerSocket serverSocket;
     private String message;
-    TCPThread(String message) {
+
+    TCPThread(String message) 
+    {
         this.message = message;
         System.out.println("tcp thread");
         serverSocket = Server.getServerSocket();
     }
 
     @Override
-    public void run() {
-        
-
-        
-            try {
+    public void run() 
+    {
+        try 
+        {
+            while(true)
+            {
                 Socket socket = serverSocket.accept();
                 System.out.println("connect");
-                InputStream is = socket.getInputStream();
-                InputStreamReader isr = new InputStreamReader(is);
-                BufferedReader br = new BufferedReader(isr);
-                String number = br.readLine();
-                System.out.println("Message received from client is "+number);
-                socket.close();
-
-
-            } catch (IOException e) {
+    
+                PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+                out.println("smt");
             }
+            
+        } 
+        catch (IOException e) 
+        {
+            e.printStackTrace();
+        }
     }
    
 }
