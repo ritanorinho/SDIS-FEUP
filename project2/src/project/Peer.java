@@ -64,7 +64,7 @@ public class Peer implements RMIInterface {
             e.getMessage();  
             return;  
 		} 
-		
+		socket.setEnabledCipherSuites(new String[] {"TLS_DH_anon_WITH_AES_128_CBC_SHA"});
 		socket.startHandshake();
 
 
@@ -155,8 +155,7 @@ public class Peer implements RMIInterface {
 	@Override
 	public void backup(String filename, int repDegree, boolean enhancement)
 			throws RemoteException, InterruptedException {
-		
-
+	
 			try
 			{
 				BufferedReader input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
