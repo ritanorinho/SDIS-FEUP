@@ -1,10 +1,12 @@
 package project;
 
 import java.io.BufferedReader;
+import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
@@ -192,7 +194,7 @@ public class Peer implements RMIInterface {
 	@Override
 	public void backup(String filename, int repDegree, boolean enhancement)
 			throws RemoteException, InterruptedException {
-				System.out.println("backup");
+
 		File file = new File(filename);
 		FileInfo fileInfo = new FileInfo(file, filename, repDegree);
 		ArrayList<Chunk> chunks = fileInfo.getChunks();
@@ -227,16 +229,15 @@ public class Peer implements RMIInterface {
 			System.arraycopy(header, 0, message, 0, header.length);
 			System.arraycopy(body, 0, message, header.length, body.length);
 
-			
-
 			try {
 			 	OutputStream outputStream;
 				DataOutputStream dataOutputStream;			
 				outputStream = socket.getOutputStream();
 				dataOutputStream = new DataOutputStream(outputStream);
-				String backupMessage= "BACKUP "+chunkId+"\n";
+				String backupMessage= "BACKUP "+chunkId+ " Peer"+serverID+"\n";
+				executor.execute(new ReceiveMessageFromServer(socket));
 				dataOutputStream.writeChars(backupMessage);
-				System.out.println(backupMessage);
+				//Get the return message from the server
 				
 			} catch (Exception e) {
 				// TODO Auto-generated catch block

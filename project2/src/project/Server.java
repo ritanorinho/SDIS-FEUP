@@ -63,7 +63,7 @@ public class Server
 		 // Require client authentication  
 		 serverSocket.setNeedClientAuth(false); //TODO Change
 		 serverSocket.setEnabledCipherSuites(new String[] {"TLS_DH_anon_WITH_AES_128_CBC_SHA"});
-		 executor.execute( new TCPThread());
+		 executor.execute( new TCPThread(executor, memory));
 		
 
         /*if(!createStores())

@@ -2,21 +2,30 @@ package project;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+
 import javax.net.ssl.SSLServerSocket;
+
+import utils.Memory;
 
 public class TCPThread extends Thread {
     private SSLServerSocket serverSocket;
-    TCPThread() {
-        serverSocket = Server.getServerSocket();
-    }
+    private ScheduledThreadPoolExecutor executor;
+    private Memory memory;
 
-    @Override
+    public TCPThread(ScheduledThreadPoolExecutor executor, Memory memory) {
+        this.executor = executor;
+        this.memory = memory;
+        serverSocket = Server.getServerSocket();
+	}
+
+	@Override
     public void run() {
         try {
             while(true){
                 
                 Socket socket = serverSocket.accept();
-                Server.executor.execute(new AcceptConnectionsThread(socket,Server.executor));
+                Server.executor.execute(new AcceptConnectionsThread(socket,executor, memory));
             
             }
 
