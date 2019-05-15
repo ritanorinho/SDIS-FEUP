@@ -19,7 +19,6 @@ public class Memory {
 	public int memoryUsed = 0;
 	public int availableCapacity= capacity - memoryUsed;
 	
-	
 	public boolean hasFileByID(String fileId) {
 		for (int i = 0; i < files.size(); i++) {
 			if (files.get(i).getFileId().equals(fileId))
@@ -75,5 +74,10 @@ public class Memory {
 		this.memoryUsed=usedMemory;
 		this.availableCapacity= this.capacity-usedMemory;
 		return usedMemory;
+	}
+
+	public void addConnection(String peerID, Socket socket){
+		conections.put(peerID, socket);
+
 	}
 }

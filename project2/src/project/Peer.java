@@ -64,6 +64,14 @@ public class Peer implements RMIInterface {
 		}
 		socket.setEnabledCipherSuites(new String[] { "TLS_DH_anon_WITH_AES_128_CBC_SHA" });
 		socket.startHandshake();
+
+		// DataOutputStream dOut = new DataOutputStream(socket.getOutputStream());
+
+		// dOut.writeChars("Peer" + Peer.getId());
+		// dOut.flush(); // Send off the data
+
+		// dOut.close();
+
 		executor = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(250);
 	}
 
@@ -159,7 +167,7 @@ public class Peer implements RMIInterface {
 				dataOutputStream.writeInt(body.length);
 				dataOutputStream.write(body);
 				
-				System.out.println("length "+body.length);
+				System.out.println("length "+ body.length);
 
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
@@ -434,7 +442,6 @@ public class Peer implements RMIInterface {
 			}
 
 		}
-
 	}
 
 	public static List<String> sortChunksToDelete() {
