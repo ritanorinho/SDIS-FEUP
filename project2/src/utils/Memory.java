@@ -14,6 +14,7 @@ public class Memory {
 	public ConcurrentHashMap<String,Integer> savedOcurrences = new ConcurrentHashMap<String,Integer>();
 	public HashMap<String, Pair> confirmedChunks = new HashMap<String, Pair>(); //chunkid < port, address>
 	public HashMap<String, Socket> conections = new HashMap<String, Socket>();
+	public HashMap<String,String> conectionsPorts = new HashMap<String, String>();
 	public ArrayList<String> deletedFiles= new ArrayList<String>();
 	public int capacity = 999999999;
 	public int memoryUsed = 0;
@@ -76,8 +77,10 @@ public class Memory {
 		return usedMemory;
 	}
 
-	public void addConnection(String peerID, Socket socket){
+	public void addConnection(String peerID, Socket socket, int port, String address){
 		conections.put(peerID, socket);
+		String portAddress = port + "-"+address;
+		conectionsPorts.put(peerID,portAddress);
 
 	}
 }

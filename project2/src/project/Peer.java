@@ -40,20 +40,25 @@ public class Peer implements RMIInterface {
 	private static double protocolVersion;
 	private static int serverID;
 	private static String accessPoint;
-	private static volatile int tcpPort;
-	private static volatile InetAddress tcpAddress;
+	private static volatile int serverPort;
+	private static volatile InetAddress serverAddress;
+	private static volatile int peerPort;
+	private static volatile InetAddress peerAddress;
 	private static ScheduledThreadPoolExecutor executor;
 	private static SSLSocket socket;
 	private static Memory memory = new Memory();
 
-	public Peer(Integer tcpPort, InetAddress tcpAddress) throws IOException {
-		tcpPort = tcpPort;
-		tcpAddress = tcpAddress;
+	public Peer(Integer serverPort, InetAddress serverAddress, Integer peerPort, InetAddress peerAddress)
+			throws IOException {
+		serverPort = serverPort;
+		serverAddress = serverAddress;
+		peerPort = peerPort;
+		peerAddress = peerAddress;
 
 		SSLSocketFactory ssf = (SSLSocketFactory) SSLSocketFactory.getDefault();
 
 		try {
-			socket = (SSLSocket) ssf.createSocket("localhost", tcpPort);
+			socket = (SSLSocket) ssf.createSocket(serverAddress, serverPort);
 		} catch (IOException e) {
 			System.out.println("Peer - Failed to create SSLSocket");
 			e.getMessage();
@@ -79,7 +84,7 @@ public class Peer implements RMIInterface {
 			DataOutputStream dataOutputStream;
 			outputStream = socket.getOutputStream();
 			dataOutputStream = new DataOutputStream(outputStream);
-			String peerID= "Peer" +Peer.getId()+"\n";		
+			String peerID= "Peer" +Peer.getId()+ " "+peerPort+" "+peerAddress+"\n";		
 			dataOutputStream.writeChars(peerID);
 			System.out.println(peerID);
 		} catch (Exception e) {
@@ -90,7 +95,7 @@ public class Peer implements RMIInterface {
 	public static void main(String args[]) throws InterruptedException, IOException, AlreadyBoundException {
 		System.setProperty("java.net.preferIPv4Stack", "true");
 		System.setProperty("java.rmi.server.hostname", "localhost");
-		if (args.length != 5) {
+		if (args.length != 7) {
 			System.out.println(
 					"ERROR: Peer format : Peer <PROTOCOL_VERSION> <SERVER_ID> <SERVICE_ACCESS_POINT> <TCP_IP> <TCP_PORT>");
 			return;
@@ -155,13 +160,15 @@ public class Peer implements RMIInterface {
 	private static void validateArgs(String[] args)
 			throws RemoteException, InterruptedException, IOException, AlreadyBoundException {
 
-		InetAddress tcpAddress = InetAddress.getByName(args[3]);
-		Integer tcpPort = Integer.parseInt(args[4]);
+		InetAddress serverAddress = InetAddress.getByName(args[3]);
+		Integer serverPort = Integer.parseInt(args[4]);
+		InetAddress peerAddress = InetAddress.getByName(args[5]);
+		Integer peerPort = Integer.parseInt(args[6]);
 		protocolVersion = Double.parseDouble(args[0]);
 		serverID = Integer.parseInt(args[1]);
 		accessPoint = args[2];
 
-		Peer peer = new Peer(tcpPort, tcpAddress);
+		Peer peer = new Peer(serverPort, serverAddress,peerPort,peerAddress);
 		RMIInterface stub = (RMIInterface) UnicastRemoteObject.exportObject(peer, 0);
 
 		Registry registry = null;

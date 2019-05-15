@@ -41,7 +41,9 @@ public class AcceptConnectionsThread extends Thread {
                 if (analizeMessage(message)) {
                     String[] splitMessage = message.trim().split("\\s+");
                     String peerID = splitMessage[0];
-                    Server.getMemory().addConnection(peerID, socket);
+                    Integer port = Integer.parseInt(splitMessage[1]);
+                    String address = splitMessage[2];
+                    Server.getMemory().addConnection(peerID, socket,port,address);
                     System.out.println("List of Peers Connected: ");
                     System.out.println(Collections.singletonList(Server.getMemory().conections));
                 }
