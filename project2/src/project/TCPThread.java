@@ -23,33 +23,35 @@ public class TCPThread extends Thread {
     @Override
     public void run() {
         try {
-            ByteArrayOutputStream bufferStream = new ByteArrayOutputStream();
-            int i = 0;
+            Socket socket = serverSocket.accept();
             while (true) {
-                Socket socket = serverSocket.accept();
-               
-               DataInputStream dataInputStream = new DataInputStream(socket.getInputStream());
+                DataInputStream dataInputStream = new DataInputStream(socket.getInputStream());
                 System.out.println("connect");
-                byte[] data = new byte[65000];
-                int length = -1;
-                socket.setReceiveBufferSize(65000);
-                while ((length = dataInputStream.read(data)) > 0) {
-                    
-                    System.out.println("---"+socket.getReceiveBufferSize());
-                    System.out.println(length);
-                    //int length = dataInputStream.read(data);
-                    bufferStream.write(data, 0, length);
-                    String dataString = new String(data);
-
-                    //System.out.println(i+"\n " + dataString+"\n\n");
+                int i = dataInputStream.available();
+                StringBuilder sb = new StringBuilder();
+                char c;
+                while ((c = dataInputStream.readChar())!= '\n') {
+                    //System.out.println("\n"+i+"\n");
+                    sb.append(c);
                 }
-                //System.out.println(data.toString());
-                System.out.println("abc");
+              String message = sb.toString();
+              analizeMessage(message);
 
             }
 
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+    public static void analizeMessage(String message){
+
+        String[] splitMessage = message.trim().split("\\s+");
+        switch (splitMessage[0]){
+            case "BACKUP":
+            System.out.println("backup");
+            break;
+            default:
+
         }
     }
 }

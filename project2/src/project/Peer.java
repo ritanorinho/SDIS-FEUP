@@ -68,12 +68,13 @@ public class Peer implements RMIInterface {
 		socket.setEnabledCipherSuites(new String[] { "TLS_DH_anon_WITH_AES_128_CBC_SHA" });
 
 		/*
-		String[] supportedSuites = socket.getSupportedCipherSuites(); 
- 
-		for(int i = 0; i < supportedSuites.length; i++) 
-			System.out.println(supportedSuites[i]);  */
+		 * String[] supportedSuites = socket.getSupportedCipherSuites();
+		 * 
+		 * for(int i = 0; i < supportedSuites.length; i++)
+		 * System.out.println(supportedSuites[i]);
+		 */
 
-		if(!createStores())
+		if (!createStores())
 			return;
 
 		socket.startHandshake();
@@ -96,55 +97,40 @@ public class Peer implements RMIInterface {
 			alive();
 	}
 
-	public static boolean createStores()
-	{
+	public static boolean createStores() {
 		char[] pwdArray = "password".toCharArray();
 		KeyStore ks, ts;
 
-		try
-		{
+		try {
 			ks = KeyStore.getInstance("JKS");
 			ks.load(new FileInputStream("keystore.jks"), pwdArray);
-		}
-		catch(Exception e)
-		{
-			try
-			{
+		} catch (Exception e) {
+			try {
 				ks = KeyStore.getInstance(KeyStore.getDefaultType());
 				ks.load(null, pwdArray);
 
-				try(FileOutputStream fos = new FileOutputStream("keystore.jks"))
-				{
+				try (FileOutputStream fos = new FileOutputStream("keystore.jks")) {
 					ks.store(fos, pwdArray);
 				}
-			}
-			catch(Exception e2)
-			{
+			} catch (Exception e2) {
 				System.out.println("Couldn't create keystore");
 				e2.printStackTrace();
 				return false;
 			}
 		}
 
-		try
-		{
+		try {
 			ts = KeyStore.getInstance("JKS");
 			ts.load(new FileInputStream("truststore.jks"), pwdArray);
-		}
-		catch(Exception e)
-		{
-			try
-			{
+		} catch (Exception e) {
+			try {
 				ts = KeyStore.getInstance(KeyStore.getDefaultType());
 				ts.load(null, pwdArray);
 
-				try(FileOutputStream fos = new FileOutputStream("truststore.jks"))
-				{
+				try (FileOutputStream fos = new FileOutputStream("truststore.jks")) {
 					ts.store(fos, pwdArray);
 				}
-			}
-			catch(Exception e2)
-			{
+			} catch (Exception e2) {
 				System.out.println("Couldn't create trust store");
 				e2.printStackTrace();
 				return false;
@@ -187,7 +173,6 @@ public class Peer implements RMIInterface {
 				e3.printStackTrace();
 			}
 		}
-		System.out.println(registry);
 	}
 
 	// protocols
@@ -233,12 +218,12 @@ public class Peer implements RMIInterface {
 
 			try {
 				outputStream = socket.getOutputStream();
-				dataOutputStream = new DataOutputStream(outputStream);				
-				// dataOutputStream.writeInt(message.length);
-				dataOutputStream.write(message, 0, message.length);
-				System.out.println("length " + message.length);
-
-			} catch (IOException e) {
+				dataOutputStream = new DataOutputStream(outputStream);
+				String backupMessage= "BACKUP "+chunkId+"\n";		
+				dataOutputStream.writeChars(backupMessage);
+				
+				
+			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
