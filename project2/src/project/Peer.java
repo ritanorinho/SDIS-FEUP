@@ -15,7 +15,6 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.security.KeyStore;
-import java.security.KeyStoreException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -24,9 +23,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.io.BufferedWriter;
 import java.io.DataOutputStream;
 
 import threads.*;
@@ -34,11 +31,8 @@ import utils.Chunk;
 import utils.FileInfo;
 import utils.Memory;
 import utils.Utils;
-import java.net.Socket;
 
-import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocket;
-import javax.net.SocketFactory;
 import javax.net.ssl.SSLSocketFactory;
 
 public class Peer implements RMIInterface {
@@ -53,13 +47,13 @@ public class Peer implements RMIInterface {
 	private static Memory memory = new Memory();
 
 	public Peer(Integer tcpPort, InetAddress tcpAddress) throws IOException {
-		this.tcpPort = tcpPort;
-		this.tcpAddress = tcpAddress;
+		tcpPort = tcpPort;
+		tcpAddress = tcpAddress;
 
 		SSLSocketFactory ssf = (SSLSocketFactory) SSLSocketFactory.getDefault();
 
 		try {
-			socket = (SSLSocket) ssf.createSocket(tcpAddress, tcpPort);
+			socket = (SSLSocket) ssf.createSocket("localhost", tcpPort);
 		} catch (IOException e) {
 			System.out.println("Peer - Failed to create SSLSocket");
 			e.getMessage();
@@ -79,7 +73,7 @@ public class Peer implements RMIInterface {
 
 		socket.startHandshake();
 		executor = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(250);
-
+ 
 		try {
 			OutputStream outputStream;
 			DataOutputStream dataOutputStream;
@@ -87,9 +81,10 @@ public class Peer implements RMIInterface {
 			dataOutputStream = new DataOutputStream(outputStream);
 			String peerID= "Peer" +Peer.getId()+"\n";		
 			dataOutputStream.writeChars(peerID);
+			System.out.println(peerID);
 		} catch (Exception e) {
 			System.out.println("ERROR");
-		}
+		} 
 	}
 
 	public static void main(String args[]) throws InterruptedException, IOException, AlreadyBoundException {
@@ -172,7 +167,7 @@ public class Peer implements RMIInterface {
 		Registry registry = null;
 
 		try {
-			registry = LocateRegistry.getRegistry();
+			registry = LocateRegistry.getRegistry(); 
 			registry.rebind(accessPoint, stub);
 		} catch (RemoteException e) {
 
@@ -190,7 +185,7 @@ public class Peer implements RMIInterface {
 	@Override
 	public void backup(String filename, int repDegree, boolean enhancement)
 			throws RemoteException, InterruptedException {
-
+				System.out.println("backup");
 		File file = new File(filename);
 		FileInfo fileInfo = new FileInfo(file, filename, repDegree);
 		ArrayList<Chunk> chunks = fileInfo.getChunks();
@@ -224,14 +219,17 @@ public class Peer implements RMIInterface {
 			byte[] message = new byte[header.length + body.length];
 			System.arraycopy(header, 0, message, 0, header.length);
 			System.arraycopy(body, 0, message, header.length, body.length);
-			OutputStream outputStream;
-			DataOutputStream dataOutputStream;
+
+			
 
 			try {
+			 	OutputStream outputStream;
+				DataOutputStream dataOutputStream;			
 				outputStream = socket.getOutputStream();
 				dataOutputStream = new DataOutputStream(outputStream);
-				String backupMessage= "Peer1 BACKUP "+chunkId+"\n";		
+				String backupMessage= "BACKUP "+chunkId+"\n";
 				dataOutputStream.writeChars(backupMessage);
+				System.out.println(backupMessage);
 				
 			} catch (Exception e) {
 				// TODO Auto-generated catch block

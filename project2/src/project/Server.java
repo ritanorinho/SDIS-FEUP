@@ -2,12 +2,13 @@ package project;
 
 import java.net.Inet4Address;
 import java.net.InetAddress;
+import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import utils.Memory;
 import java.util.concurrent.Executors;
 import java.security.*;
-import javax.net.ServerSocketFactory;
 import javax.net.ssl.*;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -17,7 +18,7 @@ import java.io.IOException;
 public class Server
 {
     private static SSLServerSocket serverSocket;
-    private static ScheduledThreadPoolExecutor executor;
+    public static ScheduledThreadPoolExecutor executor;
     private static Memory memory;
     private static InetAddress tcp_addr;
     private static int tcp_port;
@@ -57,16 +58,18 @@ public class Server
             System.out.println("Server - Failed to create SSLServerSocket");  
             e.getMessage();  
             return;  
-        } 
+		}
 
-         // Require client authentication  
-        serverSocket.setNeedClientAuth(false); //TODO Change
-        serverSocket.setEnabledCipherSuites(new String[] {"TLS_DH_anon_WITH_AES_128_CBC_SHA"});
+		 // Require client authentication  
+		 serverSocket.setNeedClientAuth(false); //TODO Change
+		 serverSocket.setEnabledCipherSuites(new String[] {"TLS_DH_anon_WITH_AES_128_CBC_SHA"});
+		 executor.execute( new TCPThread("start"));
+		
 
-        if(!createStores())
+        /*if(!createStores())
             return;
 
-        executor.execute(new TCPThread("start"));
+        executor.execute(new TCPThread("start"));*/
     }
 
     public static boolean createStores()
@@ -141,7 +144,8 @@ public class Server
     public static Memory getMemory()
     {
         return memory;
-    }
+	}
+
 
     
 
