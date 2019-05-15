@@ -9,8 +9,8 @@ import java.util.concurrent.Executors;
 import java.security.*;
 import javax.net.ServerSocketFactory;
 import javax.net.ssl.*;
-import javax.security.cert.X509Certificate;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 
 
@@ -58,12 +58,78 @@ public class Server
         } 
 
          // Require client authentication  
-        serverSocket.setNeedClientAuth(false);  
-
+        serverSocket.setNeedClientAuth(false); //TODO Change
         serverSocket.setEnabledCipherSuites(new String[] {"TLS_DH_anon_WITH_AES_128_CBC_SHA"});
 
-    executor.execute(new TCPThread("start"));
-}
+        if(!createStores())
+            return;
+
+        executor.execute(new TCPThread("start"));
+    }
+
+    public static boolean createStores()
+	{
+		char[] pwdArray = "password".toCharArray();
+		KeyStore ks, ts;
+
+		try
+		{
+			ks = KeyStore.getInstance("JKS");
+			ks.load(new FileInputStream("keystore.jks"), pwdArray);
+		}
+		catch(Exception e)
+		{
+			try
+			{
+				ks = KeyStore.getInstance(KeyStore.getDefaultType());
+				ks.load(null, pwdArray);
+
+				try(FileOutputStream fos = new FileOutputStream("keystore.jks"))
+				{
+					ks.store(fos, pwdArray);
+				}
+			}
+			catch(Exception e2)
+			{
+				System.out.println("Couldn't create keystore");
+				e2.printStackTrace();
+				return false;
+			}
+		}
+
+		try
+		{
+			ts = KeyStore.getInstance("JKS");
+			ts.load(new FileInputStream("truststore.jks"), pwdArray);
+		}
+		catch(Exception e)
+		{
+			try
+			{
+				ts = KeyStore.getInstance(KeyStore.getDefaultType());
+				ts.load(null, pwdArray);
+
+				try(FileOutputStream fos = new FileOutputStream("truststore.jks"))
+				{
+					ts.store(fos, pwdArray);
+				}
+			}
+			catch(Exception e2)
+			{
+				System.out.println("Couldn't create trust store");
+				e2.printStackTrace();
+				return false;
+			}
+		}
+
+		System.setProperty("javax.net.ssl.keyStore", "keystore.jks");
+		System.setProperty("javax.net.ssl.keyStorePassword", "password");
+
+		System.setProperty("javax.net.ssl.trustStore", "truststore.jks");
+		System.setProperty("javax.net.ssl.trustStorePassword", "password");
+
+		return true;
+	}
 
     public static SSLServerSocket getServerSocket()
     {

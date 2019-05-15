@@ -3,6 +3,7 @@ package project;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
@@ -13,6 +14,8 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -63,6 +66,16 @@ public class Peer implements RMIInterface {
 			return;
 		}
 		socket.setEnabledCipherSuites(new String[] { "TLS_DH_anon_WITH_AES_128_CBC_SHA" });
+
+		/*
+		String[] supportedSuites = socket.getSupportedCipherSuites(); 
+ 
+		for(int i = 0; i < supportedSuites.length; i++) 
+			System.out.println(supportedSuites[i]);  */
+
+		if(!createStores())
+			return;
+
 		socket.startHandshake();
 		executor = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(250);
 	}
@@ -81,6 +94,70 @@ public class Peer implements RMIInterface {
 		loadOccurrences();
 		if (protocolVersion == 1.1) // delete enhancement
 			alive();
+	}
+
+	public static boolean createStores()
+	{
+		char[] pwdArray = "password".toCharArray();
+		KeyStore ks, ts;
+
+		try
+		{
+			ks = KeyStore.getInstance("JKS");
+			ks.load(new FileInputStream("keystore.jks"), pwdArray);
+		}
+		catch(Exception e)
+		{
+			try
+			{
+				ks = KeyStore.getInstance(KeyStore.getDefaultType());
+				ks.load(null, pwdArray);
+
+				try(FileOutputStream fos = new FileOutputStream("keystore.jks"))
+				{
+					ks.store(fos, pwdArray);
+				}
+			}
+			catch(Exception e2)
+			{
+				System.out.println("Couldn't create keystore");
+				e2.printStackTrace();
+				return false;
+			}
+		}
+
+		try
+		{
+			ts = KeyStore.getInstance("JKS");
+			ts.load(new FileInputStream("truststore.jks"), pwdArray);
+		}
+		catch(Exception e)
+		{
+			try
+			{
+				ts = KeyStore.getInstance(KeyStore.getDefaultType());
+				ts.load(null, pwdArray);
+
+				try(FileOutputStream fos = new FileOutputStream("truststore.jks"))
+				{
+					ts.store(fos, pwdArray);
+				}
+			}
+			catch(Exception e2)
+			{
+				System.out.println("Couldn't create trust store");
+				e2.printStackTrace();
+				return false;
+			}
+		}
+
+		System.setProperty("javax.net.ssl.keyStore", "keystore.jks");
+		System.setProperty("javax.net.ssl.keyStorePassword", "password");
+
+		System.setProperty("javax.net.ssl.trustStore", "truststore.jks");
+		System.setProperty("javax.net.ssl.trustStorePassword", "password");
+
+		return true;
 	}
 
 	private static void validateArgs(String[] args)
@@ -114,7 +191,6 @@ public class Peer implements RMIInterface {
 	}
 
 	// protocols
-
 	@Override
 	public void backup(String filename, int repDegree, boolean enhancement)
 			throws RemoteException, InterruptedException {
