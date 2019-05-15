@@ -1,6 +1,7 @@
 package project;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -22,20 +23,29 @@ public class TCPThread extends Thread {
     @Override
     public void run() {
         try {
+            ByteArrayOutputStream bufferStream = new ByteArrayOutputStream();
+            int i = 0;
             while (true) {
                 Socket socket = serverSocket.accept();
-                InputStream inputStream;
-                DataInputStream dataInputStream;
-                inputStream = socket.getInputStream();
-                dataInputStream = new DataInputStream(inputStream);
+               
+               DataInputStream dataInputStream = new DataInputStream(socket.getInputStream());
                 System.out.println("connect");
-                while (true) {
-                    int length = dataInputStream.readInt();
-                    byte[] data = new byte[length];
-                    dataInputStream.read(data, 0, length);
-                    System.out.println(" " + length);
+                byte[] data = new byte[65000];
+                int length = -1;
+                socket.setReceiveBufferSize(65000);
+                while ((length = dataInputStream.read(data)) > 0) {
+                    
+                    System.out.println("---"+socket.getReceiveBufferSize());
+                    System.out.println(length);
+                    //int length = dataInputStream.read(data);
+                    bufferStream.write(data, 0, length);
+                    String dataString = new String(data);
 
+                    //System.out.println(i+"\n " + dataString+"\n\n");
                 }
+                //System.out.println(data.toString());
+                System.out.println("abc");
+
             }
 
         } catch (IOException e) {

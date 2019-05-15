@@ -95,7 +95,7 @@ public class Peer implements RMIInterface {
 		Peer peer = new Peer(tcpPort, tcpAddress);
 		RMIInterface stub = (RMIInterface) UnicastRemoteObject.exportObject(peer, 0);
 
-		Registry registry;
+		Registry registry = null;
 
 		try {
 			registry = LocateRegistry.getRegistry();
@@ -110,12 +110,14 @@ public class Peer implements RMIInterface {
 				e3.printStackTrace();
 			}
 		}
+		System.out.println(registry);
 	}
 
 	// protocols
 
 	@Override
-	public void backup(String filename, int repDegree, boolean enhancement) throws RemoteException, InterruptedException {
+	public void backup(String filename, int repDegree, boolean enhancement)
+			throws RemoteException, InterruptedException {
 
 		File file = new File(filename);
 		FileInfo fileInfo = new FileInfo(file, filename, repDegree);
@@ -152,14 +154,13 @@ public class Peer implements RMIInterface {
 			System.arraycopy(body, 0, message, header.length, body.length);
 			OutputStream outputStream;
 			DataOutputStream dataOutputStream;
-		
+
 			try {
 				outputStream = socket.getOutputStream();
-				dataOutputStream = new DataOutputStream(outputStream);
-				dataOutputStream.writeInt(body.length);
-				dataOutputStream.write(body);
-				
-				System.out.println("length "+body.length);
+				dataOutputStream = new DataOutputStream(outputStream);				
+				// dataOutputStream.writeInt(message.length);
+				dataOutputStream.write(message, 0, message.length);
+				System.out.println("length " + message.length);
 
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
@@ -207,8 +208,8 @@ public class Peer implements RMIInterface {
 				Peer.executor.execute(new WorkerThread(message, channel));
 			}
 			Peer.executor.schedule(
-					new RestoreFileThread(fileInfo.getFilename(), fileInfo.getFileId(), chunks.size(), workingVersion), 10,
-					TimeUnit.SECONDS);
+					new RestoreFileThread(fileInfo.getFilename(), fileInfo.getFileId(), chunks.size(), workingVersion),
+					10, TimeUnit.SECONDS);
 		}
 	}
 
@@ -252,8 +253,9 @@ public class Peer implements RMIInterface {
 
 				if (currentSpaceToFree > 0) {
 					currentSpaceToFree -= memory.savedChunks.get(key).getChunkSize();
-					String header = "REMOVED " + protocolVersion + " " + serverID + " " + memory.savedChunks.get(key).getFileId()
-							+ " " + memory.savedChunks.get(key).getChunkNo() + " " + "\r\n\r\n";
+					String header = "REMOVED " + protocolVersion + " " + serverID + " "
+							+ memory.savedChunks.get(key).getFileId() + " " + memory.savedChunks.get(key).getChunkNo()
+							+ " " + "\r\n\r\n";
 					System.out.print(header);
 
 					try {
@@ -265,8 +267,8 @@ public class Peer implements RMIInterface {
 					}
 
 					String[] splitKey = key.trim().split("-");
-					String filePath = "Peer" + Peer.getId() + "/" + "STORED" + "/" + splitKey[0] + "/" + splitKey[1] + "-"
-							+ memory.savedChunks.get(key).getReplicationDegree();
+					String filePath = "Peer" + Peer.getId() + "/" + "STORED" + "/" + splitKey[0] + "/" + splitKey[1]
+							+ "-" + memory.savedChunks.get(key).getReplicationDegree();
 					File fileToDelete = new File(filePath);
 					fileToDelete.delete();
 					iterator.remove();
@@ -397,8 +399,8 @@ public class Peer implements RMIInterface {
 								e.printStackTrace();
 							}
 							String chunkId = allFiles[i].trim() + "-" + chunkNo;
-							Chunk chunk = new Chunk(allFiles[i].trim(), chunkNo, content, (int) chunkFile.length(), chunkId.trim(),
-									replicationDegree);
+							Chunk chunk = new Chunk(allFiles[i].trim(), chunkNo, content, (int) chunkFile.length(),
+									chunkId.trim(), replicationDegree);
 							if (!memory.savedChunks.containsKey(chunkId))
 								memory.savedChunks.put(chunkId, chunk);
 						}
