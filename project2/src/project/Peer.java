@@ -3,6 +3,7 @@ package project;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
@@ -13,6 +14,8 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -63,16 +66,30 @@ public class Peer implements RMIInterface {
 			return;
 		}
 		socket.setEnabledCipherSuites(new String[] { "TLS_DH_anon_WITH_AES_128_CBC_SHA" });
+
+		/*
+		 * String[] supportedSuites = socket.getSupportedCipherSuites();
+		 * 
+		 * for(int i = 0; i < supportedSuites.length; i++)
+		 * System.out.println(supportedSuites[i]);
+		 */
+
+		if (!createStores())
+			return;
+
 		socket.startHandshake();
-
-		// DataOutputStream dOut = new DataOutputStream(socket.getOutputStream());
-
-		// dOut.writeChars("Peer" + Peer.getId());
-		// dOut.flush(); // Send off the data
-
-		// dOut.close();
-
 		executor = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(250);
+
+		try {
+			OutputStream outputStream;
+			DataOutputStream dataOutputStream;
+			outputStream = socket.getOutputStream();
+			dataOutputStream = new DataOutputStream(outputStream);
+			String peerID= "Peer" +Peer.getId()+"\n";		
+			dataOutputStream.writeChars(peerID);
+		} catch (Exception e) {
+			System.out.println("ERROR");
+		}
 	}
 
 	public static void main(String args[]) throws InterruptedException, IOException, AlreadyBoundException {
@@ -91,6 +108,55 @@ public class Peer implements RMIInterface {
 			alive();
 	}
 
+	public static boolean createStores() {
+		char[] pwdArray = "password".toCharArray();
+		KeyStore ks, ts;
+
+		try {
+			ks = KeyStore.getInstance("JKS");
+			ks.load(new FileInputStream("keystore.jks"), pwdArray);
+		} catch (Exception e) {
+			try {
+				ks = KeyStore.getInstance(KeyStore.getDefaultType());
+				ks.load(null, pwdArray);
+
+				try (FileOutputStream fos = new FileOutputStream("keystore.jks")) {
+					ks.store(fos, pwdArray);
+				}
+			} catch (Exception e2) {
+				System.out.println("Couldn't create keystore");
+				e2.printStackTrace();
+				return false;
+			}
+		}
+
+		try {
+			ts = KeyStore.getInstance("JKS");
+			ts.load(new FileInputStream("truststore.jks"), pwdArray);
+		} catch (Exception e) {
+			try {
+				ts = KeyStore.getInstance(KeyStore.getDefaultType());
+				ts.load(null, pwdArray);
+
+				try (FileOutputStream fos = new FileOutputStream("truststore.jks")) {
+					ts.store(fos, pwdArray);
+				}
+			} catch (Exception e2) {
+				System.out.println("Couldn't create trust store");
+				e2.printStackTrace();
+				return false;
+			}
+		}
+
+		System.setProperty("javax.net.ssl.keyStore", "keystore.jks");
+		System.setProperty("javax.net.ssl.keyStorePassword", "password");
+
+		System.setProperty("javax.net.ssl.trustStore", "truststore.jks");
+		System.setProperty("javax.net.ssl.trustStorePassword", "password");
+
+		return true;
+	}
+
 	private static void validateArgs(String[] args)
 			throws RemoteException, InterruptedException, IOException, AlreadyBoundException {
 
@@ -103,7 +169,7 @@ public class Peer implements RMIInterface {
 		Peer peer = new Peer(tcpPort, tcpAddress);
 		RMIInterface stub = (RMIInterface) UnicastRemoteObject.exportObject(peer, 0);
 
-		Registry registry;
+		Registry registry = null;
 
 		try {
 			registry = LocateRegistry.getRegistry();
@@ -121,9 +187,9 @@ public class Peer implements RMIInterface {
 	}
 
 	// protocols
-
 	@Override
-	public void backup(String filename, int repDegree, boolean enhancement) throws RemoteException, InterruptedException {
+	public void backup(String filename, int repDegree, boolean enhancement)
+			throws RemoteException, InterruptedException {
 
 		File file = new File(filename);
 		FileInfo fileInfo = new FileInfo(file, filename, repDegree);
@@ -160,16 +226,14 @@ public class Peer implements RMIInterface {
 			System.arraycopy(body, 0, message, header.length, body.length);
 			OutputStream outputStream;
 			DataOutputStream dataOutputStream;
-		
+
 			try {
 				outputStream = socket.getOutputStream();
 				dataOutputStream = new DataOutputStream(outputStream);
-				dataOutputStream.writeInt(body.length);
-				dataOutputStream.write(body);
+				String backupMessage= "Peer1 BACKUP "+chunkId+"\n";		
+				dataOutputStream.writeChars(backupMessage);
 				
-				System.out.println("length "+ body.length);
-
-			} catch (IOException e) {
+			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
@@ -215,8 +279,8 @@ public class Peer implements RMIInterface {
 				Peer.executor.execute(new WorkerThread(message, channel));
 			}
 			Peer.executor.schedule(
-					new RestoreFileThread(fileInfo.getFilename(), fileInfo.getFileId(), chunks.size(), workingVersion), 10,
-					TimeUnit.SECONDS);
+					new RestoreFileThread(fileInfo.getFilename(), fileInfo.getFileId(), chunks.size(), workingVersion),
+					10, TimeUnit.SECONDS);
 		}
 	}
 
@@ -260,8 +324,9 @@ public class Peer implements RMIInterface {
 
 				if (currentSpaceToFree > 0) {
 					currentSpaceToFree -= memory.savedChunks.get(key).getChunkSize();
-					String header = "REMOVED " + protocolVersion + " " + serverID + " " + memory.savedChunks.get(key).getFileId()
-							+ " " + memory.savedChunks.get(key).getChunkNo() + " " + "\r\n\r\n";
+					String header = "REMOVED " + protocolVersion + " " + serverID + " "
+							+ memory.savedChunks.get(key).getFileId() + " " + memory.savedChunks.get(key).getChunkNo()
+							+ " " + "\r\n\r\n";
 					System.out.print(header);
 
 					try {
@@ -273,8 +338,8 @@ public class Peer implements RMIInterface {
 					}
 
 					String[] splitKey = key.trim().split("-");
-					String filePath = "Peer" + Peer.getId() + "/" + "STORED" + "/" + splitKey[0] + "/" + splitKey[1] + "-"
-							+ memory.savedChunks.get(key).getReplicationDegree();
+					String filePath = "Peer" + Peer.getId() + "/" + "STORED" + "/" + splitKey[0] + "/" + splitKey[1]
+							+ "-" + memory.savedChunks.get(key).getReplicationDegree();
 					File fileToDelete = new File(filePath);
 					fileToDelete.delete();
 					iterator.remove();
@@ -405,8 +470,8 @@ public class Peer implements RMIInterface {
 								e.printStackTrace();
 							}
 							String chunkId = allFiles[i].trim() + "-" + chunkNo;
-							Chunk chunk = new Chunk(allFiles[i].trim(), chunkNo, content, (int) chunkFile.length(), chunkId.trim(),
-									replicationDegree);
+							Chunk chunk = new Chunk(allFiles[i].trim(), chunkNo, content, (int) chunkFile.length(),
+									chunkId.trim(), replicationDegree);
 							if (!memory.savedChunks.containsKey(chunkId))
 								memory.savedChunks.put(chunkId, chunk);
 						}
