@@ -76,7 +76,7 @@ public class Peer implements RMIInterface {
 		if(!createStores())
 			return;
 
-		//socket.startHandshake();
+		socket.startHandshake();
 		executor = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(250);
 	}
 

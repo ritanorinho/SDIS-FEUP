@@ -61,7 +61,7 @@ public class Server
         serverSocket.setNeedClientAuth(false); //TODO Change
         serverSocket.setEnabledCipherSuites(new String[] {"TLS_DH_anon_WITH_AES_128_CBC_SHA"});
 
-        if(createStores())
+        if(!createStores())
             return;
 
         executor.execute(new TCPThread("start"));
