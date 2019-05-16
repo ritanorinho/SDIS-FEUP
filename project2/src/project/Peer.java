@@ -34,6 +34,8 @@ import utils.FileInfo;
 import utils.Memory;
 import utils.Utils;
 
+import javax.net.ssl.SSLServerSocket;
+import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 
@@ -48,6 +50,7 @@ public class Peer implements RMIInterface {
 	private static volatile InetAddress peerAddress;
 	private static ScheduledThreadPoolExecutor executor;
 	private static SSLSocket socket;
+	private static SSLServerSocket peerServerSocket;
 	private static Memory memory = new Memory();
 
 	public Peer(Integer serverPort, InetAddress serverAddress, Integer peerPort, InetAddress peerAddress)
@@ -56,6 +59,8 @@ public class Peer implements RMIInterface {
 		serverAddress = serverAddress;
 		peerPort = peerPort;
 		peerAddress = peerAddress;
+
+		
 
 		SSLSocketFactory ssf = (SSLSocketFactory) SSLSocketFactory.getDefault();
 
@@ -99,6 +104,26 @@ public class Peer implements RMIInterface {
 		} catch (Exception e) {
 			System.out.println("ERROR");
 		}
+		createPeerSocket();
+	}
+
+	private void createPeerSocket() {
+
+		SSLServerSocketFactory ssf = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();  
+        
+        try 
+        {  
+            peerServerSocket = (SSLServerSocket) ssf.createServerSocket(peerPort);
+        }  
+        catch(IOException e) 
+        {  
+			e.printStackTrace();
+            System.out.println("Server - Failed to create SSLServerSocket");  
+            return;  
+		}
+		peerServerSocket.setNeedClientAuth(false); //TODO Change
+		peerServerSocket.setEnabledCipherSuites(new String[] {"TLS_DH_anon_WITH_AES_128_CBC_SHA"});
+		executor.execute(new PeerThread(peerServerSocket));
 	}
 
 	public static void main(String args[]) throws InterruptedException, IOException, AlreadyBoundException {
@@ -221,8 +246,26 @@ public class Peer implements RMIInterface {
 
 		if ((receiveMessage = receiveRead.readLine()) != null) {
 			System.out.println(receiveMessage);
+		String[] splitMessage = receiveMessage.split("-");
+		int port = Integer.parseInt(splitMessage[0]);
+		InetAddress address = InetAddress.getByName(splitMessage[1].substring(1));
+		System.out.println(port + " "+address);
 		}
-		System.out.println(backupMessage);
+		/*SSLSocketFactory ssf = (SSLSocketFactory) SSLSocketFactory.getDefault();
+		SSLSocket peerSocket;
+
+		
+		
+		try {
+			peerSocket = (SSLSocket) ssf.createSocket(address, port);
+		} catch (IOException e) {
+			e.printStackTrace();
+			System.out.println("Peer - Failed to create SSLSocket");
+			e.getMessage();
+			return;
+		}
+		peerSocket.setEnabledCipherSuites(new String[] { "TLS_DH_anon_WITH_AES_128_CBC_SHA" });
+		}*/
 	}
 		catch(Exception e){
 

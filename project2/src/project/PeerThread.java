@@ -8,25 +8,23 @@ import javax.net.ssl.SSLServerSocket;
 
 import utils.Memory;
 
-public class TCPThread extends Thread {
-    private SSLServerSocket serverSocket;
+public class PeerThread extends Thread {
+    private SSLServerSocket peerSocket;
     private ScheduledThreadPoolExecutor executor;
     private Memory memory;
 
-    public TCPThread(SSLServerSocket serverSocket, ScheduledThreadPoolExecutor executor, Memory memory) {
-        this.executor = executor;
-        this.memory = memory;
-        this.serverSocket = serverSocket;
-    }
+    public PeerThread(SSLServerSocket peerSocket) {
+       
+        this.peerSocket = peerSocket;
+	}
 
 	@Override
     public void run() {
         try {
             while(true){
-                
-                Socket socket = this.serverSocket.accept();
+                Socket socket = peerSocket.accept();
+                System.out.println("created peer socket");
                 Server.executor.execute(new AcceptConnectionsThread(socket,executor, memory));
-            
             }
 
         } catch (IOException e) {

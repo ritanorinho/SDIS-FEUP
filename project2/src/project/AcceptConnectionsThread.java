@@ -19,8 +19,8 @@ import java.util.Collections;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 public class AcceptConnectionsThread extends Thread {
-    private static Socket socket;
-    private static ScheduledThreadPoolExecutor executor;
+    private Socket socket;
+    private  ScheduledThreadPoolExecutor executor;
     private static Memory memory;
 
     public AcceptConnectionsThread(Socket socket, ScheduledThreadPoolExecutor executor, Memory memory) {
@@ -79,7 +79,7 @@ public class AcceptConnectionsThread extends Thread {
                 String peer = splitMessage[2];
                 String otherPeer;
                 if ((otherPeer = getOtherPeers(peer)) != null) {
-                    return otherPeer;
+                    return memory.conectionsPorts.get(otherPeer);
                 }
 
                 break;
