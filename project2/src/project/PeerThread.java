@@ -13,10 +13,10 @@ public class PeerThread extends Thread {
     private ScheduledThreadPoolExecutor executor;
     private Memory memory;
 
-    public PeerThread(SSLServerSocket peerSocket) {
+    public PeerThread(SSLServerSocket peerSocket,ScheduledThreadPoolExecutor executor) {
        
         this.peerSocket = peerSocket;
-        System.out.println("local port "+peerSocket.getLocalPort());
+        this.executor = executor;
 	}
 
 	@Override
@@ -26,7 +26,7 @@ public class PeerThread extends Thread {
             while(true){
                 Socket socket = peerSocket.accept();
                 System.out.println("created peer socket");
-                Server.executor.execute(new AcceptConnectionsThread(socket,executor, memory));
+                executor.execute(new PeersCommunicationThread(socket,executor));
             }
 
         } catch (IOException e) {

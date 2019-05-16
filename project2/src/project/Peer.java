@@ -1,6 +1,7 @@
 package project;
 
 import java.io.BufferedReader;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -122,7 +123,7 @@ public class Peer implements RMIInterface {
 		}
 		peerServerSocket.setNeedClientAuth(false); //TODO Change
 		peerServerSocket.setEnabledCipherSuites(new String[] {"TLS_DH_anon_WITH_AES_128_CBC_SHA"});
-		executor.execute(new PeerThread(peerServerSocket));
+		executor.execute(new PeerThread(peerServerSocket,executor));
 	}
 
 	public static void main(String args[]) throws InterruptedException, IOException, AlreadyBoundException {
@@ -260,6 +261,12 @@ public class Peer implements RMIInterface {
 		}
 		peerSocket.setEnabledCipherSuites(new String[] { "TLS_DH_anon_WITH_AES_128_CBC_SHA" });
 		peerSocket.startHandshake();
+		OutputStream outputStream = peerSocket.getOutputStream();
+		DataOutputStream dataOutputStream = new DataOutputStream(outputStream);
+		String message = "abc";
+		dataOutputStream.writeInt(message.getBytes().length);
+		dataOutputStream.write(message.getBytes());
+
 		}
 	}
 		catch(Exception e){

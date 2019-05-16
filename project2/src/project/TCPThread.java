@@ -17,7 +17,7 @@ public class TCPThread extends Thread {
         this.executor = executor;
         this.memory = memory;
         this.serverSocket = serverSocket;
-        System.out.println("local port "+serverSocket.getLocalPort());
+        
     }
 
 	@Override
@@ -26,7 +26,7 @@ public class TCPThread extends Thread {
             while(true){
                 
                 Socket socket = this.serverSocket.accept();
-                Server.executor.execute(new AcceptConnectionsThread(socket,executor, memory));
+                executor.execute(new AcceptConnectionsThread(socket,executor, memory));
             
             }
 
