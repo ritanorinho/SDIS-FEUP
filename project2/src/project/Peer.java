@@ -1,7 +1,6 @@
 package project;
 
 import java.io.BufferedReader;
-import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -26,7 +25,6 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.io.DataOutputStream;
 
 import threads.*;
 import utils.Chunk;
@@ -44,10 +42,10 @@ public class Peer implements RMIInterface {
 	private static double protocolVersion;
 	private static int serverID;
 	private static String accessPoint;
-	private static volatile int serverPort;
-	private static volatile InetAddress serverAddress;
-	private static volatile int peerPort;
-	private static volatile InetAddress peerAddress;
+	private  int serverPort;
+	private  InetAddress serverAddress;
+	private  int peerPort;
+	private  InetAddress peerAddress;
 	private static ScheduledThreadPoolExecutor executor;
 	private static SSLSocket socket;
 	private static SSLServerSocket peerServerSocket;
@@ -55,10 +53,10 @@ public class Peer implements RMIInterface {
 
 	public Peer(Integer serverPort, InetAddress serverAddress, Integer peerPort, InetAddress peerAddress)
 			throws IOException {
-		serverPort = serverPort;
-		serverAddress = serverAddress;
-		peerPort = peerPort;
-		peerAddress = peerAddress;
+		this.serverPort = serverPort;
+		this.serverAddress = serverAddress;
+		this.peerPort = peerPort;
+		this.peerAddress = peerAddress;
 
 		
 
@@ -112,8 +110,9 @@ public class Peer implements RMIInterface {
 		SSLServerSocketFactory ssf = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();  
         
         try 
-        {  
-            peerServerSocket = (SSLServerSocket) ssf.createServerSocket(peerPort);
+        {  	System.out.println("port "+this.peerPort);
+			peerServerSocket = (SSLServerSocket) ssf.createServerSocket(this.peerPort);
+			System.out.println("port "+peerServerSocket.getLocalPort());
         }  
         catch(IOException e) 
         {  
@@ -248,24 +247,20 @@ public class Peer implements RMIInterface {
 			System.out.println(receiveMessage);
 		String[] splitMessage = receiveMessage.split("-");
 		int port = Integer.parseInt(splitMessage[0]);
-		InetAddress address = InetAddress.getByName(splitMessage[1].substring(1));
+		InetAddress address = InetAddress.getByName("localhost");
 		System.out.println(port + " "+address);
-		}
-		/*SSLSocketFactory ssf = (SSLSocketFactory) SSLSocketFactory.getDefault();
+		SSLSocketFactory ssf = (SSLSocketFactory) SSLSocketFactory.getDefault();
 		SSLSocket peerSocket;
-
-		
-		
 		try {
-			peerSocket = (SSLSocket) ssf.createSocket(address, port);
+			peerSocket = (SSLSocket) ssf.createSocket(address,port);
 		} catch (IOException e) {
 			e.printStackTrace();
 			System.out.println("Peer - Failed to create SSLSocket");
-			e.getMessage();
 			return;
 		}
 		peerSocket.setEnabledCipherSuites(new String[] { "TLS_DH_anon_WITH_AES_128_CBC_SHA" });
-		}*/
+		peerSocket.startHandshake();
+		}
 	}
 		catch(Exception e){
 

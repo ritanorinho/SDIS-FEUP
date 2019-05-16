@@ -34,7 +34,7 @@ public class AcceptConnectionsThread extends Thread {
     public void run() {
         try {
 
-            String message, sendMessage;
+            String message;
             String analize = "abc";
             while (true) {
                 OutputStream ostream = socket.getOutputStream();

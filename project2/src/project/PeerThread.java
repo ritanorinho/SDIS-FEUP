@@ -16,11 +16,13 @@ public class PeerThread extends Thread {
     public PeerThread(SSLServerSocket peerSocket) {
        
         this.peerSocket = peerSocket;
+        System.out.println("local port "+peerSocket.getLocalPort());
 	}
 
 	@Override
     public void run() {
         try {
+           
             while(true){
                 Socket socket = peerSocket.accept();
                 System.out.println("created peer socket");
