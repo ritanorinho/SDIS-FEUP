@@ -10,6 +10,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.net.Socket;
 
 import utils.Memory;
@@ -33,17 +34,21 @@ public class AcceptConnectionsThread extends Thread {
     public void run() {
         try {
 
+            String message, sendMessage;
+            String analize = "abc";
             while (true) {
-                DataInputStream dataInputStream = new DataInputStream(socket.getInputStream());
-                System.out.println("connect");
-                StringBuilder sb = new StringBuilder();
-                char c;
-                while ((c = dataInputStream.readChar()) != '\n') {
-                    sb.append(c);
+                OutputStream ostream = socket.getOutputStream();
+                PrintWriter pwrite = new PrintWriter(ostream, true);
+               
+                InputStream istream = socket.getInputStream();
+                BufferedReader receiveRead = new BufferedReader(new InputStreamReader(istream));
+
+                if ((message = receiveRead.readLine()) != null) {
+                    System.out.println("Received message" + message);
+                    analize = analizeMessage(message);
                 }
-                String message = sb.toString();
-                System.out.println("message " + message);
-                if (analizeMessage(message)) {
+                System.out.println("server message " + analize);
+                /*if (analize.equals("conected")) {
                     String[] splitMessage = message.trim().split("\\s+");
                     String peerID = splitMessage[0];
                     Integer port = Integer.parseInt(splitMessage[1]);
@@ -51,38 +56,30 @@ public class AcceptConnectionsThread extends Thread {
                     Server.getMemory().addConnection(peerID, socket, port, address);
                     System.out.println("List of Peers Connected: ");
                     System.out.println(Collections.singletonList(Server.getMemory().conections));
-                }
+                }*/
+                pwrite.println(analize);
+                pwrite.flush();
             }
+
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public static boolean analizeMessage(String message) {
+    public String analizeMessage(String message) {
 
         String[] splitMessage = message.trim().split("\\s+");
+        String substr = splitMessage[0].trim().substring(0, 4);
 
-        String substr = splitMessage[0].substring(0, 4);
         if (substr.equals("Peer")) {
-            System.out.println("PEER");
-            return true;
+            return "conected";
         } else {
-            switch (splitMessage[0]) {
+            switch (splitMessage[0].trim()) {
             case "BACKUP":
                 String peer = splitMessage[2];
                 String otherPeer;
                 if ((otherPeer = getOtherPeers(peer)) != null) {
-
-                    try {
-                        OutputStream outputStream;
-                        DataOutputStream dataOutputStream;
-                        outputStream = socket.getOutputStream();
-                        dataOutputStream = new DataOutputStream(outputStream);
-                        dataOutputStream.writeChars(otherPeer + "\n");
-                        System.out.println("send message to peer " + otherPeer);
-                    } catch (Exception e) {
-                        System.out.println("Server error: it isn't possible to send a message to peer");
-                    }
+                    return otherPeer;
                 }
 
                 break;
@@ -90,7 +87,7 @@ public class AcceptConnectionsThread extends Thread {
 
             }
         }
-        return false;
+        return "abc";
     }
 
     public static String getOtherPeers(String peer) {

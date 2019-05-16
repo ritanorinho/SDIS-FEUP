@@ -80,18 +80,25 @@ public class Peer implements RMIInterface {
 
 		socket.startHandshake();
 		executor = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(250);
- 
+
 		try {
-			OutputStream outputStream;
-			DataOutputStream dataOutputStream;
-			outputStream = socket.getOutputStream();
-			dataOutputStream = new DataOutputStream(outputStream);
-			String peerID= "Peer" +Peer.getId()+ " "+peerPort+" "+peerAddress+"\n";		
-			dataOutputStream.writeChars(peerID);
+			OutputStream ostream = socket.getOutputStream();
+			PrintWriter pwrite = new PrintWriter(ostream, true);
+			String peerID = "Peer" + Peer.getId() + " " + peerPort + " " + peerAddress + "\n";
+			pwrite.println(peerID);
+			pwrite.flush();
+			InputStream istream = socket.getInputStream();
+			BufferedReader receiveRead = new BufferedReader(new InputStreamReader(istream));
 			System.out.println(peerID);
+			String receiveMessage;
+			if ((receiveMessage = receiveRead.readLine()) != null) // receive from server
+			{
+				System.out.println("conection " + receiveMessage); // displaying at DOS prompt
+			}
+
 		} catch (Exception e) {
 			System.out.println("ERROR");
-		} 
+		}
 	}
 
 	public static void main(String args[]) throws InterruptedException, IOException, AlreadyBoundException {
@@ -170,13 +177,13 @@ public class Peer implements RMIInterface {
 		serverID = Integer.parseInt(args[1]);
 		accessPoint = args[2];
 
-		Peer peer = new Peer(serverPort, serverAddress,peerPort,peerAddress);
+		Peer peer = new Peer(serverPort, serverAddress, peerPort, peerAddress);
 		RMIInterface stub = (RMIInterface) UnicastRemoteObject.exportObject(peer, 0);
 
 		Registry registry = null;
 
 		try {
-			registry = LocateRegistry.getRegistry(); 
+			registry = LocateRegistry.getRegistry();
 			registry.rebind(accessPoint, stub);
 		} catch (RemoteException e) {
 
@@ -205,7 +212,13 @@ public class Peer implements RMIInterface {
 			System.out.println("This version does not support this opperation");
 			return;
 		}
-
+		try{
+		OutputStream ostream = socket.getOutputStream();
+				PrintWriter pwrite = new PrintWriter(ostream, true);	
+						
+				InputStream istream = socket.getInputStream();
+				
+				BufferedReader receiveRead = new BufferedReader(new InputStreamReader(istream));
 		for (int i = 0; i < chunks.size(); i++) {
 
 			byte[] header = Utils.getHeader("PUTCHUNK", workingVersion, serverID, fileInfo.getFileId(),
@@ -229,24 +242,27 @@ public class Peer implements RMIInterface {
 			System.arraycopy(header, 0, message, 0, header.length);
 			System.arraycopy(body, 0, message, header.length, body.length);
 
-			try {
-			 	OutputStream outputStream;
-				DataOutputStream dataOutputStream;			
-				outputStream = socket.getOutputStream();
-				dataOutputStream = new DataOutputStream(outputStream);
-				String backupMessage= "BACKUP "+chunkId+ " Peer"+serverID+"\n";
-				executor.execute(new ReceiveMessageFromServer(socket));
-				dataOutputStream.writeChars(backupMessage);
-				//Get the return message from the server
+			
 				
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+				
+				String backupMessage = "BACKUP " + chunkId + " Peer" + serverID + "\n";
+				pwrite.println(backupMessage);
+				pwrite.flush();
+				String receiveMessage; 
+				System.out.println(backupMessage);
+
+				if ((receiveMessage = receiveRead.readLine()) != null) 
+				{
+					System.out.println(receiveMessage);
+				}
+				System.out.println(backupMessage);
+			
+		}
+		} catch(Exception e){
 
 		}
-
 	}
+
 
 	@Override
 	public void restore(String filename, boolean enhancement) throws RemoteException {

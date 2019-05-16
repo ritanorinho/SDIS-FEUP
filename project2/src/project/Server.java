@@ -55,8 +55,9 @@ public class Server
         }  
         catch(IOException e) 
         {  
+			e.printStackTrace();
             System.out.println("Server - Failed to create SSLServerSocket");  
-            e.getMessage();  
+           
             return;  
 		}
 
