@@ -44,11 +44,11 @@ public class AcceptConnectionsThread extends Thread {
                 BufferedReader receiveRead = new BufferedReader(new InputStreamReader(istream));
 
                 if ((message = receiveRead.readLine()) != null) {
-                    System.out.println("Received message" + message);
+                    System.out.println("Received message " + message);
                     analize = analizeMessage(message);
                 }
                 System.out.println("server message " + analize);
-                /*if (analize.equals("conected")) {
+                if (analize.equals("conected")) {
                     String[] splitMessage = message.trim().split("\\s+");
                     String peerID = splitMessage[0];
                     Integer port = Integer.parseInt(splitMessage[1]);
@@ -56,7 +56,7 @@ public class AcceptConnectionsThread extends Thread {
                     Server.getMemory().addConnection(peerID, socket, port, address);
                     System.out.println("List of Peers Connected: ");
                     System.out.println(Collections.singletonList(Server.getMemory().conections));
-                }*/
+                }
                 pwrite.println(analize);
                 pwrite.flush();
             }

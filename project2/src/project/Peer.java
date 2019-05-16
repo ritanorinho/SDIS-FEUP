@@ -93,7 +93,7 @@ public class Peer implements RMIInterface {
 			String receiveMessage;
 			if ((receiveMessage = receiveRead.readLine()) != null) // receive from server
 			{
-				System.out.println("conection " + receiveMessage); // displaying at DOS prompt
+				System.out.println("conection " + receiveMessage);
 			}
 
 		} catch (Exception e) {
@@ -204,65 +204,34 @@ public class Peer implements RMIInterface {
 
 		File file = new File(filename);
 		FileInfo fileInfo = new FileInfo(file, filename, repDegree);
-		ArrayList<Chunk> chunks = fileInfo.getChunks();
-		String chunkId;
 		double workingVersion = getWorkingVersion(enhancement);
+		try{
+		OutputStream ostream = socket.getOutputStream();
+		PrintWriter pwrite = new PrintWriter(ostream, true);
 
+		InputStream istream = socket.getInputStream();
+
+		BufferedReader receiveRead = new BufferedReader(new InputStreamReader(istream));
+
+		String backupMessage = "BACKUP " + fileInfo.getFileId() + " Peer" + serverID + "\n";
+		pwrite.println(backupMessage);
+		pwrite.flush();
+		String receiveMessage;
+		System.out.println(backupMessage);
+
+		if ((receiveMessage = receiveRead.readLine()) != null) {
+			System.out.println(receiveMessage);
+		}
+		System.out.println(backupMessage);
+	}
+		catch(Exception e){
+
+		}
 		if (workingVersion < 0) {
 			System.out.println("This version does not support this opperation");
 			return;
 		}
-		try{
-		OutputStream ostream = socket.getOutputStream();
-				PrintWriter pwrite = new PrintWriter(ostream, true);	
-						
-				InputStream istream = socket.getInputStream();
-				
-				BufferedReader receiveRead = new BufferedReader(new InputStreamReader(istream));
-		for (int i = 0; i < chunks.size(); i++) {
-
-			byte[] header = Utils.getHeader("PUTCHUNK", workingVersion, serverID, fileInfo.getFileId(),
-					chunks.get(i).getChunkNo(), repDegree);
-			String headerString = new String(header, 0, header.length);
-
-			System.out.println("SENT: " + headerString);
-
-			chunkId = fileInfo.getFileId() + "-" + chunks.get(i).getChunkNo();
-
-			if (!memory.hasFileByID(fileInfo.getFileId()))
-				memory.files.add(fileInfo);
-
-			if (!memory.savedOcurrences.containsKey(chunkId)) {
-				memory.savedOcurrences.put(chunkId, 0);
-				Utils.savedOccurrencesFile();
-			}
-
-			byte[] body = chunks.get(i).getData();
-			byte[] message = new byte[header.length + body.length];
-			System.arraycopy(header, 0, message, 0, header.length);
-			System.arraycopy(body, 0, message, header.length, body.length);
-
-			
-				
-				
-				String backupMessage = "BACKUP " + chunkId + " Peer" + serverID + "\n";
-				pwrite.println(backupMessage);
-				pwrite.flush();
-				String receiveMessage; 
-				System.out.println(backupMessage);
-
-				if ((receiveMessage = receiveRead.readLine()) != null) 
-				{
-					System.out.println(receiveMessage);
-				}
-				System.out.println(backupMessage);
-			
-		}
-		} catch(Exception e){
-
-		}
 	}
-
 
 	@Override
 	public void restore(String filename, boolean enhancement) throws RemoteException {
