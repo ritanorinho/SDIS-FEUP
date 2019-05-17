@@ -11,7 +11,6 @@ import utils.Memory;
 public class PeerThread extends Thread {
     private SSLServerSocket peerSocket;
     private ScheduledThreadPoolExecutor executor;
-    private Memory memory;
 
     public PeerThread(SSLServerSocket peerSocket,ScheduledThreadPoolExecutor executor) {
        

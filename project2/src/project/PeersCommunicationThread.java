@@ -1,10 +1,8 @@
 package project;
 
 import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.Socket;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
@@ -32,19 +30,13 @@ public class PeersCommunicationThread extends Thread {
             size = dataInputStream.readInt();
             message = new byte[size];
             dataInputStream.read(message,0,size);
-            executor.execute(new AnalizeMessageThread(message));
-            analizeMessage(message);
+            executor.execute(new AnalizeMessageThread(message,socket));
+           
             
 
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
-
-    private void analizeMessage(byte[] message) {
-
-        
-    }
-
 
 }

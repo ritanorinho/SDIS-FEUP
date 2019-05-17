@@ -1,10 +1,16 @@
 package threads;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.net.Socket;
+
 
 import project.Peer;
+import project.Server;
 import utils.Chunk;
 import utils.Utils;
 
@@ -19,8 +25,10 @@ public class StoredChunkThread implements Runnable {
 	private String chunkNo;
 	private String chunkId;
 	private int senderId;
+	private Socket socket;
+	
 
-	public StoredChunkThread(byte[] storedMessage, byte[] data, int replicationDegree) {
+	public StoredChunkThread(byte[] storedMessage, byte[] data, int replicationDegree,Socket socket) {
 		this.byteMessage = storedMessage;
 		this.data = data;
 		this.msg = new String(this.byteMessage, 0, this.byteMessage.length);
@@ -31,6 +39,7 @@ public class StoredChunkThread implements Runnable {
 		this.chunkNo = messageArray[3];
 		this.chunkId = this.fileId + "-" + this.chunkNo;
 		this.replicationDegree = replicationDegree;
+		this.socket = socket;
 	}
 
 	private void createFileChunk() {
@@ -53,7 +62,7 @@ public class StoredChunkThread implements Runnable {
 	}
 
 	private void saveChunk() {
-
+		System.out.println("save chunk");
 		Chunk chunk = new Chunk(this.fileId, Integer.parseInt(this.chunkNo), this.data, this.data.length, this.chunkId,
 				this.replicationDegree);
 
@@ -65,6 +74,17 @@ public class StoredChunkThread implements Runnable {
 				String storedMessage = "STORED " + this.version + " " + Peer.getId() + " " + this.fileId + " "
 						+ this.chunkNo + "\r\n\r\n";
 				System.out.println("\nSENT " + storedMessage);
+				try{
+				OutputStream outputStream = socket.getOutputStream();
+				DataOutputStream dataOutputStream = new DataOutputStream(outputStream);
+				dataOutputStream.writeInt(storedMessage.getBytes().length);
+				dataOutputStream.write(storedMessage.getBytes());
+				}
+				catch(Exception e){
+
+				}
+
+
 		} else {
 			return;
 		}

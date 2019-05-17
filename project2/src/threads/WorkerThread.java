@@ -18,7 +18,7 @@ public class WorkerThread implements Runnable {
 
 	@Override
 	public void run() {
-		
+/*
 		switch (channel) {
 		case "mdb":
 			try {
@@ -46,7 +46,7 @@ public class WorkerThread implements Runnable {
 			break;
 		default:
 						
-		}
+	}*/
 		
 	}
 

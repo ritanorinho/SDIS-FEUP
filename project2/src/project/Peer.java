@@ -1,6 +1,7 @@
 package project;
 
 import java.io.BufferedReader;
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -222,7 +223,7 @@ public class Peer implements RMIInterface {
 	@Override
 	public void backup(String filename, int repDegree, boolean enhancement)
 			throws RemoteException, InterruptedException {
-
+		System.out.println(Server.getMemory().conections);
 		File file = new File(filename);
 		FileInfo fileInfo = new FileInfo(file, filename, repDegree);
 		double workingVersion = getWorkingVersion(enhancement);
@@ -285,6 +286,15 @@ public class Peer implements RMIInterface {
 					DataOutputStream dataOutputStream = new DataOutputStream(outputStream);
 					dataOutputStream.writeInt(message.length);
 					dataOutputStream.write(message);
+
+					InputStream inputStream = peerSocket.getInputStream();
+					DataInputStream dataInputStream = new DataInputStream(inputStream);
+					int size = dataInputStream.readInt();
+					byte[] receivedMessage = new byte[size];
+					dataInputStream.read(receivedMessage);
+					System.out.println("size "+size);
+
+
 
 				}
 			}

@@ -21,13 +21,10 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 public class AcceptConnectionsThread extends Thread {
     private Socket socket;
     private  ScheduledThreadPoolExecutor executor;
-    private static Memory memory;
 
-    public AcceptConnectionsThread(Socket socket, ScheduledThreadPoolExecutor executor, Memory memory) {
+    public AcceptConnectionsThread(Socket socket, ScheduledThreadPoolExecutor executor) {
         this.socket = socket;
         this.executor = executor;
-        this.memory = memory;
-
     }
 
     @Override
@@ -37,6 +34,7 @@ public class AcceptConnectionsThread extends Thread {
             String message;
             String analize = "abc";
             while (true) {
+    
                 OutputStream ostream = socket.getOutputStream();
                 PrintWriter pwrite = new PrintWriter(ostream, true);
                
@@ -79,7 +77,7 @@ public class AcceptConnectionsThread extends Thread {
                 String peer = splitMessage[2];
                 String otherPeer;
                 if ((otherPeer = getOtherPeers(peer)) != null) {
-                    return memory.conectionsPorts.get(otherPeer);
+                    return Server.getMemory().conectionsPorts.get(otherPeer);
                 }
 
                 break;
@@ -91,7 +89,7 @@ public class AcceptConnectionsThread extends Thread {
     }
 
     public static String getOtherPeers(String peer) {
-        for (String key : memory.conectionsPorts.keySet()) {
+        for (String key : Server.getMemory().conectionsPorts.keySet()) {
             if (!key.equals(peer)) {
                 return key;
             }

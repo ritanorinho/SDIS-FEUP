@@ -3,10 +3,12 @@ package threads;
 import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
+import java.net.Socket;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import project.Peer;
+import project.Server;
 import utils.Chunk;
 import utils.FileInfo;
 import utils.Pair;
@@ -20,12 +22,15 @@ public class AnalizeMessageThread implements Runnable {
 	InetAddress InetAddress;
 	int senderId;
 	double version;
+	Socket socket;
 
-	public AnalizeMessageThread(byte[] message) {
+
+	public AnalizeMessageThread(byte[] message,Socket socket) {
 		this.messageBytes = message;
 		this.message = new String(this.messageBytes, 0, this.messageBytes.length);
 		this.messageArray = Utils.byteArrayToStringArray(message);
 		this.version = Double.parseDouble(messageArray[1]);
+		this.socket = socket;
 
 		if (messageArray.length > 4)
 			this.chunkId = this.messageArray[3] + "-" + this.messageArray[4];
@@ -115,6 +120,7 @@ public class AnalizeMessageThread implements Runnable {
 	}
 
 	private synchronized void putchunk() {
+		System.out.println("putchunk");
 		Integer id = Integer.parseInt(messageArray[2]);
 		Random random = new Random();
 		int delay = random.nextInt(401);
@@ -128,7 +134,7 @@ public class AnalizeMessageThread implements Runnable {
 					+ messageArray[4];
 			byte[] data = Utils.getBody(this.messageBytes);
 			Peer.getExecutor().schedule(
-					new StoredChunkThread(storedMessage.getBytes(), data, Integer.parseInt(messageArray[5])), delay,
+					new StoredChunkThread(storedMessage.getBytes(), data, Integer.parseInt(messageArray[5]),socket), delay,
 					TimeUnit.MILLISECONDS);
 		}
 	}
