@@ -115,7 +115,6 @@ public class AnalizeMessageThread implements Runnable {
 	}
 
 	private synchronized void putchunk() {
-
 		Integer id = Integer.parseInt(messageArray[2]);
 		Random random = new Random();
 		int delay = random.nextInt(401);

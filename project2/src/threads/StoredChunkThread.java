@@ -62,14 +62,9 @@ public class StoredChunkThread implements Runnable {
 			Peer.getMemory().updateMemoryUsed(this.data.length);
 			createFileChunk();
 
-			try {
 				String storedMessage = "STORED " + this.version + " " + Peer.getId() + " " + this.fileId + " "
 						+ this.chunkNo + "\r\n\r\n";
 				System.out.println("\nSENT " + storedMessage);
-				Peer.getMCListener().message(storedMessage.getBytes("US-ASCII"));
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
 		} else {
 			return;
 		}

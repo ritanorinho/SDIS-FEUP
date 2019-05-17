@@ -25,7 +25,6 @@ public class PeerThread extends Thread {
            
             while(true){
                 Socket socket = peerSocket.accept();
-                System.out.println("created peer socket");
                 executor.execute(new PeersCommunicationThread(socket,executor));
             }
 

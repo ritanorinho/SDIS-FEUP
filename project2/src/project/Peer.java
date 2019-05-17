@@ -43,10 +43,10 @@ public class Peer implements RMIInterface {
 	private static double protocolVersion;
 	private static int serverID;
 	private static String accessPoint;
-	private  int serverPort;
-	private  InetAddress serverAddress;
-	private  int peerPort;
-	private  InetAddress peerAddress;
+	private int serverPort;
+	private InetAddress serverAddress;
+	private int peerPort;
+	private InetAddress peerAddress;
 	private static ScheduledThreadPoolExecutor executor;
 	private static SSLSocket socket;
 	private static SSLServerSocket peerServerSocket;
@@ -58,8 +58,6 @@ public class Peer implements RMIInterface {
 		this.serverAddress = serverAddress;
 		this.peerPort = peerPort;
 		this.peerAddress = peerAddress;
-
-		
 
 		SSLSocketFactory ssf = (SSLSocketFactory) SSLSocketFactory.getDefault();
 
@@ -108,22 +106,20 @@ public class Peer implements RMIInterface {
 
 	private void createPeerSocket() {
 
-		SSLServerSocketFactory ssf = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();  
-        
-        try 
-        {  	System.out.println("port "+this.peerPort);
+		SSLServerSocketFactory ssf = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
+
+		try {
+			System.out.println("port " + this.peerPort);
 			peerServerSocket = (SSLServerSocket) ssf.createServerSocket(this.peerPort);
-			System.out.println("port "+peerServerSocket.getLocalPort());
-        }  
-        catch(IOException e) 
-        {  
+			System.out.println("port " + peerServerSocket.getLocalPort());
+		} catch (IOException e) {
 			e.printStackTrace();
-            System.out.println("Server - Failed to create SSLServerSocket");  
-            return;  
+			System.out.println("Server - Failed to create SSLServerSocket");
+			return;
 		}
-		peerServerSocket.setNeedClientAuth(false); //TODO Change
-		peerServerSocket.setEnabledCipherSuites(new String[] {"TLS_DH_anon_WITH_AES_128_CBC_SHA"});
-		executor.execute(new PeerThread(peerServerSocket,executor));
+		peerServerSocket.setNeedClientAuth(false); // TODO Change
+		peerServerSocket.setEnabledCipherSuites(new String[] { "TLS_DH_anon_WITH_AES_128_CBC_SHA" });
+		executor.execute(new PeerThread(peerServerSocket, executor));
 	}
 
 	public static void main(String args[]) throws InterruptedException, IOException, AlreadyBoundException {
@@ -230,46 +226,69 @@ public class Peer implements RMIInterface {
 		File file = new File(filename);
 		FileInfo fileInfo = new FileInfo(file, filename, repDegree);
 		double workingVersion = getWorkingVersion(enhancement);
-		try{
-		OutputStream ostream = socket.getOutputStream();
-		PrintWriter pwrite = new PrintWriter(ostream, true);
-
-		InputStream istream = socket.getInputStream();
-
-		BufferedReader receiveRead = new BufferedReader(new InputStreamReader(istream));
-
-		String backupMessage = "BACKUP " + fileInfo.getFileId() + " Peer" + serverID + "\n";
-		pwrite.println(backupMessage);
-		pwrite.flush();
-		String receiveMessage;
-		System.out.println(backupMessage);
-
-		if ((receiveMessage = receiveRead.readLine()) != null) {
-			System.out.println(receiveMessage);
-		String[] splitMessage = receiveMessage.split("-");
-		int port = Integer.parseInt(splitMessage[0]);
-		InetAddress address = InetAddress.getByName("localhost");
-		System.out.println(port + " "+address);
-		SSLSocketFactory ssf = (SSLSocketFactory) SSLSocketFactory.getDefault();
-		SSLSocket peerSocket;
+		ArrayList<Chunk> chunks = fileInfo.getChunks();
+		String chunkId;
 		try {
-			peerSocket = (SSLSocket) ssf.createSocket(address,port);
-		} catch (IOException e) {
-			e.printStackTrace();
-			System.out.println("Peer - Failed to create SSLSocket");
-			return;
-		}
-		peerSocket.setEnabledCipherSuites(new String[] { "TLS_DH_anon_WITH_AES_128_CBC_SHA" });
-		peerSocket.startHandshake();
-		OutputStream outputStream = peerSocket.getOutputStream();
-		DataOutputStream dataOutputStream = new DataOutputStream(outputStream);
-		String message = "abc";
-		dataOutputStream.writeInt(message.getBytes().length);
-		dataOutputStream.write(message.getBytes());
+			for (int i = 0; i < chunks.size(); i++) {
 
-		}
-	}
-		catch(Exception e){
+				byte[] header = Utils.getHeader("PUTCHUNK", workingVersion, serverID, fileInfo.getFileId(),
+						chunks.get(i).getChunkNo(), repDegree);
+				String headerString = new String(header, 0, header.length);
+
+				System.out.println("SENT: " + headerString);
+
+				chunkId = fileInfo.getFileId() + "-" + chunks.get(i).getChunkNo();
+
+				if (!memory.hasFileByID(fileInfo.getFileId()))
+					memory.files.add(fileInfo);
+
+				if (!memory.savedOcurrences.containsKey(chunkId)) {
+					memory.savedOcurrences.put(chunkId, 0);
+					Utils.savedOccurrencesFile();
+				}
+
+				byte[] body = chunks.get(i).getData();
+				byte[] message = new byte[header.length + body.length];
+				System.arraycopy(header, 0, message, 0, header.length);
+				System.arraycopy(body, 0, message, header.length, body.length);
+				OutputStream ostream = socket.getOutputStream();
+				PrintWriter pwrite = new PrintWriter(ostream, true);
+
+				InputStream istream = socket.getInputStream();
+
+				BufferedReader receiveRead = new BufferedReader(new InputStreamReader(istream));
+
+				String backupMessage = "BACKUP " + fileInfo.getFileId() + " Peer" + serverID + "\n";
+				pwrite.println(backupMessage);
+				pwrite.flush();
+				String receiveMessage;
+				System.out.println(backupMessage);
+
+				if ((receiveMessage = receiveRead.readLine()) != null) {
+					System.out.println(receiveMessage);
+					String[] splitMessage = receiveMessage.split("-");
+					int port = Integer.parseInt(splitMessage[0]);
+					InetAddress address = InetAddress.getByName("localhost");
+					System.out.println(port + " " + address);
+					SSLSocketFactory ssf = (SSLSocketFactory) SSLSocketFactory.getDefault();
+					SSLSocket peerSocket;
+					try {
+						peerSocket = (SSLSocket) ssf.createSocket(address, port);
+					} catch (IOException e) {
+						e.printStackTrace();
+						System.out.println("Peer - Failed to create SSLSocket");
+						return;
+					}
+					peerSocket.setEnabledCipherSuites(new String[] { "TLS_DH_anon_WITH_AES_128_CBC_SHA" });
+					peerSocket.startHandshake();
+					OutputStream outputStream = peerSocket.getOutputStream();
+					DataOutputStream dataOutputStream = new DataOutputStream(outputStream);
+					dataOutputStream.writeInt(message.length);
+					dataOutputStream.write(message);
+
+				}
+			}
+		} catch (Exception e) {
 
 		}
 		if (workingVersion < 0) {
