@@ -32,6 +32,7 @@ import utils.FileInfo;
 import utils.Memory;
 import utils.Utils;
 
+import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.SSLSocket;
@@ -50,7 +51,7 @@ public class Peer implements RMIInterface {
 	private int peerPort;
 	private InetAddress peerAddress;
 	private static ScheduledThreadPoolExecutor executor;
-	private static SSLSocket socket;
+	private static SSLSocket serverSocket;
 	private static SSLServerSocket peerServerSocket;
 	private static Memory memory = new Memory();
 
@@ -60,17 +61,6 @@ public class Peer implements RMIInterface {
 		this.serverAddress = serverAddress;
 		this.peerPort = peerPort;
 		this.peerAddress = peerAddress;
-
-		SSLSocketFactory ssf = (SSLSocketFactory) SSLSocketFactory.getDefault();
-
-		try {
-			socket = (SSLSocket) ssf.createSocket(serverAddress, serverPort);
-		} catch (IOException e) {
-			System.out.println("Peer - Failed to create SSLSocket");
-			e.getMessage();
-			return;
-		}
-		socket.setEnabledCipherSuites(new String[] { "TLS_DH_anon_WITH_AES_128_CBC_SHA" });
 
 		/*
 		 * String[] supportedSuites = socket.getSupportedCipherSuites();
@@ -82,17 +72,28 @@ public class Peer implements RMIInterface {
 		if (!createStores())
 			return;
 
-		socket.startHandshake();
+		serverSocket = createSocket();
+
+		if(serverSocket == null)
+		{
+			System.out.println("Couldn't connect to server");
+			return;
+		}
+
+		serverSocket.startHandshake();
+
+		System.out.println("Connection to the server estabelished");
+
 		executor = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(250);
 
 		try {
 			
-			OutputStream ostream = socket.getOutputStream();
+			OutputStream ostream = serverSocket.getOutputStream();
 			PrintWriter pwrite = new PrintWriter(ostream, true);
 			String peerID = "Peer" + Peer.getId() + " " + peerPort + " " + peerAddress + "\n";
 			pwrite.println(peerID);
 			pwrite.flush();
-			InputStream istream = socket.getInputStream();
+			InputStream istream = serverSocket.getInputStream();
 			BufferedReader receiveRead = new BufferedReader(new InputStreamReader(istream));
 			System.out.println(peerID);
 			String receiveMessage;
@@ -103,8 +104,34 @@ public class Peer implements RMIInterface {
 
 		} catch (Exception e) {
 			System.out.println("ERROR");
+			e.printStackTrace();
 		}
 		createPeerSocket();
+	}
+
+	public SSLSocket createSocket()
+	{
+		SSLSocketFactory ssf = (SSLSocketFactory) SSLSocketFactory.getDefault();
+		SSLSocket socket;
+
+		try {
+			socket = (SSLSocket) ssf.createSocket(serverAddress, serverPort);
+		} catch (IOException e) {
+			System.out.println("Peer - Failed to create SSLSocket");
+			e.getMessage();
+			return null;
+		}
+
+		socket.setEnabledCipherSuites(new String[] 
+		{
+			"SSL_RSA_WITH_RC4_128_MD5", "SSL_RSA_WITH_RC4_128_SHA", "SSL_RSA_WITH_NULL_MD5",
+			"TLS_RSA_WITH_AES_128_CBC_SHA", "TLS_DHE_RSA_WITH_AES_128_CBC_SHA",
+			"TLS_DHE_DSS_WITH_AES_128_CBC_SHA", "TLS_DH_anon_WITH_AES_128_CBC_SHA"
+		});
+
+		socket.setEnabledProtocols(new String[] {"TLSv1.2"});
+
+		return socket;
 	}
 
 	private void createPeerSocket() {
@@ -149,32 +176,14 @@ public class Peer implements RMIInterface {
 		new File(peerFolder).mkdirs();
 
 		try {
-			ks = KeyStore.getInstance("JKS");
-			ks.load(new FileInputStream(peerFolder + "/keystore.jks"), pwdArray);
-		} catch (Exception e) {
-			try {
-				ks = KeyStore.getInstance(KeyStore.getDefaultType());
-				ks.load(null, pwdArray);
-
-				try (FileOutputStream fos = new FileOutputStream(peerFolder + "/keystore.jks")) {
-					ks.store(fos, pwdArray);
-				}
-			} catch (Exception e2) {
-				System.out.println("Couldn't create keystore");
-				e2.printStackTrace();
-				return false;
-			}
-		}
-
-		try {
 			ts = KeyStore.getInstance("JKS");
-			ts.load(new FileInputStream(peerFolder + "/truststore.jks"), pwdArray);
+			ts.load(new FileInputStream("truststore.jks"), pwdArray);
 		} catch (Exception e) {
 			try {
 				ts = KeyStore.getInstance(KeyStore.getDefaultType());
 				ts.load(null, pwdArray);
 
-				try (FileOutputStream fos = new FileOutputStream(peerFolder + "/truststore.jks")) {
+				try (FileOutputStream fos = new FileOutputStream("truststore.jks")) {
 					ts.store(fos, pwdArray);
 				}
 			} catch (Exception e2) {
@@ -183,9 +192,6 @@ public class Peer implements RMIInterface {
 				return false;
 			}
 		}
-
-		System.setProperty("javax.net.ssl.keyStore", peerFolder + "/keystore.jks");
-		System.setProperty("javax.net.ssl.keyStorePassword", "password");
 
 		System.setProperty("javax.net.ssl.trustStore", peerFolder + "/truststore.jks");
 		System.setProperty("javax.net.ssl.trustStorePassword", "password");
@@ -257,10 +263,10 @@ public class Peer implements RMIInterface {
 				byte[] message = new byte[header.length + body.length];
 				System.arraycopy(header, 0, message, 0, header.length);
 				System.arraycopy(body, 0, message, header.length, body.length);
-				OutputStream ostream = socket.getOutputStream();
+				OutputStream ostream = serverSocket.getOutputStream();
 				PrintWriter pwrite = new PrintWriter(ostream, true);
 
-				InputStream istream = socket.getInputStream();
+				InputStream istream = serverSocket.getInputStream();
 
 				BufferedReader receiveRead = new BufferedReader(new InputStreamReader(istream));
 

@@ -14,7 +14,6 @@ public class TCPThread extends Thread {
     public TCPThread(SSLServerSocket serverSocket, ScheduledThreadPoolExecutor executor) {
         this.executor = executor;
         this.serverSocket = serverSocket;
-        
     }
 
 	@Override
