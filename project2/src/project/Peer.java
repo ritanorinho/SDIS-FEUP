@@ -2,7 +2,6 @@ package project;
 
 import java.io.BufferedReader;
 import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -38,6 +37,9 @@ import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
+
+import sockets.ReceiverSocket;
+import sockets.SenderSocket;
 
 public class Peer implements RMIInterface {
 
@@ -85,6 +87,7 @@ public class Peer implements RMIInterface {
 		executor = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(250);
 
 		try {
+			
 			OutputStream ostream = socket.getOutputStream();
 			PrintWriter pwrite = new PrintWriter(ostream, true);
 			String peerID = "Peer" + Peer.getId() + " " + peerPort + " " + peerAddress + "\n";
@@ -282,18 +285,9 @@ public class Peer implements RMIInterface {
 					}
 					peerSocket.setEnabledCipherSuites(new String[] { "TLS_DH_anon_WITH_AES_128_CBC_SHA" });
 					peerSocket.startHandshake();
-					OutputStream outputStream = peerSocket.getOutputStream();
-					DataOutputStream dataOutputStream = new DataOutputStream(outputStream);
-					dataOutputStream.writeInt(message.length);
-					dataOutputStream.write(message);
 
-					InputStream inputStream = peerSocket.getInputStream();
-					DataInputStream dataInputStream = new DataInputStream(inputStream);
-					int size = dataInputStream.readInt();
-					byte[] receivedMessage = new byte[size];
-					dataInputStream.read(receivedMessage);
-					System.out.println("size "+size);
-
+					executor.execute(new SenderSocket(peerSocket,message));
+					executor.execute(new ReceiverSocket(peerSocket,message,executor));
 
 
 				}
