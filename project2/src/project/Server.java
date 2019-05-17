@@ -37,17 +37,11 @@ public class Server {
 			return;
 		}
 
-		new File("Server").mkdirs();
-
 		if(!createStores()) 
 		{
 			System.out.println("Couldn't create local key/trust stores");
 			return;
 		}	
-
-		/*
-		if(!setCertificateHandling())
-			return; */
 
 		SSLServerSocketFactory ssf = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
 
@@ -112,13 +106,13 @@ public class Server {
 
 		try {
 			ks = KeyStore.getInstance("JKS");
-			ks.load(new FileInputStream("Server/keystore.jks"), pwdArray);
+			ks.load(new FileInputStream("keystore.jks"), pwdArray);
 		} catch (Exception e) {
 			try {
 				ks = KeyStore.getInstance(KeyStore.getDefaultType());
 				ks.load(null, pwdArray);
 
-				try (FileOutputStream fos = new FileOutputStream("Server/keystore.jks")) {
+				try (FileOutputStream fos = new FileOutputStream("keystore.jks")) {
 					ks.store(fos, pwdArray);
 				}
 			} catch (Exception e2) {
@@ -128,7 +122,7 @@ public class Server {
 			}
 		}
 
-		System.setProperty("javax.net.ssl.keyStore", "Server/keystore.jks");
+		System.setProperty("javax.net.ssl.keyStore", "keystore.jks");
 		System.setProperty("javax.net.ssl.keyStorePassword", "password");
 
 		return true;

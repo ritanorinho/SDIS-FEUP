@@ -193,7 +193,7 @@ public class Peer implements RMIInterface {
 			}
 		}
 
-		System.setProperty("javax.net.ssl.trustStore", peerFolder + "/truststore.jks");
+		System.setProperty("javax.net.ssl.trustStore", "truststore.jks");
 		System.setProperty("javax.net.ssl.trustStorePassword", "password");
 
 		return true;
