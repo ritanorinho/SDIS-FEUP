@@ -48,6 +48,7 @@ public class GetchunkThread implements Runnable {
 	public String sendConfirmChunk(int port){
 		String storedMessage = null;
 
+		/*
 		try {
 			storedMessage = "CONFIRMCHUNK "+this.senderVersion+" "+Peer.getId()+" "+ chunkId +" "+port+"\r\n\r\n";
 			Peer.getMCListener().message(storedMessage.getBytes("US-ASCII"));
@@ -56,7 +57,7 @@ public class GetchunkThread implements Runnable {
 
 		} catch (IOException e) {
 			e.printStackTrace();
-		}
+		} */
 
 		return storedMessage;
 	}

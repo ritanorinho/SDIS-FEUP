@@ -1,13 +1,9 @@
 package project;
 
 import java.net.InetAddress;
-import java.net.Socket;
-import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import utils.Memory;
-
-import java.util.HashMap;
 import java.util.concurrent.Executors;
 import java.security.*;
 import javax.net.ssl.*;
@@ -24,6 +20,7 @@ public class Server {
 
 	public static void main(String args[]) {
 		System.out.println("main " + memory.conections.size());
+
 		if (args.length != 2) {
 			System.out.println("Wrong number of arguments\nUsage: Server <tcp_addr> <tcp_port>");
 			return;
@@ -41,7 +38,7 @@ public class Server {
 		SSLServerSocketFactory ssf = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
 
 		try {
-			serverSocket = (SSLServerSocket) ssf.createServerSocket(tcp_port);
+			serverSocket = (SSLServerSocket) ssf.createServerSocket(tcp_port, 30, tcp_addr);
 		} catch (IOException e) {
 			e.printStackTrace();
 			System.out.println("Server - Failed to create SSLServerSocket");
@@ -54,11 +51,8 @@ public class Server {
 		executor = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(250);
 		executor.execute(new TCPThread(serverSocket, executor));
 
-		/*
-		 * if(!createStores()) return;
-		 * 
-		 * executor.execute(new TCPThread("start"));
-		 */
+		
+		//if(!createStores()) return;
 	}
 
 	public static boolean createStores() {

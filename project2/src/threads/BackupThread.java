@@ -36,11 +36,12 @@ public class BackupThread implements Runnable {
 
 			// it retransmits the backup message on the MDB channel, and
 			// doubles the time interval for receiving confirmation messages
+			/*
 			try {
 				Peer.getMDBListener().message(this.message);
 			} catch (IOException e) {
 				e.printStackTrace();
-			}
+			} */
 
 			this.attempt++;
 			if (this.attempt < this.MAX_ATTEMPT) { // This procedure is repeated up to a maximum number of five times
