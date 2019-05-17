@@ -10,6 +10,7 @@ import javax.net.ssl.*;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.File;
 
 public class Server {
 	private static SSLServerSocket serverSocket;
@@ -35,10 +36,19 @@ public class Server {
 			return;
 		}
 
+		new File("Server").mkdirs();
+
+		if(!createStores()) 
+		{
+			System.out.println("Couldn't create local key/trust stores");
+			return;
+		}	
+
 		SSLServerSocketFactory ssf = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
 
 		try {
 			serverSocket = (SSLServerSocket) ssf.createServerSocket(tcp_port, 30, tcp_addr);
+			System.out.println("Server ready to receive connections...");
 		} catch (IOException e) {
 			e.printStackTrace();
 			System.out.println("Server - Failed to create SSLServerSocket");
@@ -49,10 +59,7 @@ public class Server {
 		serverSocket.setNeedClientAuth(false); // TODO Change
 		serverSocket.setEnabledCipherSuites(new String[] { "TLS_DH_anon_WITH_AES_128_CBC_SHA" });
 		executor = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(250);
-		executor.execute(new TCPThread(serverSocket, executor));
-
-		
-		//if(!createStores()) return;
+		executor.execute(new TCPThread(serverSocket, executor));	
 	}
 
 	public static boolean createStores() {
@@ -61,13 +68,13 @@ public class Server {
 
 		try {
 			ks = KeyStore.getInstance("JKS");
-			ks.load(new FileInputStream("keystore.jks"), pwdArray);
+			ks.load(new FileInputStream("Server/keystore.jks"), pwdArray);
 		} catch (Exception e) {
 			try {
 				ks = KeyStore.getInstance(KeyStore.getDefaultType());
 				ks.load(null, pwdArray);
 
-				try (FileOutputStream fos = new FileOutputStream("keystore.jks")) {
+				try (FileOutputStream fos = new FileOutputStream("Server/keystore.jks")) {
 					ks.store(fos, pwdArray);
 				}
 			} catch (Exception e2) {
@@ -79,13 +86,13 @@ public class Server {
 
 		try {
 			ts = KeyStore.getInstance("JKS");
-			ts.load(new FileInputStream("truststore.jks"), pwdArray);
+			ts.load(new FileInputStream("Server/truststore.jks"), pwdArray);
 		} catch (Exception e) {
 			try {
 				ts = KeyStore.getInstance(KeyStore.getDefaultType());
 				ts.load(null, pwdArray);
 
-				try (FileOutputStream fos = new FileOutputStream("truststore.jks")) {
+				try (FileOutputStream fos = new FileOutputStream("Server/truststore.jks")) {
 					ts.store(fos, pwdArray);
 				}
 			} catch (Exception e2) {
@@ -95,10 +102,10 @@ public class Server {
 			}
 		}
 
-		System.setProperty("javax.net.ssl.keyStore", "keystore.jks");
+		System.setProperty("javax.net.ssl.keyStore", "Server/keystore.jks");
 		System.setProperty("javax.net.ssl.keyStorePassword", "password");
 
-		System.setProperty("javax.net.ssl.trustStore", "truststore.jks");
+		System.setProperty("javax.net.ssl.trustStore", "Server/truststore.jks");
 		System.setProperty("javax.net.ssl.trustStorePassword", "password");
 
 		return true;

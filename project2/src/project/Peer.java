@@ -1,7 +1,6 @@
 package project;
 
 import java.io.BufferedReader;
-import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -145,16 +144,19 @@ public class Peer implements RMIInterface {
 	public static boolean createStores() {
 		char[] pwdArray = "password".toCharArray();
 		KeyStore ks, ts;
+		String peerFolder = "Peer" + Peer.getId();
+
+		new File(peerFolder).mkdirs();
 
 		try {
 			ks = KeyStore.getInstance("JKS");
-			ks.load(new FileInputStream("keystore.jks"), pwdArray);
+			ks.load(new FileInputStream(peerFolder + "/keystore.jks"), pwdArray);
 		} catch (Exception e) {
 			try {
 				ks = KeyStore.getInstance(KeyStore.getDefaultType());
 				ks.load(null, pwdArray);
 
-				try (FileOutputStream fos = new FileOutputStream("keystore.jks")) {
+				try (FileOutputStream fos = new FileOutputStream(peerFolder + "/keystore.jks")) {
 					ks.store(fos, pwdArray);
 				}
 			} catch (Exception e2) {
@@ -166,13 +168,13 @@ public class Peer implements RMIInterface {
 
 		try {
 			ts = KeyStore.getInstance("JKS");
-			ts.load(new FileInputStream("truststore.jks"), pwdArray);
+			ts.load(new FileInputStream(peerFolder + "/truststore.jks"), pwdArray);
 		} catch (Exception e) {
 			try {
 				ts = KeyStore.getInstance(KeyStore.getDefaultType());
 				ts.load(null, pwdArray);
 
-				try (FileOutputStream fos = new FileOutputStream("truststore.jks")) {
+				try (FileOutputStream fos = new FileOutputStream(peerFolder + "/truststore.jks")) {
 					ts.store(fos, pwdArray);
 				}
 			} catch (Exception e2) {
@@ -182,10 +184,10 @@ public class Peer implements RMIInterface {
 			}
 		}
 
-		System.setProperty("javax.net.ssl.keyStore", "keystore.jks");
+		System.setProperty("javax.net.ssl.keyStore", peerFolder + "/keystore.jks");
 		System.setProperty("javax.net.ssl.keyStorePassword", "password");
 
-		System.setProperty("javax.net.ssl.trustStore", "truststore.jks");
+		System.setProperty("javax.net.ssl.trustStore", peerFolder + "/truststore.jks");
 		System.setProperty("javax.net.ssl.trustStorePassword", "password");
 
 		return true;

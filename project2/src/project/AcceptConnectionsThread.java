@@ -39,7 +39,7 @@ public class AcceptConnectionsThread extends Thread {
                     analize = analizeMessage(message);
                 }
                 System.out.println("server message " + analize);
-                if (analize.equals("conected")) {
+                if (analize.equals("connected")) {
                     String[] splitMessage = message.trim().split("\\s+");
                     String peerID = splitMessage[0];
                     Integer port = Integer.parseInt(splitMessage[1]);
