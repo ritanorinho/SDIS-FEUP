@@ -116,7 +116,6 @@ public class Server {
 	}
 
 	public static Memory getMemory() {
-		System.out.println("Memory " + memory.conections.size());
 		return memory;
 	}
 

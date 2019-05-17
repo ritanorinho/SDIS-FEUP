@@ -23,7 +23,6 @@ public class PeersCommunicationThread extends Thread {
     @Override
     public void run() {
         byte[] message = null;
-        System.out.println("before executor");
         executor.execute(new ReceiverSocket(this.socket,message,executor));
        
 

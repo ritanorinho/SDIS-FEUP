@@ -62,7 +62,7 @@ public class StoredChunkThread implements Runnable {
 	}
 
 	private void saveChunk() {
-		System.out.println("save chunk");
+
 		Chunk chunk = new Chunk(this.fileId, Integer.parseInt(this.chunkNo), this.data, this.data.length, this.chunkId,
 				this.replicationDegree);
 
