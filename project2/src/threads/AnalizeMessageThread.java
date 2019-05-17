@@ -8,7 +8,6 @@ import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import project.Peer;
-import project.Server;
 import utils.Chunk;
 import utils.FileInfo;
 import utils.Pair;
