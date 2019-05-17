@@ -1,14 +1,9 @@
 package project;
 
-import java.io.DataInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.Socket;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import sockets.ReceiverSocket;
-import threads.AnalizeMessageThread;
 
 public class PeersCommunicationThread extends Thread {
     private Socket socket;
@@ -23,7 +18,6 @@ public class PeersCommunicationThread extends Thread {
     @Override
     public void run() {
         byte[] message = null;
-        System.out.println("before executor");
         executor.execute(new ReceiverSocket(this.socket,message,executor));
        
 

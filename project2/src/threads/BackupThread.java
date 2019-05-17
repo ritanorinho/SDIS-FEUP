@@ -1,6 +1,5 @@
 package threads;
 
-import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 import project.Peer;

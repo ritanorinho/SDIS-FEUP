@@ -38,7 +38,7 @@ public class AcceptConnectionsThread extends Thread {
                     System.out.println("Received message " + message);
                     analize = analizeMessage(message);
                 }
-                System.out.println("server message " + analize);
+
                 if (analize.equals("connected")) {
                     String[] splitMessage = message.trim().split("\\s+");
                     String peerID = splitMessage[0];
@@ -63,7 +63,7 @@ public class AcceptConnectionsThread extends Thread {
         String substr = splitMessage[0].trim().substring(0, 4);
 
         if (substr.equals("Peer")) {
-            return "conected";
+            return "connected";
         } else {
             switch (splitMessage[0].trim()) {
             case "BACKUP":

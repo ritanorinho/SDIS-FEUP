@@ -6,7 +6,6 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import javax.net.ssl.SSLServerSocket;
 
-import utils.Memory;
 
 public class PeerThread extends Thread {
     private SSLServerSocket peerSocket;
