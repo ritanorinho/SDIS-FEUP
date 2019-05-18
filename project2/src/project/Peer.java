@@ -293,7 +293,10 @@ public class Peer implements RMIInterface {
 
 						executor.execute(new SenderSocket(peerSocket, message));
 						executor.execute(new ReceiverSocket(peerSocket, message, executor));
-
+						String confirmation = split[0]+"-"+split[1];
+						pwrite.println(confirmation);
+						pwrite.flush();
+						System.out.println("confirmation "+confirmation);
 					}
 
 				}
@@ -360,7 +363,7 @@ public class Peer implements RMIInterface {
 		}*/
 
 		try{
-		String deleteMessage = "DELETE " + fileInfo.getFilename() + " Peer" + serverID + "\n";
+		String deleteMessage = "DELETE " + fileInfo.getFileId() + " Peer" + serverID + "\n";
 
 		OutputStream ostream = serverSocket.getOutputStream();
 		PrintWriter pwrite = new PrintWriter(ostream, true);
