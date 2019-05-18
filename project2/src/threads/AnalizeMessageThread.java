@@ -1,6 +1,7 @@
 package threads;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.Socket;
@@ -23,8 +24,7 @@ public class AnalizeMessageThread implements Runnable {
 	double version;
 	Socket socket;
 
-
-	public AnalizeMessageThread(byte[] message,Socket socket) {
+	public AnalizeMessageThread(byte[] message, Socket socket) {
 		this.messageBytes = message;
 		this.message = new String(this.messageBytes, 0, this.messageBytes.length);
 		this.messageArray = Utils.byteArrayToStringArray(message);
@@ -33,11 +33,12 @@ public class AnalizeMessageThread implements Runnable {
 
 		if (messageArray.length > 4)
 			this.chunkId = this.messageArray[3] + "-" + this.messageArray[4];
-		else if (messageArray.length > 3)this.chunkId = this.messageArray[3];
+		else if (messageArray.length > 3)
+			this.chunkId = this.messageArray[3];
 	}
 
 	public AnalizeMessageThread(byte[] message, InetAddress adress) {
-		
+
 		this.messageBytes = message;
 		this.message = new String(this.messageBytes, 0, this.messageBytes.length);
 		this.messageArray = Utils.byteArrayToStringArray(message);
@@ -45,9 +46,9 @@ public class AnalizeMessageThread implements Runnable {
 
 		if (messageArray.length > 4)
 			this.chunkId = this.messageArray[3] + "-" + this.messageArray[4];
-		else if (messageArray.length > 3) this.chunkId = this.messageArray[3];
+		else if (messageArray.length > 3)
+			this.chunkId = this.messageArray[3];
 		this.InetAddress = adress;
-		
 
 	}
 
@@ -55,7 +56,7 @@ public class AnalizeMessageThread implements Runnable {
 	public void run() {
 		String messageType = this.message.trim().split("\\s+")[0];
 
-		if(!isVersionSupported()){
+		if (!isVersionSupported()) {
 			return;
 		}
 
@@ -88,8 +89,8 @@ public class AnalizeMessageThread implements Runnable {
 		}
 	}
 
-	private boolean isVersionSupported(){
-		if(this.version > Peer.getProtocolVersion())
+	private boolean isVersionSupported() {
+		if (this.version > Peer.getProtocolVersion())
 			return false;
 		return true;
 	}
@@ -97,25 +98,32 @@ public class AnalizeMessageThread implements Runnable {
 	private void alive() {
 		int senderId = Integer.parseInt(this.messageArray[2]);
 		if (senderId != Peer.getId()) {
-			for (int i = 0;i< Peer.getMemory().deletedFiles.size();i++) {
-				String deletedMessage = "DELETE " + this.messageArray[1] + " " + Peer.getId() + " " + Peer.getMemory().deletedFiles.get(i) + " " + "\r\n\r\n";
-				System.out.println("\n SENT "+deletedMessage);
+			for (int i = 0; i < Peer.getMemory().deletedFiles.size(); i++) {
+				String deletedMessage = "DELETE " + this.messageArray[1] + " " + Peer.getId() + " "
+						+ Peer.getMemory().deletedFiles.get(i) + " " + "\r\n\r\n";
+				System.out.println("\n SENT " + deletedMessage);
 				try {
-					Peer.getExecutor().execute(new WorkerThread(deletedMessage.getBytes("US-ASCII"),"mc"));
+					Peer.getExecutor().execute(new WorkerThread(deletedMessage.getBytes("US-ASCII"), "mc"));
 				} catch (UnsupportedEncodingException e) {
 					e.printStackTrace();
 				}
 			}
 		}
-		
+
 	}
 
 	private synchronized void stored() {
 		String chunkId = messageArray[3] + "-" + messageArray[4];
-		
 		if (Peer.getMemory().savedOcurrences.containsKey(chunkId) && Peer.getId() != senderId) {
 			Peer.getMemory().savedOcurrences.put(chunkId, Peer.getMemory().savedOcurrences.get(chunkId) + 1);
 			Utils.savedOccurrencesFile();
+		}
+
+		try {
+			System.out.println("inside stored");
+			Peer.sendMessageToServer("STORED " + chunkId + " " + Peer.getId());
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 

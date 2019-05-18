@@ -74,8 +74,6 @@ public class Peer implements RMIInterface {
 
 		serverSocket.startHandshake();
 
-		System.out.println("Connection to the server estabelished");
-
 		executor = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(250);
 
 		try {
@@ -91,7 +89,7 @@ public class Peer implements RMIInterface {
 			String receiveMessage;
 			if ((receiveMessage = receiveRead.readLine()) != null) // receive from server
 			{
-				System.out.println("conection " + receiveMessage);
+				System.out.println("Connection status: " + receiveMessage);
 			}
 
 		} catch (Exception e) {
@@ -460,6 +458,13 @@ public class Peer implements RMIInterface {
 
 	public static int getId() {
 		return serverID;
+	}
+
+	public static void sendMessageToServer(String msg) throws IOException {
+		OutputStream ostream = serverSocket.getOutputStream();
+		PrintWriter pwrite = new PrintWriter(ostream, true);
+		pwrite.println(msg);
+		pwrite.flush();
 	}
 
 	public double getWorkingVersion(boolean enhancement) {

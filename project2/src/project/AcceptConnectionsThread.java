@@ -25,7 +25,7 @@ public class AcceptConnectionsThread extends Thread {
         try {
 
             String message;
-            String analize = "abc";
+            String analize = null;
             while (true) {
 
                 OutputStream ostream = socket.getOutputStream();
@@ -35,7 +35,7 @@ public class AcceptConnectionsThread extends Thread {
                 BufferedReader receiveRead = new BufferedReader(new InputStreamReader(istream));
 
                 if ((message = receiveRead.readLine()) != null) {
-                    System.out.println("Received message " + message);
+                    System.out.println("\nReceived message " + message);
                     analize = analizeMessage(message);
                 }
 
@@ -70,7 +70,12 @@ public class AcceptConnectionsThread extends Thread {
             case "BACKUP":
                 peer = splitMessage[2];
                 int replicationDegree = Integer.parseInt(splitMessage[3]);
-                return getOtherPeers(peer, replicationDegree);
+               return getOtherPeers(peer,replicationDegree);
+            case "STORED":
+               String peerID = splitMessage[1];
+               String chunkID = splitMessage[2];   
+               Server.getMemory().serverSavedChunks.put(chunkID, peerID);
+                break;
             case "DELETE":
                 peer = splitMessage[2];
                 String file = splitMessage[1];
@@ -81,7 +86,7 @@ public class AcceptConnectionsThread extends Thread {
 
             }
         }
-        return "";
+        return null;
     }
 
     private String getPeersWithFile(String file) {
