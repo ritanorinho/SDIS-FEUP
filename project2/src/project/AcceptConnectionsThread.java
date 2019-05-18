@@ -15,7 +15,7 @@ public class AcceptConnectionsThread extends Thread {
     private Socket socket;
     private  ScheduledThreadPoolExecutor executor;
 
-    public AcceptConnectionsThread(Socket socket, ScheduledThreadPoolExecutor executor) {
+    public  AcceptConnectionsThread(Socket socket, ScheduledThreadPoolExecutor executor) {
         this.socket = socket;
         this.executor = executor;
     }
@@ -68,12 +68,9 @@ public class AcceptConnectionsThread extends Thread {
             switch (splitMessage[0].trim()) {
             case "BACKUP":
                 String peer = splitMessage[2];
+                int replicationDegree = Integer.parseInt(splitMessage[3]);
                 String otherPeer;
-                if ((otherPeer = getOtherPeers(peer)) != null) {
-                    return Server.getMemory().conectionsPorts.get(otherPeer);
-                }
-
-                break;
+               return getOtherPeers(peer,replicationDegree);
             default:
 
             }
@@ -81,13 +78,21 @@ public class AcceptConnectionsThread extends Thread {
         return "abc";
     }
 
-    public static String getOtherPeers(String peer) {
+    public static String getOtherPeers(String peer, int replicationDegree) {
+        StringBuilder sb = new StringBuilder();
+        String conectionPorts = "";
         for (String key : Server.getMemory().conectionsPorts.keySet()) {
+            if(replicationDegree > 0){
             if (!key.equals(peer)) {
-                return key;
+                sb.append(Server.getMemory().conectionsPorts.get(key));
+                sb.append(" ");
+                replicationDegree--;
             }
+        } else break;
+
 
         }
-        return null;
+        conectionPorts = sb.toString();
+        return conectionPorts;
     }
 }
