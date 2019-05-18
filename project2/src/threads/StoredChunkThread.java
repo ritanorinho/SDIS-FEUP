@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.Socket;
 
-import project.Server;
+
 import project.Peer;
 import utils.Chunk;
 
@@ -72,15 +72,18 @@ public class StoredChunkThread implements Runnable {
 						+ this.chunkNo + "\r\n\r\n";
 				System.out.println("\nSENT " + storedMessage);
 				try{
-					OutputStream outputStream = socket.getOutputStream();
-					DataOutputStream dataOutputStream = new DataOutputStream(outputStream);
-					dataOutputStream.writeInt(storedMessage.getBytes().length);
-					dataOutputStream.write(storedMessage.getBytes());
+				OutputStream outputStream = socket.getOutputStream();
+				DataOutputStream dataOutputStream = new DataOutputStream(outputStream);
+				dataOutputStream.writeInt(storedMessage.getBytes().length);
+				dataOutputStream.write(storedMessage.getBytes());
 				}
 				catch(Exception e){
-					e.printStackTrace();
+
 				}
 
+
+		} else {
+			return;
 		}
 	}
 

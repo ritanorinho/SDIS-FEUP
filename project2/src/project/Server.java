@@ -21,6 +21,7 @@ public class Server {
 	public static int tcp_port;
 
 	public static void main(String args[]) {
+		System.out.println("main " + memory.conections.size());
 
 		if (args.length != 2) {
 			System.out.println("Wrong number of arguments\nUsage: Server <tcp_addr> <tcp_port>");

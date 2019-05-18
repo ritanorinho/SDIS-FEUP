@@ -54,10 +54,6 @@ public class Peer implements RMIInterface {
 	private static SSLSocket serverSocket;
 	private static SSLServerSocket peerServerSocket;
 	private static Memory memory = new Memory();
-	private static OutputStream ostream;
-	private static PrintWriter pwrite;
-	private static InputStream istream;
-	private static BufferedReader receiveRead;
 
 	public Peer(Integer serverPort, InetAddress serverAddress, Integer peerPort, InetAddress peerAddress)
 			throws IOException {
@@ -84,25 +80,26 @@ public class Peer implements RMIInterface {
 			return;
 		}
 
-		ostream = serverSocket.getOutputStream();
-		pwrite = new PrintWriter(ostream, true);
-		istream = serverSocket.getInputStream();
-		receiveRead = new BufferedReader(new InputStreamReader(istream));
-
 		serverSocket.startHandshake();
+
+		System.out.println("Connection to the server estabelished");
 
 		executor = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(250);
 
 		try {
 			
+			OutputStream ostream = serverSocket.getOutputStream();
+			PrintWriter pwrite = new PrintWriter(ostream, true);
 			String peerID = "Peer" + Peer.getId() + " " + peerPort + " " + peerAddress + "\n";
 			pwrite.println(peerID);
 			pwrite.flush();
-
+			InputStream istream = serverSocket.getInputStream();
+			BufferedReader receiveRead = new BufferedReader(new InputStreamReader(istream));
+			System.out.println(peerID);
 			String receiveMessage;
 			if ((receiveMessage = receiveRead.readLine()) != null) // receive from server
 			{
-				System.out.println(receiveMessage);
+				System.out.println("conection " + receiveMessage);
 			}
 
 		} catch (Exception e) {
@@ -142,9 +139,9 @@ public class Peer implements RMIInterface {
 		SSLServerSocketFactory ssf = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
 
 		try {
-
+			System.out.println("port " + this.peerPort);
 			peerServerSocket = (SSLServerSocket) ssf.createServerSocket(this.peerPort);
-
+			System.out.println("port " + peerServerSocket.getLocalPort());
 		} catch (IOException e) {
 			e.printStackTrace();
 			System.out.println("Server - Failed to create SSLServerSocket");
@@ -237,7 +234,7 @@ public class Peer implements RMIInterface {
 	@Override
 	public void backup(String filename, int repDegree, boolean enhancement)
 			throws RemoteException, InterruptedException {
-
+		System.out.println(Server.getMemory().conections);
 		File file = new File(filename);
 		FileInfo fileInfo = new FileInfo(file, filename, repDegree);
 		double workingVersion = getWorkingVersion(enhancement);
@@ -249,6 +246,8 @@ public class Peer implements RMIInterface {
 				byte[] header = Utils.getHeader("PUTCHUNK", workingVersion, serverID, fileInfo.getFileId(),
 						chunks.get(i).getChunkNo(), repDegree);
 				String headerString = new String(header, 0, header.length);
+
+				System.out.println("SENT: " + headerString);
 
 				chunkId = fileInfo.getFileId() + "-" + chunks.get(i).getChunkNo();
 
@@ -264,16 +263,25 @@ public class Peer implements RMIInterface {
 				byte[] message = new byte[header.length + body.length];
 				System.arraycopy(header, 0, message, 0, header.length);
 				System.arraycopy(body, 0, message, header.length, body.length);
+				OutputStream ostream = serverSocket.getOutputStream();
+				PrintWriter pwrite = new PrintWriter(ostream, true);
 
+				InputStream istream = serverSocket.getInputStream();
+
+				BufferedReader receiveRead = new BufferedReader(new InputStreamReader(istream));
+
+				String backupMessage = "BACKUP " + fileInfo.getFileId() + " Peer" + serverID + "\n";
+				pwrite.println(backupMessage);
+				pwrite.flush();
 				String receiveMessage;
+				System.out.println(backupMessage);
 
-				if ((receiveMessage = sendBackupMsg(fileInfo)) != null) {
-					System.out.println("RECEIVED FROM SERVER: " + receiveMessage);
-
+				if ((receiveMessage = receiveRead.readLine()) != null) {
+					System.out.println(receiveMessage);
 					String[] splitMessage = receiveMessage.split("-");
 					int port = Integer.parseInt(splitMessage[0]);
 					InetAddress address = InetAddress.getByName("localhost");
-
+					System.out.println(port + " " + address);
 					SSLSocketFactory ssf = (SSLSocketFactory) SSLSocketFactory.getDefault();
 					SSLSocket peerSocket;
 					try {
@@ -286,7 +294,6 @@ public class Peer implements RMIInterface {
 					peerSocket.setEnabledCipherSuites(new String[] { "TLS_DH_anon_WITH_AES_128_CBC_SHA" });
 					peerSocket.startHandshake();
 
-					System.out.println("SENT TO PEERS: " + headerString);
 					executor.execute(new SenderSocket(peerSocket,message));
 					executor.execute(new ReceiverSocket(peerSocket,message,executor));
 
@@ -300,19 +307,6 @@ public class Peer implements RMIInterface {
 			System.out.println("This version does not support this opperation");
 			return;
 		}
-	}
-
-	public String sendBackupMsg(FileInfo fileInfo){
-		String backupMessage = "BACKUP " + fileInfo.getFileId() + " Peer" + serverID + "\n";
-		sendMessageToServer(backupMessage);
-		System.out.println("SENT TO SERVER: " + backupMessage);
-
-		try {
-			return receiveRead.readLine();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return null;
 	}
 
 	@Override
@@ -496,13 +490,6 @@ public class Peer implements RMIInterface {
 	public static int getId() {
 		return serverID;
 	}
-
-	public static void sendMessageToServer(String message) {
-		pwrite.println(message);
-		pwrite.flush();
-	}
-
-
 
 	public double getWorkingVersion(boolean enhancement) {
 		double ret;

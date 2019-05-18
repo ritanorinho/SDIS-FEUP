@@ -25,7 +25,7 @@ public class AcceptConnectionsThread extends Thread {
         try {
 
             String message;
-            String analize = null;
+            String analize = "abc";
             while (true) {
     
                 OutputStream ostream = socket.getOutputStream();
@@ -35,6 +35,7 @@ public class AcceptConnectionsThread extends Thread {
                 BufferedReader receiveRead = new BufferedReader(new InputStreamReader(istream));
 
                 if ((message = receiveRead.readLine()) != null) {
+                    System.out.println("Received message " + message);
                     analize = analizeMessage(message);
                 }
 
@@ -44,9 +45,9 @@ public class AcceptConnectionsThread extends Thread {
                     Integer port = Integer.parseInt(splitMessage[1]);
                     String address = splitMessage[2];
                     Server.getMemory().addConnection(peerID, socket, port, address);
-                    System.out.println("Connected: " + message);
+                    System.out.println("List of Peers Connected: ");
+                    System.out.println(Collections.singletonList(Server.getMemory().conections));
                 }
-                
                 pwrite.println(analize);
                 pwrite.flush();
             }
@@ -62,27 +63,22 @@ public class AcceptConnectionsThread extends Thread {
         String substr = splitMessage[0].trim().substring(0, 4);
 
         if (substr.equals("Peer")) {
-            return "Connection estabelished";
+            return "connected";
         } else {
-            System.out.println("Received message: " + message);
             switch (splitMessage[0].trim()) {
             case "BACKUP":
                 String peer = splitMessage[2];
                 String otherPeer;
-                if ((otherPeer = getOtherPeers(peer)) != null) 
+                if ((otherPeer = getOtherPeers(peer)) != null) {
                     return Server.getMemory().conectionsPorts.get(otherPeer);
-                break;
+                }
 
-            case "STORED":
-                String peerID = splitMessage[1];
-                String chunkID = splitMessage[2];
-                Server.getMemory().serverSavedChunks.put(chunkID, peerID);
-                break;    
+                break;
             default:
 
             }
         }
-        return null;
+        return "abc";
     }
 
     public static String getOtherPeers(String peer) {
