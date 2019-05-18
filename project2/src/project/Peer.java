@@ -292,13 +292,10 @@ public class Peer implements RMIInterface {
 						}
 						peerSocket.setEnabledCipherSuites(new String[] { "TLS_DH_anon_WITH_AES_128_CBC_SHA" });
 						peerSocket.startHandshake();
-						System.out.println("before sender socket");
 						executor.execute(new SenderSocket(peerSocket, message));
-						System.out.println("after sender socket");
 						executor.execute(new ReceiverSocket(peerSocket, message, executor));
-						System.out.println("after receiver socket");
-						String confirmation = split[0]+"-"+split[1];
-						System.out.println("confirmation "+confirmation);
+
+
 					}
 
 				}

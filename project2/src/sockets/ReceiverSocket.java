@@ -35,7 +35,7 @@ public class ReceiverSocket extends Thread {
             dataInputStream.read(this.message);
             System.out.println(size);
             executor.execute(new AnalizeMessageThread(message, socket));
-            System.out.println("after receiver socket executor");
+
 	               
         } catch (IOException e) {
             e.printStackTrace();

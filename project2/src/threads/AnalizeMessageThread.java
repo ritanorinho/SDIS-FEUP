@@ -112,12 +112,11 @@ public class AnalizeMessageThread implements Runnable {
 
 	private synchronized void stored() {
 		String chunkId = messageArray[3] + "-" + messageArray[4];
-		System.out.println("inside stored");
+		
 		if (Peer.getMemory().savedOcurrences.containsKey(chunkId) && Peer.getId() != senderId) {
 			Peer.getMemory().savedOcurrences.put(chunkId, Peer.getMemory().savedOcurrences.get(chunkId) + 1);
 			Utils.savedOccurrencesFile();
 		}
-		System.out.println("out stored");
 	}
 
 	private synchronized void putchunk() {
