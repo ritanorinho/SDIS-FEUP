@@ -62,13 +62,6 @@ public class Peer implements RMIInterface {
 		this.peerPort = peerPort;
 		this.peerAddress = peerAddress;
 
-		/*
-		 * String[] supportedSuites = socket.getSupportedCipherSuites();
-		 * 
-		 * for(int i = 0; i < supportedSuites.length; i++)
-		 * System.out.println(supportedSuites[i]);
-		 */
-
 		if (!checkStores())
 			return;
 
@@ -105,7 +98,13 @@ public class Peer implements RMIInterface {
 			System.out.println("ERROR");
 			e.printStackTrace();
 		}
-		createPeerSocket();
+
+		peerServerSocket = createServerSocket();
+
+		if(peerServerSocket == null)
+			return;
+			
+		executor.execute(new PeerThread(peerServerSocket, executor));
 	}
 
 	public SSLSocket createSocket() {
@@ -129,22 +128,31 @@ public class Peer implements RMIInterface {
 		return socket;
 	}
 
-	private void createPeerSocket() {
-
+	private SSLServerSocket createServerSocket() 
+	{
 		SSLServerSocketFactory ssf = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
+		SSLServerSocket sSocket;
 
-		try {
+		try 
+		{
 			System.out.println("port " + this.peerPort);
-			peerServerSocket = (SSLServerSocket) ssf.createServerSocket(this.peerPort);
+			sSocket = (SSLServerSocket) ssf.createServerSocket(this.peerPort);
 			System.out.println("port " + peerServerSocket.getLocalPort());
-		} catch (IOException e) {
+		} 
+		catch (IOException e) 
+		{
 			e.printStackTrace();
-			System.out.println("Server - Failed to create SSLServerSocket");
-			return;
+			System.out.println("Failed to create server socket");
+			return null;
 		}
-		peerServerSocket.setNeedClientAuth(false); // TODO Change
-		peerServerSocket.setEnabledCipherSuites(new String[] { "TLS_DH_anon_WITH_AES_128_CBC_SHA" });
-		executor.execute(new PeerThread(peerServerSocket, executor));
+
+		sSocket.setNeedClientAuth(true);
+		sSocket.setEnabledCipherSuites(new String[] { "SSL_RSA_WITH_RC4_128_MD5", "SSL_RSA_WITH_RC4_128_SHA",
+				"SSL_RSA_WITH_NULL_MD5", "TLS_RSA_WITH_AES_128_CBC_SHA", "TLS_DHE_RSA_WITH_AES_128_CBC_SHA",
+				"TLS_DHE_DSS_WITH_AES_128_CBC_SHA", "TLS_DH_anon_WITH_AES_128_CBC_SHA" });
+		sSocket.setEnabledProtocols(new String[] { "TLSv1.2" });
+
+		return sSocket;
 	}
 
 	public static void main(String args[]) throws InterruptedException, IOException, AlreadyBoundException {
