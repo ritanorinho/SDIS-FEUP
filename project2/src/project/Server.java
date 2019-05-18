@@ -37,7 +37,9 @@ public class Server {
 			return;
 		}
 
-		if(!createStores()) 
+		new File("Server").mkdir();
+
+		if(!checkStores()) 
 		{
 			System.out.println("Couldn't create local key/trust stores");
 			return;
@@ -48,7 +50,7 @@ public class Server {
 		try {
 			serverSocket = (SSLServerSocket) ssf.createServerSocket(tcp_port, 30, tcp_addr);
 
-			serverSocket.setNeedClientAuth(false);
+			serverSocket.setNeedClientAuth(true);
 			serverSocket.setEnabledCipherSuites(new String[] 
 			{ 
 				"SSL_RSA_WITH_RC4_128_MD5", "SSL_RSA_WITH_RC4_128_SHA", "SSL_RSA_WITH_NULL_MD5",
@@ -100,30 +102,30 @@ public class Server {
 		return true;
 	}
 
-	public static boolean createStores() {
-		char[] pwdArray = "password".toCharArray();
-		KeyStore ks;
+	public static boolean checkStores() 
+	{
+		File store = new File("Server/keystore.jks");
 
-		try {
-			ks = KeyStore.getInstance("JKS");
-			ks.load(new FileInputStream("keystore.jks"), pwdArray);
-		} catch (Exception e) {
-			try {
-				ks = KeyStore.getInstance(KeyStore.getDefaultType());
-				ks.load(null, pwdArray);
+		if(!store.exists())
+		{
+			System.out.println("Couldn't find server key store");
 
-				try (FileOutputStream fos = new FileOutputStream("keystore.jks")) {
-					ks.store(fos, pwdArray);
-				}
-			} catch (Exception e2) {
-				System.out.println("Couldn't create keystore");
-				e2.printStackTrace();
-				return false;
-			}
+			return false;
 		}
 
-		System.setProperty("javax.net.ssl.keyStore", "keystore.jks");
+		store = new File("Server/truststore.jks");
+
+		if(!store.exists())
+		{
+			System.out.println("Couldn't find server trust store");
+
+			return false;
+		}
+
+		System.setProperty("javax.net.ssl.keyStore", "Server/keystore.jks");
 		System.setProperty("javax.net.ssl.keyStorePassword", "password");
+		System.setProperty("javax.net.ssl.trustStore", "Server/truststore.jks");
+		System.setProperty("javax.net.ssl.trustStorePassword", "password");
 
 		return true;
 	}

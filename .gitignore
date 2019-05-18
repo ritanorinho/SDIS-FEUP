@@ -1,6 +1,7 @@
 
 *.class
 *.bat
+*.cer
 
 \.idea/
 

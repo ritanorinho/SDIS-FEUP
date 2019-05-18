@@ -69,7 +69,7 @@ public class Peer implements RMIInterface {
 		 * System.out.println(supportedSuites[i]);
 		 */
 
-		if (!createStores())
+		if (!checkStores())
 			return;
 
 		serverSocket = createSocket();
@@ -163,31 +163,28 @@ public class Peer implements RMIInterface {
 			alive();
 	}
 
-	public static boolean createStores() {
-		char[] pwdArray = "password".toCharArray();
-		KeyStore ks, ts;
-		String peerFolder = "Peer" + Peer.getId();
+	public static boolean checkStores() 
+	{
+		File store = new File("keystore.jks");
 
-		new File(peerFolder).mkdirs();
+		if(!store.exists())
+		{
+			System.out.println("Couldn't find peer key store");
 
-		try {
-			ts = KeyStore.getInstance("JKS");
-			ts.load(new FileInputStream("truststore.jks"), pwdArray);
-		} catch (Exception e) {
-			try {
-				ts = KeyStore.getInstance(KeyStore.getDefaultType());
-				ts.load(null, pwdArray);
-
-				try (FileOutputStream fos = new FileOutputStream("truststore.jks")) {
-					ts.store(fos, pwdArray);
-				}
-			} catch (Exception e2) {
-				System.out.println("Couldn't create trust store");
-				e2.printStackTrace();
-				return false;
-			}
+			return false;
 		}
 
+		store = new File("truststore.jks");
+
+		if(!store.exists())
+		{
+			System.out.println("Couldn't find peer trust store");
+
+			return false;
+		}
+
+		System.setProperty("javax.net.ssl.keyStore", "keystore.jks");
+		System.setProperty("javax.net.ssl.keyStorePassword", "password");
 		System.setProperty("javax.net.ssl.trustStore", "truststore.jks");
 		System.setProperty("javax.net.ssl.trustStorePassword", "password");
 
