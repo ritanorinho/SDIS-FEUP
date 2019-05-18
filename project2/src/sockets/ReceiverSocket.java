@@ -33,7 +33,9 @@ public class ReceiverSocket extends Thread {
 		    int size = dataInputStream.readInt();
 			this.message = new byte[size];
             dataInputStream.read(this.message);
+            System.out.println(size);
             executor.execute(new AnalizeMessageThread(message, socket));
+
 	               
         } catch (IOException e) {
             e.printStackTrace();

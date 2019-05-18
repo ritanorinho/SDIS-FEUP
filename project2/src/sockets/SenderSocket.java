@@ -19,11 +19,12 @@ public class SenderSocket extends Thread {
     public void run() {
 
         try {
+
             OutputStream outputStream = socket.getOutputStream();
 			DataOutputStream dataOutputStream = new DataOutputStream(outputStream);
 			dataOutputStream.writeInt(this.message.length);
-			dataOutputStream.write(this.message);                      
-
+            dataOutputStream.write(this.message);      
+                            
         } catch (IOException e) {
             e.printStackTrace();
         }

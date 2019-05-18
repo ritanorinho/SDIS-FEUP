@@ -226,7 +226,7 @@ public class Peer implements RMIInterface {
 	@Override
 	public void backup(String filename, int repDegree, boolean enhancement)
 			throws RemoteException, InterruptedException {
-		System.out.println(Server.getMemory().conections);
+
 		File file = new File(filename);
 		FileInfo fileInfo = new FileInfo(file, filename, repDegree);
 		double workingVersion = getWorkingVersion(enhancement);
@@ -289,9 +289,9 @@ public class Peer implements RMIInterface {
 						}
 						peerSocket.setEnabledCipherSuites(new String[] { "TLS_DH_anon_WITH_AES_128_CBC_SHA" });
 						peerSocket.startHandshake();
-
 						executor.execute(new SenderSocket(peerSocket, message));
 						executor.execute(new ReceiverSocket(peerSocket, message, executor));
+
 
 					}
 
@@ -359,7 +359,7 @@ public class Peer implements RMIInterface {
 		}*/
 
 		try{
-		String deleteMessage = "DELETE " + fileInfo.getFilename() + " Peer" + serverID + "\n";
+		String deleteMessage = "DELETE " + fileInfo.getFileId() + " Peer" + serverID + "\n";
 
 		OutputStream ostream = serverSocket.getOutputStream();
 		PrintWriter pwrite = new PrintWriter(ostream, true);

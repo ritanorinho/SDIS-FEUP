@@ -13,9 +13,9 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 public class AcceptConnectionsThread extends Thread {
     private Socket socket;
-    private  ScheduledThreadPoolExecutor executor;
+    private ScheduledThreadPoolExecutor executor;
 
-    public  AcceptConnectionsThread(Socket socket, ScheduledThreadPoolExecutor executor) {
+    public AcceptConnectionsThread(Socket socket, ScheduledThreadPoolExecutor executor) {
         this.socket = socket;
         this.executor = executor;
     }
@@ -27,10 +27,10 @@ public class AcceptConnectionsThread extends Thread {
             String message;
             String analize = "abc";
             while (true) {
-    
+
                 OutputStream ostream = socket.getOutputStream();
                 PrintWriter pwrite = new PrintWriter(ostream, true);
-               
+
                 InputStream istream = socket.getInputStream();
                 BufferedReader receiveRead = new BufferedReader(new InputStreamReader(istream));
 
@@ -61,38 +61,58 @@ public class AcceptConnectionsThread extends Thread {
 
         String[] splitMessage = message.trim().split("\\s+");
         String substr = splitMessage[0].trim().substring(0, 4);
+        String peer;
 
         if (substr.equals("Peer")) {
             return "connected";
         } else {
             switch (splitMessage[0].trim()) {
             case "BACKUP":
-                String peer = splitMessage[2];
+                peer = splitMessage[2];
                 int replicationDegree = Integer.parseInt(splitMessage[3]);
-                String otherPeer;
-               return getOtherPeers(peer,replicationDegree);
+                return getOtherPeers(peer, replicationDegree);
             case "DELETE":
-            
-            break;
+                peer = splitMessage[2];
+                String file = splitMessage[1];
+                System.out.println(file);
+                return getPeersWithFile(file);
+
             default:
 
             }
         }
-        return "abc";
+        return "";
+    }
+
+    private String getPeersWithFile(String file) {
+        StringBuilder sb = new StringBuilder();
+        String conectionPorts = "";
+        for (int i = 0; i < Server.getMemory().serverSavedChunks.size();i++){
+            String[] split = Server.getMemory().serverSavedChunks.get(i).split("-");
+            String fileId = split[0].trim();
+            if (fileId.equals(file)){
+                String peer = split[2].trim();
+                sb.append(Server.getMemory().conectionsPorts.get(peer));
+                sb.append(" ");
+
+            }
+        }
+        conectionPorts = sb.toString();
+        return conectionPorts;
     }
 
     public static String getOtherPeers(String peer, int replicationDegree) {
         StringBuilder sb = new StringBuilder();
         String conectionPorts = "";
         for (String key : Server.getMemory().conectionsPorts.keySet()) {
-            if(replicationDegree > 0){
-            if (!key.equals(peer)) {
-                sb.append(Server.getMemory().conectionsPorts.get(key));
-                sb.append(" ");
-                replicationDegree--;
-            }
-        } else break;
-
+            if (replicationDegree > 0) {
+                if (!key.equals(peer)) {
+                    sb.append(Server.getMemory().conectionsPorts.get(key));
+                    sb.append(" ");
+                    replicationDegree--;
+                }
+            } else
+                break;
 
         }
         conectionPorts = sb.toString();
