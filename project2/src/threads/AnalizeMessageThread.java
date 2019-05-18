@@ -8,6 +8,8 @@ import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import project.Peer;
+import project.Server;
+
 import utils.Chunk;
 import utils.FileInfo;
 import utils.Pair;
@@ -116,6 +118,9 @@ public class AnalizeMessageThread implements Runnable {
 			Peer.getMemory().savedOcurrences.put(chunkId, Peer.getMemory().savedOcurrences.get(chunkId) + 1);
 			Utils.savedOccurrencesFile();
 		}
+
+		Peer.sendMessageToServer(messageArray[0] + " " + Peer.getId() + " " + chunkId);
+
 	}
 
 	private synchronized void putchunk() {
