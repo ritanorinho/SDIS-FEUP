@@ -258,6 +258,7 @@ public class Peer implements RMIInterface {
 				byte[] message = new byte[header.length + body.length];
 				System.arraycopy(header, 0, message, 0, header.length);
 				System.arraycopy(body, 0, message, header.length, body.length);
+				
 				OutputStream ostream = serverSocket.getOutputStream();
 				PrintWriter pwrite = new PrintWriter(ostream, true);
 
@@ -355,11 +356,25 @@ public class Peer implements RMIInterface {
 		File file = new File(filename);
 		FileInfo fileInfo = new FileInfo(file, filename, 0);
 
-		if (!memory.hasFileByName(file.getName())) {
-			System.out.println(filename + "has never backed up!");
+		/*if (!memory.hasFileByName(file.getName())) {
+			System.out.println(filename + " has never backed up!");
 			return;
-		}
+		}*/
 
+		try{
+		String deleteMessage = "DELETE " + fileInfo.getFilename() + " Peer" + serverID + "\n";
+
+		OutputStream ostream = serverSocket.getOutputStream();
+		PrintWriter pwrite = new PrintWriter(ostream, true);
+
+		InputStream istream = serverSocket.getInputStream();
+		BufferedReader receiveRead = new BufferedReader(new InputStreamReader(istream));
+		pwrite.println(deleteMessage);
+		pwrite.flush();
+		}catch(Exception e){
+
+		}
+		
 		String header = "DELETE " + protocolVersion + " " + serverID + " " + fileInfo.getFileId() + " " + "\r\n\r\n";
 		System.out.println("SENT: " + header);
 
@@ -375,54 +390,6 @@ public class Peer implements RMIInterface {
 			e1.printStackTrace();
 		}
 	}
-
-	@Override
-	public void reclaim(int space) throws RemoteException {
-		int currentSpaceToFree = memory.getUsedMemory() - space; // space to free
-
-		if (currentSpaceToFree > 0) {
-
-			List<String> sortedChunks = sortChunksToDelete();
-
-			for (Iterator<String> iterator = sortedChunks.iterator(); iterator.hasNext();) {
-				String[] splitString = iterator.next().trim().split(":");
-				String key = splitString[0];
-
-				if (currentSpaceToFree > 0) {
-					currentSpaceToFree -= memory.savedChunks.get(key).getChunkSize();
-					String header = "REMOVED " + protocolVersion + " " + serverID + " "
-							+ memory.savedChunks.get(key).getFileId() + " " + memory.savedChunks.get(key).getChunkNo()
-							+ " " + "\r\n\r\n";
-					System.out.print(header);
-
-					try {
-						byte[] data = header.getBytes("US-ASCII");
-						String channel = "mc";
-						executor.execute(new WorkerThread(data, channel));
-					} catch (UnsupportedEncodingException e) {
-						e.printStackTrace();
-					}
-
-					String[] splitKey = key.trim().split("-");
-					String filePath = "Peer" + Peer.getId() + "/" + "STORED" + "/" + splitKey[0] + "/" + splitKey[1]
-							+ "-" + memory.savedChunks.get(key).getReplicationDegree();
-					File fileToDelete = new File(filePath);
-					fileToDelete.delete();
-					iterator.remove();
-					Peer.getMemory().savedOcurrences.put(key, Peer.getMemory().savedOcurrences.get(key) - 1);
-					Utils.savedOccurrencesFile();
-					Peer.getMemory().savedChunks.remove(key);
-				}
-
-			}
-		}
-
-		Peer.getMemory().capacity = space;
-		Peer.getMemory().memoryUsed = Peer.getMemory().getUsedMemory();
-		System.out.println("Memory used: " + Peer.getMemory().memoryUsed + " of " + Peer.getMemory().capacity);
-
-	}
-
 	@Override
 	public void state() throws RemoteException {
 

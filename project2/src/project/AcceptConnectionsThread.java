@@ -71,6 +71,9 @@ public class AcceptConnectionsThread extends Thread {
                 int replicationDegree = Integer.parseInt(splitMessage[3]);
                 String otherPeer;
                return getOtherPeers(peer,replicationDegree);
+            case "DELETE":
+            
+            break;
             default:
 
             }

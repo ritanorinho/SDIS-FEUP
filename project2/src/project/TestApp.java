@@ -102,15 +102,6 @@ public class TestApp {
         stub.delete(fileName);
         break;
 
-      case "RECLAIM":
-        if (args.length != 3) {
-          System.out.println("ERROR: TestApp parameters must be: <peer_ap> RECLAIM <maximum space>");
-          return;
-        }
-        spaceDisk = Integer.parseInt(args[2]);
-        stub.reclaim(spaceDisk);
-        break;
-
       case "STATE":
         if (args.length != 2) {
           System.out.println("ERROR: TestApp parameters must be: <peer_ap> STATE");
