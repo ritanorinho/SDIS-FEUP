@@ -8,7 +8,7 @@ import java.net.Socket;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
-import project.Peer;
+import app.Peer;
 import utils.Chunk;
 import utils.FileInfo;
 import utils.Pair;

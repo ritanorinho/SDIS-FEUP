@@ -1,4 +1,4 @@
-package project;
+package threads.listeners;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -7,9 +7,9 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
-
 import java.util.Collections;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+import app.Server;
 
 public class AcceptConnectionsThread extends Thread {
     private Socket socket;
@@ -26,11 +26,11 @@ public class AcceptConnectionsThread extends Thread {
 
             String message;
             String analize = null;
+
             while (true) {
 
                 OutputStream ostream = socket.getOutputStream();
                 PrintWriter pwrite = new PrintWriter(ostream, true);
-
                 InputStream istream = socket.getInputStream();
                 BufferedReader receiveRead = new BufferedReader(new InputStreamReader(istream));
 
@@ -63,19 +63,22 @@ public class AcceptConnectionsThread extends Thread {
         String substr = splitMessage[0].trim().substring(0, 4);
         String peer;
 
-        if (substr.equals("Peer")) {
+        if (substr.equals("Peer"))
             return "connected";
-        } else {
-            switch (splitMessage[0].trim()) {
+        
+        switch(splitMessage[0].trim()) 
+        {
             case "BACKUP":
                 peer = splitMessage[2];
                 int replicationDegree = Integer.parseInt(splitMessage[3]);
-               return getOtherPeers(peer,replicationDegree);
+                return getOtherPeers(peer,replicationDegree);
+
             case "STORED":
-               String peerID = splitMessage[1];
-               String chunkID = splitMessage[2];   
-               Server.getMemory().serverSavedChunks.put(chunkID, peerID);
+                String peerID = splitMessage[1];
+                String chunkID = splitMessage[2];   
+                Server.getMemory().serverSavedChunks.put(chunkID, peerID);
                 break;
+
             case "DELETE":
                 peer = splitMessage[2];
                 String file = splitMessage[1];
@@ -83,17 +86,18 @@ public class AcceptConnectionsThread extends Thread {
                 return getPeersWithFile(file);
 
             default:
+                System.out.println("Unknown message: " + splitMessage[0].trim());
+        }   
 
-            }
-        }
         return null;
     }
 
     private String getPeersWithFile(String file) {
         StringBuilder sb = new StringBuilder();
         String conectionPorts = "";
+
         for (int i = 0; i < Server.getMemory().serverSavedChunks.size();i++){
-            String[] split = Server.getMemory().serverSavedChunks.get(i).split("-");
+            String[] split = Server.getMemory().serverSavedChunks.get(i).split("-"); //TODO Change to array(?)
             String fileId = split[0].trim();
             if (fileId.equals(file)){
                 String peer = split[2].trim();
@@ -102,16 +106,19 @@ public class AcceptConnectionsThread extends Thread {
 
             }
         }
+
         conectionPorts = sb.toString();
+
         return conectionPorts;
     }
 
     public static String getOtherPeers(String peer, int replicationDegree) {
         StringBuilder sb = new StringBuilder();
         String conectionPorts = "";
+        
         for (String key : Server.getMemory().conectionsPorts.keySet()) {
             if (replicationDegree > 0) {
-                if (!key.equals(peer)) {
+                if (!key.equals(peer)) { //TODO Check if other peer doesn't have chunck already
                     sb.append(Server.getMemory().conectionsPorts.get(key));
                     sb.append(" ");
                     replicationDegree--;
@@ -120,7 +127,9 @@ public class AcceptConnectionsThread extends Thread {
                 break;
 
         }
+
         conectionPorts = sb.toString();
+        
         return conectionPorts;
     }
 }

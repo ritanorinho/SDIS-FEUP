@@ -2,7 +2,7 @@ package threads;
 
 import java.util.concurrent.TimeUnit;
 
-import project.Peer;
+import app.Peer;
 
 public class BackupThread implements Runnable {
 	private byte[] message;

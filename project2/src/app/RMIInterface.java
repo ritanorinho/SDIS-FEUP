@@ -1,4 +1,4 @@
-package project;
+package app;
 
 import java.io.UnsupportedEncodingException;
 import java.rmi.Remote;

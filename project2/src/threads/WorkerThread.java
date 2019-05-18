@@ -2,7 +2,7 @@ package threads;
 
 import java.io.IOException;
 
-import project.Peer;
+import app.Peer;
 
 public class WorkerThread implements Runnable {
 

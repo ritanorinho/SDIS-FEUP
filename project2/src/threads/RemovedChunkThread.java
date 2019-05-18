@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
-import project.Peer;
+import app.Peer;
 
 public class RemovedChunkThread implements Runnable {
 	String chunkId ;

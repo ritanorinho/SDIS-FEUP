@@ -1,4 +1,4 @@
-package project;
+package threads.listeners;
 
 import java.io.IOException;
 import java.net.Socket;
@@ -7,11 +7,11 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import javax.net.ssl.SSLServerSocket;
 
 
-public class TCPThread extends Thread {
+public class ServerThread extends Thread {
     private SSLServerSocket serverSocket;
     private ScheduledThreadPoolExecutor executor;
 
-    public TCPThread(SSLServerSocket serverSocket, ScheduledThreadPoolExecutor executor) {
+    public ServerThread(SSLServerSocket serverSocket, ScheduledThreadPoolExecutor executor) {
         this.executor = executor;
         this.serverSocket = serverSocket;
     }

@@ -11,7 +11,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import project.Peer;
+import app.Peer;
 import utils.Chunk;
 import utils.Utils;
 

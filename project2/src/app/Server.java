@@ -1,4 +1,4 @@
-package project;
+package app;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -7,11 +7,10 @@ import utils.Memory;
 import java.util.concurrent.Executors;
 import java.security.*;
 import javax.net.ssl.*;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.File;
 import java.security.cert.X509Certificate;
+import threads.listeners.ServerThread;
 
 public class Server {
 	private static SSLServerSocket serverSocket;
@@ -66,7 +65,7 @@ public class Server {
 		}
 
 		executor = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(250);
-		executor.execute(new TCPThread(serverSocket, executor));	
+		executor.execute(new ServerThread(serverSocket, executor));	
 	}
 
 	public static boolean setCertificateHandling()

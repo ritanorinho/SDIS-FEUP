@@ -6,7 +6,7 @@ import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 
-import project.Peer;
+import app.Peer;
 
 public class GetchunkThread implements Runnable {
 	private String[] messageArray;

@@ -7,7 +7,7 @@ import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.util.Arrays;
 
-import project.Peer;
+import app.Peer;
 
 public class Utils {
 	

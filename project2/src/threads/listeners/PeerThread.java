@@ -1,10 +1,12 @@
-package project;
+package threads.listeners;
 
 import java.io.IOException;
 import java.net.Socket;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import javax.net.ssl.SSLServerSocket;
+
+import threads.sockets.ReceiverSocket;
 
 
 public class PeerThread extends Thread {
@@ -23,7 +25,7 @@ public class PeerThread extends Thread {
            
             while(true){
                 Socket socket = peerSocket.accept();
-                executor.execute(new PeersCommunicationThread(socket,executor));
+                executor.execute(new ReceiverSocket(socket, executor));
             }
 
         } catch (IOException e) {

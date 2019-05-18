@@ -1,10 +1,8 @@
-package sockets;
+package threads.sockets;
 
 import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.Socket;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
@@ -21,7 +19,11 @@ public class ReceiverSocket extends Thread {
         this.executor = executor;
     }
 
-  
+    public ReceiverSocket(Socket socket, ScheduledThreadPoolExecutor executor)
+    {
+        this.socket = socket;
+        this.executor = executor;
+    }
 
 	@Override
     public void run() {

@@ -8,7 +8,7 @@ import java.io.OutputStream;
 import java.net.Socket;
 
 
-import project.Peer;
+import app.Peer;
 import utils.Chunk;
 
 public class StoredChunkThread implements Runnable {

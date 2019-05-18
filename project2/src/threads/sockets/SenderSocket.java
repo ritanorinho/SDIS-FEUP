@@ -1,15 +1,15 @@
-package sockets;
+package threads.sockets;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.net.Socket;
+import javax.net.ssl.SSLSocket;
 
 public class SenderSocket extends Thread {
-    private Socket socket;
+    private SSLSocket socket;
     private byte[] message;
 
-    public SenderSocket(Socket socket, byte[] message) {
+    public SenderSocket(SSLSocket socket, byte[] message) {
         this.socket = socket;
         this.message = message;
 

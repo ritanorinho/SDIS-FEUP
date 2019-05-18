@@ -1,1 +1,1 @@
-java project/Peer $1 $2 Peer$2 127.0.0.1 $3 127.0.0.1 $4
+java app/Peer $1 $2 Peer$2 127.0.0.1 $3 127.0.0.1 $4
