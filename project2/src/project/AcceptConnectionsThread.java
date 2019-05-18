@@ -70,7 +70,6 @@ public class AcceptConnectionsThread extends Thread {
             case "BACKUP":
                 peer = splitMessage[2];
                 int replicationDegree = Integer.parseInt(splitMessage[3]);
-                String otherPeer;
                return getOtherPeers(peer,replicationDegree);
             case "STORED":
                String peerID = splitMessage[1];
