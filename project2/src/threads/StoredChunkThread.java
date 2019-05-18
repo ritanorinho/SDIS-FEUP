@@ -76,6 +76,7 @@ public class StoredChunkThread implements Runnable {
 				DataOutputStream dataOutputStream = new DataOutputStream(outputStream);
 				dataOutputStream.writeInt(storedMessage.getBytes().length);
 				dataOutputStream.write(storedMessage.getBytes());
+				System.out.println("after send stored");
 				}
 				catch(Exception e){
 
