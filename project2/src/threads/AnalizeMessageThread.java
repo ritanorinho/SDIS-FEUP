@@ -147,7 +147,7 @@ public class AnalizeMessageThread implements Runnable {
 	}
 
 	private synchronized void delete() {
-
+		System.out.println("inside delete");
 		String fileId = messageArray[3];
 		Peer.getMemory().removeChunks(fileId);
 		String localDirPath = "Peer" + Peer.getId() + "/STORED/" + fileId;

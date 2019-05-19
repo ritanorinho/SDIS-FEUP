@@ -81,4 +81,11 @@ public class Memory {
 	public void addConnection(String peerID, Socket socket, int port){
 		conections.put(peerID, new Pair<Socket, Integer>(socket, port));
 	}
+
+	public String getPeerPort(String peerID){
+		
+	return conections.get(peerID).getKey().getInetAddress().getHostAddress()+
+	       "-"+conections.get(peerID).getValue().toString();
+			
+	}
 }

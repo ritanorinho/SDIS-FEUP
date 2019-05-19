@@ -347,10 +347,10 @@ public class Peer implements RMIInterface {
 		File file = new File(filename);
 		FileInfo fileInfo = new FileInfo(file, filename, 0);
 
-		/*if (!memory.hasFileByName(file.getName())) {
+		if (!memory.hasFileByName(file.getName())) {
 			System.out.println(filename + " has never backed up!");
 			return;
-		}*/
+		}
 
 		try{
 		String deleteMessage = "DELETE " + fileInfo.getFileId() + " Peer" + serverID + "\n";
@@ -362,23 +362,39 @@ public class Peer implements RMIInterface {
 		BufferedReader receiveRead = new BufferedReader(new InputStreamReader(istream));
 		pwrite.println(deleteMessage);
 		pwrite.flush();
-		}catch(Exception e){
+		String receiveMessage;
 
-		}
-		
 		String header = "DELETE " + protocolVersion + " " + serverID + " " + fileInfo.getFileId() + " " + "\r\n\r\n";
 		System.out.println("SENT: " + header);
-
 		byte[] data;
-		try {
-			data = header.getBytes("US-ASCII");
-			byte[] message = new byte[data.length];
-			System.arraycopy(data, 0, message, 0, data.length);
-			String channel = "mc";
-			Peer.executor.execute(new WorkerThread(data, channel));
+		data = header.getBytes("US-ASCII");
+		byte[] message = new byte[data.length];
+		System.arraycopy(data, 0, message, 0, data.length);
 
-		} catch (UnsupportedEncodingException e1) {
-			e1.printStackTrace();
+		if ((receiveMessage = receiveRead.readLine()) != null) {
+			String[] splitMessage = receiveMessage.split(" ");
+
+			System.out.println("Peers to connect " + receiveMessage);
+
+			for (int j = 0; j < splitMessage.length; j++) {
+
+				String[] split = splitMessage[j].split("-");
+				int port = Integer.parseInt(split[1]);
+				InetAddress address = InetAddress.getByName(split[0]);
+				SSLSocket peerSocket = createSocket(address, port);
+
+				System.out.println(port + " " + address);
+
+				peerSocket.startHandshake();
+
+				executor.execute(new SenderSocket(peerSocket, message));
+				executor.execute(new ReceiverSocket(peerSocket, message, executor));
+			}
+
+		}
+
+		}catch(Exception e){
+
 		}
 	}
 	@Override
