@@ -84,8 +84,7 @@ public class GetchunkThread implements Runnable {
 		int delay = random.nextInt(401);
 		int senderId = Integer.parseInt(messageArray[2]);	
 		if (Peer.getId() != senderId ){	
-			Peer.getExecutor().schedule(new WorkerThread(message,channel), delay,
-					TimeUnit.MILLISECONDS);
+			
 		}
 	}
 

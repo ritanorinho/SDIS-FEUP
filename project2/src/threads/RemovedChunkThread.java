@@ -54,12 +54,9 @@ public class RemovedChunkThread implements Runnable {
 				byte[] message = new byte[header.getBytes().length+body.length];
 				System.arraycopy(header.getBytes(), 0, message, 0, header.getBytes().length);
 				System.arraycopy(body, 0, message, header.getBytes().length, body.length);
-				String channel = "mdb";
-				Peer.getExecutor().execute(new WorkerThread(message,channel));
-
+			
 				// The initiator-peer collects the confirmation
 				// messages during a time interval of one second
-				Peer.getExecutor().schedule(new BackupThread(this.chunkId, message, replicationDegree), 1, TimeUnit.SECONDS);	
 				}
 			else {
 				System.out.println("The count doesn't drop below the desired replication degree of the chunk "+this.chunkNo);

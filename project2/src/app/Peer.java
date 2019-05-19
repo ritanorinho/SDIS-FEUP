@@ -438,7 +438,6 @@ public class Peer implements RMIInterface {
 		try {
 			byte[] byteMessage = aliveMessage.getBytes("US-ASCII");
 			String channel = "mc";
-			executor.execute(new WorkerThread(byteMessage, channel));
 
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();

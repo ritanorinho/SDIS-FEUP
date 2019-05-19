@@ -102,11 +102,6 @@ public class AnalizeMessageThread implements Runnable {
 				String deletedMessage = "DELETE " + this.messageArray[1] + " " + Peer.getId() + " "
 						+ Peer.getMemory().deletedFiles.get(i) + " " + "\r\n\r\n";
 				System.out.println("\n SENT " + deletedMessage);
-				try {
-					Peer.getExecutor().execute(new WorkerThread(deletedMessage.getBytes("US-ASCII"), "mc"));
-				} catch (UnsupportedEncodingException e) {
-					e.printStackTrace();
-				}
 			}
 		}
 
