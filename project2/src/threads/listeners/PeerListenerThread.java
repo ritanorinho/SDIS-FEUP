@@ -38,8 +38,11 @@ public class PeerListenerThread extends Thread {
                     analize = analizeMessage(message);
                 }
 
-                pwrite.println(analize);
-                pwrite.flush();
+                if(analize != "")
+                {
+                    pwrite.println(analize);
+                    pwrite.flush();
+                }
             }
 
         } catch (IOException e) {
@@ -53,7 +56,7 @@ public class PeerListenerThread extends Thread {
         String peer, peerID;
 
         if(!splitMessage[0].equals("Peer") && !connected)
-            return null;
+            return "";
         
         switch(splitMessage[0].trim()) 
         {
@@ -75,8 +78,9 @@ public class PeerListenerThread extends Thread {
 
             case "STORED":
                 peerID = splitMessage[1];
-                String chunkID = splitMessage[2];   
-                Server.getMemory().serverSavedChunks.add(peerID + "-" + chunkID);
+                String chunkID = splitMessage[2];
+                String key = chunkID +"-"+peerID;   
+                Server.getMemory().serverSavedChunks.add(key);
                 break;
 
             case "DELETE":
@@ -89,7 +93,7 @@ public class PeerListenerThread extends Thread {
                 System.out.println("Unknown message: " + splitMessage[0].trim());
         }   
 
-        return null;
+        return "";
     }
 
     private String getPeersWithFile(String file) {
