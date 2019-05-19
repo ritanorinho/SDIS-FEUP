@@ -1,12 +1,10 @@
 package app;
 
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import utils.Memory;
 import utils.Pair;
-
-import java.util.ArrayList;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.security.*;
 import javax.net.ssl.*;
@@ -21,7 +19,7 @@ public class Server {
 	private static final Memory memory = new Memory();
 	private static InetAddress tcp_addr;
 	public static int tcp_port;
-	private static ArrayList<Pair<InetAddress, Integer>> servers;
+	private static ConcurrentHashMap<String, Pair<Integer, SSLSocket>> servers;
 
 	public static void main(String args[]) 
 	{
@@ -31,19 +29,28 @@ public class Server {
 			return;
 		}
 
-		servers = new ArrayList<Pair<InetAddress, Integer>>();
+		servers = new ConcurrentHashMap<String, Pair<Integer, SSLSocket>>();
 
 		try 
 		{
 			tcp_addr = InetAddress.getByName(args[0]);
 			tcp_port = Integer.parseInt(args[1]);
 
-			servers.add(new Pair<InetAddress, Integer>(InetAddress.getByName(args[2]), Integer.parseInt(args[3])));
-			servers.add(new Pair<InetAddress, Integer>(InetAddress.getByName(args[4]), Integer.parseInt(args[5])));
+			SSLSocket s1 = Peer.createSocket(InetAddress.getByName(args[2]), Integer.parseInt(args[3])),
+				s2 = Peer.createSocket(InetAddress.getByName(args[4]), Integer.parseInt(args[5]));
 
-		} catch (UnknownHostException e) {
-			System.out.println("Couldn't find server socket host");
-			return;
+			servers.put(args[2], new Pair<Integer, SSLSocket>(Integer.parseInt(args[3]), s1));
+			servers.put(args[4], new Pair<Integer, SSLSocket>(Integer.parseInt(args[5]), s2));
+
+			if(s1 != null)
+				s1.startHandshake();
+
+			if(s2 != null)
+				s2.startHandshake();
+		} 
+		catch (Exception e) 
+		{
+			
 		}
 
 		new File("Server").mkdir();
@@ -149,6 +156,16 @@ public class Server {
 
 	public static String message() {
 		return "abc";
+	}
+
+	public static InetAddress getAddress()
+	{
+		return tcp_addr;
+	}
+
+	public static int getPort()
+	{
+		return tcp_port;
 	}
 
 }

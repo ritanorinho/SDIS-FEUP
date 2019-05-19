@@ -115,7 +115,6 @@ public class Peer implements RMIInterface {
 			socket = (SSLSocket) ssf.createSocket(address, port);
 		} catch (IOException e) {
 			System.out.println("Failed to create SSLSocket");
-			e.getMessage();
 			return null;
 		}
 

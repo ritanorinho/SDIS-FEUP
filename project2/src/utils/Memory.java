@@ -20,6 +20,7 @@ public class Memory {
 	public int capacity = 999999999;
 	public int memoryUsed = 0;
 	public int availableCapacity= capacity - memoryUsed;
+	private long lastUpdated = 0;
 	
 	public boolean hasFileByID(String fileId) {
 		for (int i = 0; i < files.size(); i++) {
@@ -87,5 +88,10 @@ public class Memory {
 	return conections.get(peerID).getKey().getInetAddress().getHostAddress()+
 	       "-"+conections.get(peerID).getValue().toString();
 			
+	}
+
+	public long getLastUpdated()
+	{
+		return lastUpdated;
 	}
 }
