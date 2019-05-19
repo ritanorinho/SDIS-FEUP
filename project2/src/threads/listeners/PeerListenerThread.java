@@ -7,15 +7,15 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.util.Collections;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import app.Server;
 
-public class AcceptConnectionsThread extends Thread {
+public class PeerListenerThread extends Thread {
     private Socket socket;
     private ScheduledThreadPoolExecutor executor;
+    private boolean connected = false;
 
-    public AcceptConnectionsThread(Socket socket, ScheduledThreadPoolExecutor executor) {
+    public PeerListenerThread(Socket socket, ScheduledThreadPoolExecutor executor) {
         this.socket = socket;
         this.executor = executor;
     }
@@ -23,7 +23,6 @@ public class AcceptConnectionsThread extends Thread {
     @Override
     public void run() {
         try {
-
             String message;
             String analize = null;
 
@@ -39,15 +38,6 @@ public class AcceptConnectionsThread extends Thread {
                     analize = analizeMessage(message);
                 }
 
-                if (analize.equals("connected")) {
-                    String[] splitMessage = message.trim().split("\\s+");
-                    String peerID = splitMessage[0];
-                    Integer port = Integer.parseInt(splitMessage[1]);
-                    String address = splitMessage[2];
-                    Server.getMemory().addConnection(peerID, socket, port, address);
-                    System.out.println("List of Peers Connected: ");
-                    System.out.println(Collections.singletonList(Server.getMemory().conections));
-                }
                 pwrite.println(analize);
                 pwrite.flush();
             }
@@ -60,23 +50,33 @@ public class AcceptConnectionsThread extends Thread {
     public String analizeMessage(String message) {
 
         String[] splitMessage = message.trim().split("\\s+");
-        String substr = splitMessage[0].trim().substring(0, 4);
-        String peer;
+        String peer, peerID;
 
-        if (substr.equals("Peer"))
-            return "connected";
+        if(!splitMessage[0].equals("Peer") && !connected)
+            return null;
         
         switch(splitMessage[0].trim()) 
         {
+            case "Peer":
+                int port = Integer.parseInt(splitMessage[2]);
+
+                peerID = splitMessage[1];
+
+                Server.getMemory().addConnection(peerID, socket, port);
+                connected = true;
+                
+                System.out.println("New peer connected: Peer" + peerID + "@" + socket.getInetAddress() + ":" + port);
+                
+                return "connected";
+                
             case "BACKUP":
                 peer = splitMessage[2];
-                int replicationDegree = Integer.parseInt(splitMessage[3]);
-                return getOtherPeers(peer,replicationDegree);
+                return getAvailablePeers(peer, Integer.parseInt(splitMessage[3]), splitMessage[1]);
 
             case "STORED":
-                String peerID = splitMessage[1];
+                peerID = splitMessage[1];
                 String chunkID = splitMessage[2];   
-                Server.getMemory().serverSavedChunks.put(chunkID, peerID);
+                Server.getMemory().serverSavedChunks.add(peerID + "-" + chunkID);
                 break;
 
             case "DELETE":
@@ -97,13 +97,12 @@ public class AcceptConnectionsThread extends Thread {
         String conectionPorts = "";
 
         for (int i = 0; i < Server.getMemory().serverSavedChunks.size();i++){
-            String[] split = Server.getMemory().serverSavedChunks.get(i).split("-"); //TODO Change to array(?)
+            String[] split = Server.getMemory().serverSavedChunks.get(i).split("-");
             String fileId = split[0].trim();
             if (fileId.equals(file)){
                 String peer = split[2].trim();
-                sb.append(Server.getMemory().conectionsPorts.get(peer));
+                sb.append(Server.getMemory().conections.get(peer).getValue());
                 sb.append(" ");
-
             }
         }
 
@@ -112,24 +111,22 @@ public class AcceptConnectionsThread extends Thread {
         return conectionPorts;
     }
 
-    public static String getOtherPeers(String peer, int replicationDegree) {
-        StringBuilder sb = new StringBuilder();
-        String conectionPorts = "";
+    public static String getAvailablePeers(String peer, int replicationDegree, String chunckId) {
+        String sb = "";
         
-        for (String key : Server.getMemory().conectionsPorts.keySet()) {
+        for (String key : Server.getMemory().conections.keySet()) {
             if (replicationDegree > 0) {
-                if (!key.equals(peer)) { //TODO Check if other peer doesn't have chunck already
-                    sb.append(Server.getMemory().conectionsPorts.get(key));
-                    sb.append(" ");
+                if (!key.equals(peer)) { //TODO Check if other peer doesn't have chunck already => Better algorythm maybe?
+                System.out.println(peer + "vs" + key);    
+                sb += Server.getMemory().conections.get(key).getKey().getInetAddress().getHostAddress() 
+                        + "-" + Server.getMemory().conections.get(key).getValue() + " ";
                     replicationDegree--;
                 }
             } else
                 break;
 
         }
-
-        conectionPorts = sb.toString();
         
-        return conectionPorts;
+        return sb;
     }
 }

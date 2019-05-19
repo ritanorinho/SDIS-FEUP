@@ -73,7 +73,7 @@ public class Peer implements RMIInterface {
 
 			OutputStream ostream = serverSocket.getOutputStream();
 			PrintWriter pwrite = new PrintWriter(ostream, true);
-			String peerID = "Peer" + Peer.getId() + " " + peerPort + " " + peerAddress + "\n", receivedMessage;
+			String peerID = "Peer " + Peer.getId() + " " + peerPort + "\n", receivedMessage;
 			InputStream istream = serverSocket.getInputStream();
 			BufferedReader receiveRead = new BufferedReader(new InputStreamReader(istream));
 
@@ -150,7 +150,8 @@ public class Peer implements RMIInterface {
 
 	public static void main(String args[]) throws InterruptedException, IOException, AlreadyBoundException {
 		System.setProperty("java.net.preferIPv4Stack", "true");
-		System.setProperty("java.rmi.server.hostname", "localhost");
+		System.setProperty("java.rmi.server.hostname", "localhost"); //TODO Change ?
+
 		if (args.length != 7) {
 			System.out.println(
 					"ERROR: Peer format : Peer <PROTOCOL_VERSION> <SERVER_ID> <SERVICE_ACCESS_POINT> <TCP_IP> <TCP_PORT>");
@@ -160,7 +161,7 @@ public class Peer implements RMIInterface {
 		validateArgs(args);
 		loadMemory();
 		loadOccurrences();
-		
+
 		if (protocolVersion == 1.1) // delete enhancement
 			alive();
 	}
@@ -260,7 +261,7 @@ public class Peer implements RMIInterface {
 				PrintWriter pwrite = new PrintWriter(ostream, true);
 				InputStream istream = serverSocket.getInputStream();
 				BufferedReader receiveRead = new BufferedReader(new InputStreamReader(istream));
-				String backupMessage = "BACKUP " + chunkId + " Peer" + serverID + " "+repDegree+ "\n", receiveMessage;
+				String backupMessage = "BACKUP " + chunkId + " " + serverID + " " + repDegree+ "\n", receiveMessage;
 
 				pwrite.println(backupMessage);
 				pwrite.flush();
@@ -274,8 +275,8 @@ public class Peer implements RMIInterface {
 
 					for (int j = 0; j < splitMessage.length; j++) {
 						String[] split = splitMessage[j].split("-");
-						int port = Integer.parseInt(split[0]);
-						InetAddress address = InetAddress.getByName("localhost");
+						int port = Integer.parseInt(split[1]);
+						InetAddress address = InetAddress.getByName(split[0]);
 						SSLSocket peerSocket = createSocket(address, port);
 
 						System.out.println(port + " " + address);

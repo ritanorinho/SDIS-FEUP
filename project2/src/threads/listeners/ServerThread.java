@@ -22,7 +22,7 @@ public class ServerThread extends Thread {
             while(true){
                 
                 Socket socket = this.serverSocket.accept();
-                executor.execute(new AcceptConnectionsThread(socket,executor));
+                executor.execute(new PeerListenerThread(socket,executor));
             }
 
         } catch (IOException e) {
