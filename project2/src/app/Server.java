@@ -4,6 +4,9 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import utils.Memory;
+import utils.Pair;
+
+import java.util.ArrayList;
 import java.util.concurrent.Executors;
 import java.security.*;
 import javax.net.ssl.*;
@@ -18,17 +21,25 @@ public class Server {
 	private static final Memory memory = new Memory();
 	private static InetAddress tcp_addr;
 	public static int tcp_port;
+	private static ArrayList<Pair<InetAddress, Integer>> servers;
 
-	public static void main(String args[]) {
-
-		if (args.length != 2) {
-			System.out.println("Wrong number of arguments\nUsage: Server <tcp_addr> <tcp_port>");
+	public static void main(String args[]) 
+	{
+		if (args.length != 6) 
+		{
+			System.out.println("Wrong number of arguments\nUsage: Server <server1_addr> <server1_port> <server2_addr> <server2_port> <server3_addr> <server3_port>");
 			return;
 		}
 
-		try {
+		servers = new ArrayList<Pair<InetAddress, Integer>>();
+
+		try 
+		{
 			tcp_addr = InetAddress.getByName(args[0]);
 			tcp_port = Integer.parseInt(args[1]);
+
+			servers.add(new Pair<InetAddress, Integer>(InetAddress.getByName(args[2]), Integer.parseInt(args[3])));
+			servers.add(new Pair<InetAddress, Integer>(InetAddress.getByName(args[4]), Integer.parseInt(args[5])));
 
 		} catch (UnknownHostException e) {
 			System.out.println("Couldn't find server socket host");
