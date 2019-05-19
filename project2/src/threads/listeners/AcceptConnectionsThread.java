@@ -75,8 +75,9 @@ public class AcceptConnectionsThread extends Thread {
 
             case "STORED":
                 String peerID = splitMessage[1];
-                String chunkID = splitMessage[2];   
-                Server.getMemory().serverSavedChunks.put(chunkID, peerID);
+                String chunkID = splitMessage[2];
+                String key = chunkID +"-"+peerID;   
+                Server.getMemory().serverSavedChunks.add(key);
                 break;
 
             case "DELETE":
@@ -97,7 +98,7 @@ public class AcceptConnectionsThread extends Thread {
         String conectionPorts = "";
 
         for (int i = 0; i < Server.getMemory().serverSavedChunks.size();i++){
-            String[] split = Server.getMemory().serverSavedChunks.get(i).split("-"); //TODO Change to array(?)
+            String[] split = Server.getMemory().serverSavedChunks.get(i).split("-");
             String fileId = split[0].trim();
             if (fileId.equals(file)){
                 String peer = split[2].trim();

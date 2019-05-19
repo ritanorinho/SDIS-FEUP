@@ -15,7 +15,7 @@ public class Memory {
 	public HashMap<String, Pair> confirmedChunks = new HashMap<String, Pair>(); //chunkid < port, address>
 	public ConcurrentHashMap<String, Socket> conections = new ConcurrentHashMap<String, Socket>();
 	public ConcurrentHashMap<String,String> conectionsPorts = new ConcurrentHashMap<String, String>();
-	public ConcurrentHashMap<String,String> serverSavedChunks = new ConcurrentHashMap<String,String>();  //chunkId, peerId
+	public ArrayList<String> serverSavedChunks = new ArrayList<String>();  //chunkId-peerId
 	public ArrayList<String> deletedFiles= new ArrayList<String>();
 	public int capacity = 999999999;
 	public int memoryUsed = 0;
