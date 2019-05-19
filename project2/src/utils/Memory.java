@@ -81,6 +81,7 @@ public class Memory {
 	public void addConnection(String peerID, Socket socket, int port, String address){
 		conections.put(peerID, socket);
 		String portAddress = port + "-"+address;
+		System.out.println("conection peer id "+peerID);
 		conectionsPorts.put(peerID,portAddress);
 
 	}

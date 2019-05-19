@@ -8,6 +8,7 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import app.Server;
 
@@ -100,6 +101,7 @@ public class AcceptConnectionsThread extends Thread {
     private String getPeersWithFile(String file) {
         StringBuilder sb = new StringBuilder();
         String conectionPorts = "";
+        HashMap<String,String> peerPorts = new HashMap<String, String>();
 
         System.out.println(file);
         for (int i = 0; i < Server.getMemory().serverSavedChunks.size();i++){
@@ -107,12 +109,16 @@ public class AcceptConnectionsThread extends Thread {
             String fileId = split[0].trim();
             System.out.println(Server.getMemory().serverSavedChunks.get(i));
             if (fileId.equals(file)){
-                String peer = split[2].trim();
+                String peer = "Peer"+split[2].trim();
+                if (!peerPorts.containsKey(peer)){
                 sb.append(Server.getMemory().conectionsPorts.get(peer));
                 sb.append(" ");
+                peerPorts.put(peer,Server.getMemory().conectionsPorts.get(peer));
+                }
             }
         }
         conectionPorts = sb.toString();
+        System.out.println("conection ports "+conectionPorts);
 
         return conectionPorts;
     }
