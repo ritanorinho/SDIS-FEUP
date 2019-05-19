@@ -48,8 +48,12 @@ public class AcceptConnectionsThread extends Thread {
                     System.out.println("List of Peers Connected: ");
                     System.out.println(Collections.singletonList(Server.getMemory().conections));
                 }
+
+                if(!analize.equals("")){
                 pwrite.println(analize);
                 pwrite.flush();
+                }
+                else System.out.println("Null message");
             }
 
         } catch (IOException e) {
@@ -89,8 +93,7 @@ public class AcceptConnectionsThread extends Thread {
             default:
                 System.out.println("Unknown message: " + splitMessage[0].trim());
         }   
-
-        return null;
+        return "";
     }
 
     private String getPeersWithFile(String file) {
@@ -119,7 +122,7 @@ public class AcceptConnectionsThread extends Thread {
         
         for (String key : Server.getMemory().conectionsPorts.keySet()) {
             if (replicationDegree > 0) {
-                if (!key.equals(peer)) { //TODO Check if other peer doesn't have chunck already
+                if (!key.equals(peer)) { //TODO Check if other peer doesn't have chunk already
                     sb.append(Server.getMemory().conectionsPorts.get(key));
                     sb.append(" ");
                     replicationDegree--;
