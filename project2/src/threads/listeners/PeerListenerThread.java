@@ -120,8 +120,7 @@ public class PeerListenerThread extends Thread {
         
         for (String key : Server.getMemory().conections.keySet()) {
             if (replicationDegree > 0) {
-                if (!key.equals(peer)) { //TODO Check if other peer doesn't have chunck already => Better algorythm maybe?
-                System.out.println(peer + "vs" + key);    
+                if (!key.equals(peer)) { //TODO Check if other peer doesn't have chunk already => Better algorythm maybe?  
                 sb += Server.getMemory().conections.get(key).getKey().getInetAddress().getHostAddress() 
                         + "-" + Server.getMemory().conections.get(key).getValue() + " ";
                     replicationDegree--;
