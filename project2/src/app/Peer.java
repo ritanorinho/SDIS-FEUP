@@ -333,8 +333,8 @@ public class Peer implements RMIInterface {
 				byte[] message = header.getBytes();
 
 				System.out.println("SENT: " + header);
-				String channel = "mc";
-				Peer.executor.execute(new WorkerThread(message, channel));
+				//TODO: send message to server
+				
 			}
 			Peer.executor.schedule(
 					new RestoreFileThread(fileInfo.getFilename(), fileInfo.getFileId(), chunks.size(), workingVersion),
