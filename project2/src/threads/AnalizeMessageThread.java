@@ -120,8 +120,8 @@ public class AnalizeMessageThread implements Runnable {
 		}
 
 		try {
-			System.out.println("inside stored");
-			Peer.sendMessageToServer("STORED " + chunkId + " " + Peer.getId());
+			
+			Peer.sendMessageToServer("STORED " +  messageArray[2] + " "+chunkId);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

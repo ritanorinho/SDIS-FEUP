@@ -80,13 +80,13 @@ public class PeerListenerThread extends Thread {
                 peerID = splitMessage[1];
                 String chunkID = splitMessage[2];
                 String key = chunkID +"-"+peerID;   
+                System.out.println("Peer id "+peerID);
                 Server.getMemory().serverSavedChunks.add(key);
                 break;
 
             case "DELETE":
                 peer = splitMessage[2];
                 String file = splitMessage[1];
-                System.out.println(file);
                 return getPeersWithFile(file);
 
             default:
@@ -100,16 +100,17 @@ public class PeerListenerThread extends Thread {
         StringBuilder sb = new StringBuilder();
         String conectionPorts = "";
 
+        System.out.println(file);
         for (int i = 0; i < Server.getMemory().serverSavedChunks.size();i++){
             String[] split = Server.getMemory().serverSavedChunks.get(i).split("-");
             String fileId = split[0].trim();
+            System.out.println(Server.getMemory().serverSavedChunks.get(i));
             if (fileId.equals(file)){
                 String peer = split[2].trim();
                 sb.append(Server.getMemory().conections.get(peer).getValue());
                 sb.append(" ");
             }
         }
-
         conectionPorts = sb.toString();
 
         return conectionPorts;
