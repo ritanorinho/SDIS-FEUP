@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
+import java.net.InetAddress;
 import java.net.Socket;
 
 
@@ -12,10 +13,9 @@ public class Memory {
 	public ConcurrentHashMap<String,Chunk> savedChunks= new ConcurrentHashMap<String,Chunk>(); //key: fileId-ChunkNo String: fileId
 	public HashMap<String,String> chunksToRestore= new HashMap<String,String>();
 	public ConcurrentHashMap<String,Integer> savedOcurrences = new ConcurrentHashMap<String,Integer>();
-	public HashMap<String, Pair> confirmedChunks = new HashMap<String, Pair>(); //chunkid < port, address>
-	public ConcurrentHashMap<String, Socket> conections = new ConcurrentHashMap<String, Socket>();
-	public ConcurrentHashMap<String,String> conectionsPorts = new ConcurrentHashMap<String, String>();
-	public ArrayList<String> serverSavedChunks = new ArrayList<String>();  //chunkId-peerId
+	public HashMap<String, Pair<Integer, InetAddress>> confirmedChunks = new HashMap<String, Pair<Integer, InetAddress>>(); //chunkid < port, address>
+	public ConcurrentHashMap<String, Pair<Socket, Integer>> conections = new ConcurrentHashMap<String, Pair<Socket, Integer>>();
+	public ArrayList<String> serverSavedChunks = new ArrayList<String>();  //chunkId, peerId
 	public ArrayList<String> deletedFiles= new ArrayList<String>();
 	public int capacity = 999999999;
 	public int memoryUsed = 0;
@@ -78,11 +78,7 @@ public class Memory {
 		return usedMemory;
 	}
 
-	public void addConnection(String peerID, Socket socket, int port, String address){
-		conections.put(peerID, socket);
-		String portAddress = port + "-"+address;
-		System.out.println("conection peer id "+peerID);
-		conectionsPorts.put(peerID,portAddress);
-
+	public void addConnection(String peerID, Socket socket, int port){
+		conections.put(peerID, new Pair<Socket, Integer>(socket, port));
 	}
 }

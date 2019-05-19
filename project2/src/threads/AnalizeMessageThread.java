@@ -194,7 +194,7 @@ public class AnalizeMessageThread implements Runnable {
 		String chunkid = messageArray[3].trim();
 		int port = Integer.parseInt(this.messageArray[4].trim());
 		if (senderId != Peer.getId() && !Peer.getMemory().confirmedChunks.containsKey(chunkid)) {
-			Peer.getMemory().confirmedChunks.put(chunkid, new Pair(port, this.InetAddress));
+			Peer.getMemory().confirmedChunks.put(chunkid, new Pair<Integer, InetAddress>(port, this.InetAddress));
 		}
 
 	}

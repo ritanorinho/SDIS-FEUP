@@ -1,22 +1,20 @@
 package utils;
 
-import java.net.InetAddress;
+public class Pair<T, U> {
 
-public class Pair {
-
-    private int left;
-    private InetAddress right;
+    private T left;
+    private U right;
     
-    public Pair(int left,InetAddress right){
+    public Pair(T left, U right){
         this.left = left;
         this.right = right;
     }
 
-    public int getKey(){
+    public T getKey(){
         return left;
     }
 
-    public InetAddress getValue(){
+    public U getValue(){
         return right;
     }
 
