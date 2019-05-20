@@ -216,8 +216,6 @@ public class Server {
 
 		System.out.println("SYNC initiated");
 
-		memory.printServerSavedChunks();
-
 		while(it.hasNext())
 		{
 			entry = it.next();

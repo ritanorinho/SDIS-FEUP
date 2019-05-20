@@ -14,14 +14,13 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
-
-import app.Peer;
 import app.Server;
 
 public class ServerListenerThread extends Thread {
     private Socket socket;
     private ScheduledThreadPoolExecutor executor;
     private boolean connected = false;
+    private String peerId;
 
     public ServerListenerThread(Socket socket, ScheduledThreadPoolExecutor executor) {
         this.socket = socket;
@@ -55,8 +54,13 @@ public class ServerListenerThread extends Thread {
                 }
             }
 
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (IOException e) 
+        {
+            System.out.println("Disconect detected");
+
+            //TODO Revisit need for heartbeat/alive
+            if(peerId != null)
+                Server.getMemory().peersAlive.put(peerId, false);
         }
     }
 
@@ -75,6 +79,8 @@ public class ServerListenerThread extends Thread {
             connected = true;
 
             System.out.println("New peer connected: Peer" + peerID + "@" + socket.getInetAddress() + ":" + port);
+
+            this.peerId = peerID;
 
             return "connected";
 
@@ -183,7 +189,7 @@ public class ServerListenerThread extends Thread {
 
         for (String key : Server.getMemory().conections.keySet()) {
             if (replicationDegree > 0) {
-                if (!key.equals(peer)) { // TODO Check if other peer doesn't have chunk already => Better algorythm
+                if (!key.equals(peer) && !Server.getMemory().serverSavedChunks.contains(chunckId + "-" + peer)) { // TODO Check if other peer doesn't have chunk already => Better algorythm
                                          // maybe?
                     sb += Server.getMemory().conections.get(key).getKey().getInetAddress().getHostAddress() + "-"
                             + Server.getMemory().conections.get(key).getValue() + " ";
