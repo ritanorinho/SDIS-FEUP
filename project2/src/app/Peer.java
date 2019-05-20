@@ -6,7 +6,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
 import java.rmi.AlreadyBoundException;
@@ -36,7 +35,6 @@ import utils.Utils;
 
 public class Peer implements RMIInterface {
 
-	private static double protocolVersion;
 	private static int serverID;
 	private static String accessPoint;
 	private int serverPort;
@@ -152,18 +150,15 @@ public class Peer implements RMIInterface {
 		System.setProperty("java.net.preferIPv4Stack", "true");
 		System.setProperty("java.rmi.server.hostname", "localhost"); //TODO Change ?
 
-		if (args.length != 7) {
+		if (args.length != 6) {
 			System.out.println(
-					"ERROR: Peer format : Peer <PROTOCOL_VERSION> <SERVER_ID> <SERVICE_ACCESS_POINT> <TCP_IP> <TCP_PORT>");
+					"ERROR: Peer format : Peer <SERVER_ID> <SERVICE_ACCESS_POINT> <TCP_IP> <TCP_PORT>");
 			return;
 		}
 
 		validateArgs(args);
 		loadMemory();
 		loadOccurrences();
-
-		if (protocolVersion == 1.1) // delete enhancement
-			alive();
 	}
 
 	public static boolean checkStores() 
@@ -197,13 +192,12 @@ public class Peer implements RMIInterface {
 	private static void validateArgs(String[] args)
 			throws RemoteException, InterruptedException, IOException, AlreadyBoundException {
 
-		InetAddress serverAddress = InetAddress.getByName(args[3]);
-		Integer serverPort = Integer.parseInt(args[4]);
-		InetAddress peerAddress = InetAddress.getByName(args[5]);
-		Integer peerPort = Integer.parseInt(args[6]);
-		protocolVersion = Double.parseDouble(args[0]);
-		serverID = Integer.parseInt(args[1]);
-		accessPoint = args[2];
+		InetAddress serverAddress = InetAddress.getByName(args[2]);
+		Integer serverPort = Integer.parseInt(args[3]);
+		InetAddress peerAddress = InetAddress.getByName(args[4]);
+		Integer peerPort = Integer.parseInt(args[5]);
+		serverID = Integer.parseInt(args[0]);
+		accessPoint = args[1];
 
 		Peer peer = new Peer(serverPort, serverAddress, peerPort, peerAddress);
 		RMIInterface stub = (RMIInterface) UnicastRemoteObject.exportObject(peer, 0);
@@ -230,13 +224,12 @@ public class Peer implements RMIInterface {
 	public void backup(String filename, int repDegree, boolean enhancement) throws RemoteException, InterruptedException {
 		File file = new File(filename);
 		FileInfo fileInfo = new FileInfo(file, filename, repDegree);
-		double workingVersion = getWorkingVersion(enhancement);
 		ArrayList<Chunk> chunks = fileInfo.getChunks();
 		String chunkId;
 
 		try {
 			for (int i = 0; i < chunks.size(); i++) {
-				byte[] header = Utils.getHeader("PUTCHUNK", workingVersion, serverID, fileInfo.getFileId(), 
+				byte[] header = Utils.getHeader("PUTCHUNK", serverID, fileInfo.getFileId(), 
 					chunks.get(i).getChunkNo(), repDegree);
 				String headerString = new String(header, 0, header.length);
 
@@ -293,11 +286,6 @@ public class Peer implements RMIInterface {
 			System.out.println("Backup Failed");
 			e.printStackTrace();
 		}
-		
-		if (workingVersion < 0) {
-			System.out.println("This version does not support this opperation");
-			return;
-		}
 	}
 
 	@Override
@@ -307,12 +295,6 @@ public class Peer implements RMIInterface {
 		ArrayList<Chunk> chunks = new ArrayList<Chunk>();
 		FileInfo fileInfo = null;
 		String header = null;
-		double workingVersion = getWorkingVersion(enhancement);
-
-		if (workingVersion < 0) {
-			System.out.println("This version does not support this opperation");
-			return;
-		}
 
 		if (!memory.hasFileByID(fileId)) {
 			System.out.println(filename + "has never backed up!");
@@ -327,7 +309,7 @@ public class Peer implements RMIInterface {
 				}
 			}
 			for (int i = 0; i < chunks.size(); i++) {
-				header = "GETCHUNK " + workingVersion + " " + serverID + " " + fileInfo.getFileId() + " "
+				header = "GETCHUNK "+ serverID + " " + fileInfo.getFileId() + " "
 						+ chunks.get(i).getChunkNo() + " " + "\r\n\r\n";
 
 				byte[] message = header.getBytes();
@@ -337,7 +319,7 @@ public class Peer implements RMIInterface {
 				
 			}
 			Peer.executor.schedule(
-					new RestoreFileThread(fileInfo.getFilename(), fileInfo.getFileId(), chunks.size(), workingVersion),
+					new RestoreFileThread(fileInfo.getFilename(), fileInfo.getFileId(), chunks.size(),1.0),
 					10, TimeUnit.SECONDS);
 		}
 	}
@@ -364,7 +346,7 @@ public class Peer implements RMIInterface {
 		pwrite.flush();
 		String receiveMessage;
 
-		String header = "DELETE " + protocolVersion + " " + serverID + " " + fileInfo.getFileId() + " " + "\r\n\r\n";
+		String header = "DELETE " + serverID + " " + fileInfo.getFileId() + " " + "\r\n\r\n";
 		System.out.println("SENT: " + header);
 		byte[] data;
 		data = header.getBytes("US-ASCII");
@@ -430,26 +412,8 @@ public class Peer implements RMIInterface {
 		System.out.println("The amount of storage used to backup the chunks: " + memory.memoryUsed);
 
 	}
-
-	public static void alive() {
-
-		String aliveMessage = "ALIVE " + protocolVersion + " " + serverID + " " + "\r\n\r\n";
-		System.out.println("\nSENT: " + aliveMessage);
-		try {
-			byte[] byteMessage = aliveMessage.getBytes("US-ASCII");
-			String channel = "mc";
-
-		} catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
-		}
-
-	}
-
 	// gets
 
-	public static double getProtocolVersion() {
-		return protocolVersion;
-	}
 
 	public static Memory getMemory() {
 		return memory;
@@ -468,19 +432,6 @@ public class Peer implements RMIInterface {
 		PrintWriter pwrite = new PrintWriter(ostream, true);
 		pwrite.println(msg);
 		pwrite.flush();
-	}
-
-	public double getWorkingVersion(boolean enhancement) {
-		double ret;
-
-		if (enhancement && protocolVersion == 1.0)
-			ret = -1;
-		else if (!enhancement && protocolVersion == 1.1)
-			ret = 1.0;
-		else
-			ret = protocolVersion;
-
-		return ret;
 	}
 
 	public static void loadMemory() {

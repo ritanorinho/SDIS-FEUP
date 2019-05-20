@@ -17,7 +17,6 @@ public class StoredChunkThread implements Runnable {
 	String[] messageArray;
 	private int replicationDegree;
 	String msg;
-	private String version;
 	private String fileId;
 	private String chunkNo;
 	private String chunkId;
@@ -29,11 +28,11 @@ public class StoredChunkThread implements Runnable {
 		this.byteMessage = storedMessage;
 		this.data = data;
 		this.msg = new String(this.byteMessage, 0, this.byteMessage.length);
+		System.out.println("stored "+this.msg);
 		this.messageArray = msg.split("\\s+");
-		this.version = messageArray[0];
-		this.senderId = Integer.parseInt(messageArray[1]);
-		this.fileId = messageArray[2];
-		this.chunkNo = messageArray[3];
+		this.senderId = Integer.parseInt(messageArray[0]);
+		this.fileId = messageArray[1];
+		this.chunkNo = messageArray[2];
 		this.chunkId = this.fileId + "-" + this.chunkNo;
 		this.replicationDegree = replicationDegree;
 		this.socket = socket;
@@ -44,7 +43,7 @@ public class StoredChunkThread implements Runnable {
 				+ this.replicationDegree;
 
 		try {
-
+			System.out.println("create file chunk");
 			File file = new File(filename);
 			file.getParentFile().mkdirs();
 			file.createNewFile();
@@ -62,13 +61,13 @@ public class StoredChunkThread implements Runnable {
 
 		Chunk chunk = new Chunk(this.fileId, Integer.parseInt(this.chunkNo), this.data, this.data.length, this.chunkId,
 				this.replicationDegree);
-
+		System.out.println("save chunk");
 		if (!Peer.getMemory().savedChunks.containsKey(this.chunkId)) {
 			Peer.getMemory().savedChunks.put(this.chunkId, chunk);
 			Peer.getMemory().updateMemoryUsed(this.data.length);
 			createFileChunk();
 
-				String storedMessage = "STORED " + this.version + " " + Peer.getId() + " " + this.fileId + " "
+				String storedMessage = "STORED "+ Peer.getId() + " " + this.fileId + " "
 						+ this.chunkNo + "\r\n\r\n";
 				System.out.println("\nSENT " + storedMessage);
 				try{
@@ -93,18 +92,7 @@ public class StoredChunkThread implements Runnable {
 			if (Peer.getMemory().files.get(i).getFileId().equals(fileId))
 				return;
 		}
-		if (version.equals("1.1")) {
-			try {
-				Thread.sleep((long) (Math.random() * 1500));
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-			if (Peer.getMemory().savedOcurrences.get(this.chunkId) >= this.replicationDegree) {
-				System.out.println("CHUNK NO: " + chunkNo + ": Replication degree rechead");
-				return;
-			}
 
-		}
 		if (Peer.getId() == this.senderId)
 			return;
 		if (Peer.getMemory().getAvailableCapacity() >= this.data.length) {

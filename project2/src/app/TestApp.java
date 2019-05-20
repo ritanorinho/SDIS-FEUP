@@ -57,20 +57,6 @@ public class TestApp {
 				e.printStackTrace();
 			}
         break;
-      case "BACKUPENH":
-        if (args.length != 4) {
-          System.out.println("ERROR: TestApp parameters must be: <peer_ap> BACKUP <file> <replicationDegree> ");
-          return;
-        }
-        fileName = args[2];
-        replicationDegree = Integer.parseInt(args[3]);
-			try {
-				stub.backup(fileName, replicationDegree, true);
-			} catch (UnsupportedEncodingException e) {
-				e.printStackTrace();
-			}
-        break;  
-
       case "RESTORE":
         if (args.length != 3) {
           System.out.println("ERROR: TestApp parameters must be: <peer_ap> RESTORE <file> ");
@@ -80,17 +66,6 @@ public class TestApp {
         replicationDegree = 3;
         fileName = args[2];
         stub.restore(fileName, false);
-        break;
-
-        case "RESTOREENH":
-        if (args.length != 3) {
-          System.out.println("ERROR: TestApp parameters must be: <peer_ap> RESTORE <file> ");
-          return;
-        }
-        
-        replicationDegree = 3;
-        fileName = args[2];
-        stub.restore(fileName, true);
         break;
 
       case "DELETE":
