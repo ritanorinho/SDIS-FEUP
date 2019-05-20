@@ -14,14 +14,13 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
-
-import app.Peer;
 import app.Server;
 
 public class ServerListenerThread extends Thread {
     private Socket socket;
     private ScheduledThreadPoolExecutor executor;
     private boolean connected = false;
+    private String peerId;
 
     public ServerListenerThread(Socket socket, ScheduledThreadPoolExecutor executor) {
         this.socket = socket;
@@ -46,22 +45,22 @@ public class ServerListenerThread extends Thread {
                     analize = analizeMessage(message);
                 }
 
-                if (analize.equals("end")) {
-                    ostream.close();
-                    pwrite.close();
-                    istream.close();
-                    receiveRead.close();
-                    return;
-                }
-
+                if (analize.equals("end"))
+                    continue;
+            
                 if (!analize.equals("")) {
                     pwrite.println(analize);
                     pwrite.flush();
                 }
             }
 
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (IOException e) 
+        {
+            System.out.println("Disconect detected");
+
+            //TODO Revisit need for heartbeat/alive
+            if(peerId != null)
+                Server.getMemory().peersAlive.put(peerId, false);
         }
     }
 
@@ -80,6 +79,8 @@ public class ServerListenerThread extends Thread {
             connected = true;
 
             System.out.println("New peer connected: Peer" + peerID + "@" + socket.getInetAddress() + ":" + port);
+
+            this.peerId = peerID;
 
             return "connected";
 
@@ -150,20 +151,15 @@ public class ServerListenerThread extends Thread {
             break;
         case "UNAVAILABLE":   
             try {
-
-                int peerPort = Integer.parseInt(splitMessage[1]);
-                InetAddress peerAddress = InetAddress.getByName(splitMessage[2]);
+                int peerPort = Integer.parseInt(splitMessage[0]);
+                InetAddress peerAddress = InetAddress.getByName(splitMessage[1]);
                 String id = Server.getMemory().getPeerId(peerPort, peerAddress);
-                System.out.println(id);
-                if (id != ""){
-                System.out.println("null id");
                 Server.getMemory().peersAlive.remove(id);
                 Server.getMemory().peersAlive.put(id,false);
-                }
+                break;
             } catch (UnknownHostException e) {
                 e.printStackTrace();
             }
-            break;
 
             default:
                 System.out.println("Unknown message: " + splitMessage[0].trim());
@@ -218,7 +214,7 @@ public class ServerListenerThread extends Thread {
 
         for (String key : Server.getMemory().conections.keySet()) {
             if (replicationDegree > 0) {
-                if (!key.equals(peer)) { // TODO Check if other peer doesn't have chunk already => Better algorythm
+                if (!key.equals(peer) && !Server.getMemory().serverSavedChunks.contains(chunckId + "-" + peer)) { // TODO Check if other peer doesn't have chunk already => Better algorythm
                                          // maybe?
                     sb += Server.getMemory().conections.get(key).getKey().getInetAddress().getHostAddress() + "-"
                             + Server.getMemory().conections.get(key).getValue() + " ";
@@ -240,20 +236,25 @@ public class ServerListenerThread extends Thread {
             return;
 
         long lUpdt = Long.parseLong(msgParams[2]);
-        
-        if(lUpdt < Peer.getMemory().getLastUpdated())
+
+        try 
         {
-            try
+            ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
+
+            if(lUpdt < Server.getMemory().getLastUpdated())
             {
-                ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
                 oos.writeObject(Server.getMemory());
-                oos.close();
+                System.out.println("Sent new memory");
             }
-            catch(IOException e)
-            {
-                System.out.println("Couldn't send data to server");
-                return;
-            }
+            else
+                oos.writeObject(null);
+        } 
+        catch (IOException e) 
+        {
+            System.out.println("Couldn't send data to server");
+            return;
         }
+        
+        
 	}
 }
