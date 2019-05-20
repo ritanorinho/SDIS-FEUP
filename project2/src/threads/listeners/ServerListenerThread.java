@@ -7,7 +7,9 @@ import java.io.InputStreamReader;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.net.InetAddress;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -44,15 +46,13 @@ public class ServerListenerThread extends Thread {
                     analize = analizeMessage(message);
                 }
 
-                if(analize.equals("end"))
-                {
+                if (analize.equals("end")) {
                     ostream.close();
                     pwrite.close();
                     istream.close();
                     receiveRead.close();
                     return;
                 }
-                    
 
                 if (!analize.equals("")) {
                     pwrite.println(analize);
@@ -70,61 +70,72 @@ public class ServerListenerThread extends Thread {
         String[] splitMessage = message.trim().split("\\s+");
         String peer, peerID, file;
 
-        switch (splitMessage[0].trim()) 
-        {
-            case "Peer":
-                int port = Integer.parseInt(splitMessage[2]);
+        switch (splitMessage[0].trim()) {
+        case "Peer":
+            int port = Integer.parseInt(splitMessage[2]);
 
-                peerID = splitMessage[1];
+            peerID = splitMessage[1];
 
-                Server.getMemory().addConnection(peerID, socket, port);
-                connected = true;
+            Server.getMemory().addConnection(peerID, socket, port);
+            connected = true;
 
-                System.out.println("New peer connected: Peer" + peerID + "@" + socket.getInetAddress() + ":" + port);
+            System.out.println("New peer connected: Peer" + peerID + "@" + socket.getInetAddress() + ":" + port);
 
-                return "connected";
+            return "connected";
 
-            case "SYNC":
-                handleSync(message);
-                return "end";
+        case "SYNC":
+            handleSync(message);
+            return "end";
 
-            case "BACKUP":
+        case "BACKUP":
 
-                if(!connected)
-                    return "";
+            if (!connected)
+                return "";
 
-                peer = splitMessage[2];
-                return getAvailablePeers(peer, Integer.parseInt(splitMessage[3]), splitMessage[1]);
+            peer = splitMessage[2];
+            return getAvailablePeers(peer, Integer.parseInt(splitMessage[3]), splitMessage[1]);
 
-            case "STORED":
+        case "STORED":
 
-                if(!connected)
-                    return "";
+            if (!connected)
+                return "";
 
-                peer = splitMessage[1];
-                String chunkID = splitMessage[2];
-                String key = chunkID + "-" + peer;
-                System.out.println("Peer id " + peer);
-                Server.getMemory().serverSavedChunks.add(key);
+            peer = splitMessage[1];
+            String chunkID = splitMessage[2];
+            String key = chunkID + "-" + peer;
+            System.out.println("Peer id " + peer);
+            Server.getMemory().serverSavedChunks.add(key);
+            break;
+
+        case "DELETE":
+
+            if (!connected)
+                return "";
+
+            peer = splitMessage[2];
+            file = splitMessage[1];
+            return getPeersWithFile(file);
+        case "DELETED":
+
+            if (!connected)
+                return "";
+
+            peer = splitMessage[2];
+            file = splitMessage[1];
+            deleteChunks(peer, file);
+            break;
+        case "UNAVAILABLE":   
+            try {
+                int peerPort = Integer.parseInt(splitMessage[0]);
+                InetAddress peerAddress = InetAddress.getByName(splitMessage[1]);
+                String id = Server.getMemory().getPeerId(peerPort, peerAddress);
+                Server.getMemory().peersAlive.remove(id);
+                Server.getMemory().peersAlive.put(id,false);
                 break;
-
-            case "DELETE":
-
-                if(!connected)
-                    return "";
-
-                peer = splitMessage[2];
-                file = splitMessage[1];
-                return getPeersWithFile(file);
-            case "DELETED":
-
-                if(!connected)
-                    return "";
-
-                peer = splitMessage[2];
-                file = splitMessage[1];
-                deleteChunks(peer, file);
-                break;
+            } catch (UnknownHostException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
 
             default:
                 System.out.println("Unknown message: " + splitMessage[0].trim());
@@ -157,7 +168,7 @@ public class ServerListenerThread extends Thread {
             System.out.println(Server.getMemory().serverSavedChunks.get(i));
             if (fileId.equals(file)) {
                 String peer = split[2].trim();
-                if (!peerPorts.containsKey(peer)) {
+                if (!peerPorts.containsKey(peer) && Server.getMemory().peersAlive.get(peer)) {
                     sb.append(Server.getMemory().getPeerPort(peer));
                     sb.append(" ");
                     peerPorts.put(peer, Server.getMemory().getPeerPort(peer));
