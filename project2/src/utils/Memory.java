@@ -8,7 +8,6 @@ import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.Socket;
 
-
 public class Memory implements Serializable
 {
 	public ArrayList<FileInfo> files = new ArrayList<FileInfo>(); //key: fileId-ChunkNo
@@ -16,7 +15,7 @@ public class Memory implements Serializable
 	public HashMap<String,String> chunksToRestore= new HashMap<String,String>();
 	public ConcurrentHashMap<String,Integer> savedOcurrences = new ConcurrentHashMap<String,Integer>();
 	public HashMap<String, Pair<Integer, InetAddress>> confirmedChunks = new HashMap<String, Pair<Integer, InetAddress>>(); //chunkid < port, address>
-	public ConcurrentHashMap<String, Pair<Socket, Integer>> conections = new ConcurrentHashMap<String, Pair<Socket, Integer>>();
+	public transient ConcurrentHashMap<String, Pair<Socket, Integer>> conections = new ConcurrentHashMap<String, Pair<Socket, Integer>>();
 	public ArrayList<String> serverSavedChunks = new ArrayList<String>();  //chunkId, peerId
 	public ArrayList<String> deletedFiles= new ArrayList<String>();
 	public ConcurrentHashMap<String,Boolean> peersAlive = new ConcurrentHashMap<String,Boolean>();

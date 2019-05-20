@@ -20,8 +20,11 @@ import java.io.ObjectInputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.security.cert.X509Certificate;
 import threads.listeners.ServerThread;
+import threads.scheduled.SaveMemoryTask;
 
 public class Server {
 	private static SSLServerSocket serverSocket;
@@ -31,43 +34,43 @@ public class Server {
 	public static int tcp_port;
 	private static ConcurrentHashMap<String, Pair<Integer, SSLSocket>> servers;
 
-	public static void main(String args[]) 
-	{
-		if (args.length != 6) 
-		{
-			System.out.println("Wrong number of arguments\nUsage: Server <server1_addr> <server1_port> <server2_addr> <server2_port> <server3_addr> <server3_port>");
+	public static void main(String args[]) {
+		if (args.length != 6) {
+			System.out.println(
+					"Wrong number of arguments\nUsage: Server <server1_addr> <server1_port> <server2_addr> <server2_port> <server3_addr> <server3_port>");
 			return;
 		}
 
 		servers = new ConcurrentHashMap<String, Pair<Integer, SSLSocket>>();
 
-		if(!checkStores()) 
-		{
+		if (!checkStores()) {
 			System.out.println("Couldn't create local key/trust stores");
 			return;
-		}	
+		}
 
-		try 
-		{
+		try {
 			tcp_addr = InetAddress.getByName(args[0]);
 			tcp_port = Integer.parseInt(args[1]);
 
-			/*SSLSocket s1 = Peer.createSocket(InetAddress.getByName(args[2]), Integer.parseInt(args[3])),
-				s2 = Peer.createSocket(InetAddress.getByName(args[4]), Integer.parseInt(args[5]));
+			/*
+			 * SSLSocket s1 = Peer.createSocket(InetAddress.getByName(args[2]),
+			 * Integer.parseInt(args[3])), s2 =
+			 * Peer.createSocket(InetAddress.getByName(args[4]), Integer.parseInt(args[5]));
+			 * 
+			 * servers.put(args[2], new Pair<Integer, SSLSocket>(Integer.parseInt(args[3]),
+			 * s1)); servers.put(args[4], new Pair<Integer,
+			 * SSLSocket>(Integer.parseInt(args[5]), s2));
+			 * 
+			 * if(s1 != null) s1.startHandshake();
+			 * 
+			 * if(s2 != null) s2.startHandshake();
+			 */
+		} catch (Exception e) {
 
-			servers.put(args[2], new Pair<Integer, SSLSocket>(Integer.parseInt(args[3]), s1));
-			servers.put(args[4], new Pair<Integer, SSLSocket>(Integer.parseInt(args[5]), s2));
-
-			if(s1 != null)
-				s1.startHandshake();
-
-			if(s2 != null)
-				s2.startHandshake();*/
-		} 
-		catch (Exception e) 
-		{
-			
 		}
+
+		loadMemory();
+
 
 		SSLServerSocketFactory ssf = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
 
@@ -75,13 +78,10 @@ public class Server {
 			serverSocket = (SSLServerSocket) ssf.createServerSocket(tcp_port, 30, tcp_addr);
 
 			serverSocket.setNeedClientAuth(true);
-			serverSocket.setEnabledCipherSuites(new String[] 
-			{ 
-				"SSL_RSA_WITH_RC4_128_MD5", "SSL_RSA_WITH_RC4_128_SHA", "SSL_RSA_WITH_NULL_MD5",
-				"TLS_RSA_WITH_AES_128_CBC_SHA", "TLS_DHE_RSA_WITH_AES_128_CBC_SHA",
-				"TLS_DHE_DSS_WITH_AES_128_CBC_SHA", "TLS_DH_anon_WITH_AES_128_CBC_SHA"
-			});
-			serverSocket.setEnabledProtocols(new String[] {"TLSv1.2"});
+			serverSocket.setEnabledCipherSuites(new String[] { "SSL_RSA_WITH_RC4_128_MD5", "SSL_RSA_WITH_RC4_128_SHA",
+					"SSL_RSA_WITH_NULL_MD5", "TLS_RSA_WITH_AES_128_CBC_SHA", "TLS_DHE_RSA_WITH_AES_128_CBC_SHA",
+					"TLS_DHE_DSS_WITH_AES_128_CBC_SHA", "TLS_DH_anon_WITH_AES_128_CBC_SHA" });
+			serverSocket.setEnabledProtocols(new String[] { "TLSv1.2" });
 
 			System.out.println("Server ready to receive connections...");
 		} catch (IOException e) {
@@ -90,16 +90,36 @@ public class Server {
 			return;
 		}
 
+		SaveMemoryTask saveMemory = new SaveMemoryTask();
 		executor = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(250);
-		executor.execute(new ServerThread(serverSocket, executor));	
-		executor.scheduleAtFixedRate(new Runnable()
-		{
+		executor.scheduleAtFixedRate(saveMemory, 10, 10, TimeUnit.SECONDS);
+
+		executor.execute(new ServerThread(serverSocket, executor));
+		executor.scheduleAtFixedRate(new Runnable() {
 			@Override
-			public void run() 
-			{
+			public void run() {
 				startSync();
 			}
 		}, 10, 10, TimeUnit.SECONDS);
+	}
+
+	public static void loadMemory() {
+		
+		try {
+			FileInputStream fi =  new FileInputStream(new File("Server/memory"));
+			ObjectInputStream oi = new ObjectInputStream(fi);
+			memory = (Memory) oi.readObject();
+			memory.conections = new ConcurrentHashMap<String, Pair<Socket, Integer>>();
+			System.out.println("Loaded memory successfully");
+			oi.close();
+		} catch (FileNotFoundException e) {
+			System.out.println("No memory to load.");
+		}catch (IOException e) {
+			e.printStackTrace();
+		}catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		}
+
 	}
 
 	public static boolean setCertificateHandling()
