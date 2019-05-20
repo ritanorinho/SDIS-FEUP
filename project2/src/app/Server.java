@@ -48,20 +48,25 @@ public class Server {
 			return;
 		}
 
-		try {
+		loadMemory();
+
+		try 
+		{
 			tcp_addr = InetAddress.getByName(args[0]);
 			tcp_port = Integer.parseInt(args[1]);
 
 			SSLSocket s1 = Peer.createSocket(InetAddress.getByName(args[2]), Integer.parseInt(args[3])),
 				s2 = Peer.createSocket(InetAddress.getByName(args[4]), Integer.parseInt(args[5]));
 
-		}
+			servers.put(args[2], new Pair<Integer, SSLSocket>(Integer.parseInt(args[3]), s1));
+			servers.put(args[4], new Pair<Integer, SSLSocket>(Integer.parseInt(args[5]), s2));
 
-		loadMemory();
+			if (s1 != null)
+				s1.startHandshake();
 
-			if(s2 != null)
+			if (s2 != null)
 				s2.startHandshake();
-		} 
+		}
 		catch (Exception e) 
 		{
 			
@@ -87,7 +92,7 @@ public class Server {
 
 		SaveMemoryTask saveMemory = new SaveMemoryTask();
 		executor = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(250);
-		executor.scheduleAtFixedRate(saveMemory, 10, 10, TimeUnit.SECONDS);
+		executor.scheduleAtFixedRate(saveMemory, 1, 1, TimeUnit.MINUTES);
 
 		executor.execute(new ServerThread(serverSocket, executor));
 		executor.scheduleAtFixedRate(new Runnable() {
@@ -95,7 +100,7 @@ public class Server {
 			public void run() {
 				startSync();
 			}
-		}, 10, 10, TimeUnit.SECONDS);
+		}, 30, 30, TimeUnit.SECONDS);
 	}
 
 	public static void loadMemory() {
@@ -211,6 +216,8 @@ public class Server {
 
 		System.out.println("SYNC initiated");
 
+		memory.printServerSavedChunks();
+
 		while(it.hasNext())
 		{
 			entry = it.next();
@@ -235,18 +242,23 @@ public class Server {
 
 			try 
 			{
-				socket.setSoTimeout(500);
-
 				OutputStream ostream = socket.getOutputStream();
 				PrintWriter pwrite = new PrintWriter(ostream, true);
-				ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
-
+				
 				pwrite.println("SYNC " + Server.getAddress().getHostAddress() + " " + Server.getMemory().getLastUpdated());
-                
+				
 				try
 				{
+					ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
+				
 					Memory newMemory = (Memory) ois.readObject();
 
+					if(newMemory == null)
+					{
+						System.out.println("Up-to-date: " + memory.getLastUpdated());
+						continue;
+					}
+						
 					Server.setMemory(newMemory);
 
 					System.out.println("Updated memory");
@@ -255,14 +267,16 @@ public class Server {
 				{
 					if(!(e instanceof SocketTimeoutException))
 						System.out.println("Couldn't save new memory");
+
+					e.printStackTrace();
 				}
 
-				System.out.println("exited");
-				socket.setSoTimeout(0);
 			} 
 			catch (IOException e) 
 			{
 				System.out.println("Couldn't sync");
+
+				e.printStackTrace();
 			}
 		}
 		
