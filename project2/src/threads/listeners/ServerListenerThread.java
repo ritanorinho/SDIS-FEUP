@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
@@ -188,7 +189,7 @@ public class ServerListenerThread extends Thread {
         return sb;
     }
 
-	public static void handleSync(String syncMsg)
+	public void handleSync(String syncMsg)
 	{
         String[] msgParams = syncMsg.split(" ");
 
@@ -196,11 +197,20 @@ public class ServerListenerThread extends Thread {
             return;
 
         long lUpdt = Long.parseLong(msgParams[2]);
-
+        
         if(lUpdt < Peer.getMemory().getLastUpdated())
         {
-            
+            try
+            {
+                ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
+                oos.writeObject(Server.getMemory());
+                oos.close();
+            }
+            catch(IOException e)
+            {
+                System.out.println("Couldn't send data to server");
+                return;
+            }
         }
-        
 	}
 }

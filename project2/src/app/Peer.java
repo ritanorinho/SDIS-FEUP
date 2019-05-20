@@ -55,14 +55,15 @@ public class Peer implements RMIInterface {
 			return;
 
 		servers.add(createSocket(sa1, sp1));
-		servers.add(createSocket(sa2, sp2));
-		servers.add(createSocket(sa3, sp3));
+		//servers.add(createSocket(sa2, sp2));
+		//servers.add(createSocket(sa3, sp3));
 
+		/*
 		if(servers.get(0) == null || servers.get(1) == null || servers.get(2) == null) 
 		{
 			System.out.println("Couldn't connect to server(s)");
 			return;
-		}
+		} */
 
 		executor = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(250);
 

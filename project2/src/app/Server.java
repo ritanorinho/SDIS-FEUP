@@ -31,6 +31,12 @@ public class Server {
 
 		servers = new ConcurrentHashMap<String, Pair<Integer, SSLSocket>>();
 
+		if(!checkStores()) 
+		{
+			System.out.println("Couldn't create local key/trust stores");
+			return;
+		}	
+
 		try 
 		{
 			tcp_addr = InetAddress.getByName(args[0]);
@@ -53,20 +59,12 @@ public class Server {
 			
 		}
 
-		new File("Server").mkdir();
-
-		if(!checkStores()) 
-		{
-			System.out.println("Couldn't create local key/trust stores");
-			return;
-		}	
-
 		SSLServerSocketFactory ssf = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
 
 		try {
 			serverSocket = (SSLServerSocket) ssf.createServerSocket(tcp_port, 30, tcp_addr);
 
-			serverSocket.setNeedClientAuth(true);
+			serverSocket.setNeedClientAuth(false);
 			serverSocket.setEnabledCipherSuites(new String[] 
 			{ 
 				"SSL_RSA_WITH_RC4_128_MD5", "SSL_RSA_WITH_RC4_128_SHA", "SSL_RSA_WITH_NULL_MD5",
