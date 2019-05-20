@@ -104,22 +104,13 @@ public class Peer implements RMIInterface {
 		SSLSocketFactory ssf = (SSLSocketFactory) SSLSocketFactory.getDefault();
 		SSLSocket socket;
 
-		try {
+		try 
+		{
 			socket = (SSLSocket) ssf.createSocket(address, port);
-		} catch (IOException e) {
+		} 
+		catch (IOException e) 
+		{
 			System.out.println("Failed to create SSLSocket");
-			OutputStream ostream;
-			try {
-				ostream = Peer.getServerSocket().getOutputStream();
-				PrintWriter pwrite1 = new PrintWriter(ostream, true);
-				String unavailableMessage = "UNAVAILABLE " + " " + port + " " + address + "\n";
-				pwrite1.println(unavailableMessage);
-				pwrite1.flush();
-			} catch (IOException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
-
 			return null;
 		}
 
@@ -223,6 +214,26 @@ public class Peer implements RMIInterface {
 		}
 	}
 
+	public void sendUnavailable(InetAddress address, int port)
+	{
+		OutputStream ostream;
+
+		try 
+		{
+			ostream = Peer.getServerSocket().getOutputStream();
+			PrintWriter pwrite1 = new PrintWriter(ostream, true);
+			String unavailableMessage = "UNAVAILABLE " + " " + port + " " + address.getHostAddress() + "\n";
+			pwrite1.println(unavailableMessage);
+			pwrite1.flush();
+		}
+		catch (IOException e1) 
+		{
+			// TODO Auto-generated catch block
+			System.out.println("Couldn't send UNAVAILABLE");
+			e1.printStackTrace();
+		}
+	}
+
 	// protocols
 	@Override
 	public void backup(String filename, int repDegree, boolean enhancement)
@@ -277,6 +288,14 @@ public class Peer implements RMIInterface {
 						InetAddress address = InetAddress.getByName(split[0]);
 						SSLSocket peerSocket = null;
 						peerSocket = createSocket(address, port);
+
+						if(peerSocket == null)
+						{
+							sendUnavailable(address, port);
+							backup(filename, repDegree, enhancement);
+							return;
+						}
+
 						System.out.println(port + " " + address);
 						peerSocket.startHandshake();
 						executor.execute(new SenderSocket(peerSocket, message));
@@ -369,6 +388,13 @@ public class Peer implements RMIInterface {
 
 					InetAddress address = InetAddress.getByName(split[0]);
 					peerSocket = createSocket(address, port);
+
+					if(peerSocket == null)
+					{
+						sendUnavailable(address, port);
+						delete(filename);
+						return;
+					}
 
 					System.out.println(port + " " + address);
 

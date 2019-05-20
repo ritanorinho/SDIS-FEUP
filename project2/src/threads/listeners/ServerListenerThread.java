@@ -210,20 +210,22 @@ public class ServerListenerThread extends Thread {
             return;
 
         long lUpdt = Long.parseLong(msgParams[2]);
-        
-        if(lUpdt < Peer.getMemory().getLastUpdated())
+
+        try 
         {
-            try
-            {
-                ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
+            ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
+
+            if(lUpdt < Peer.getMemory().getLastUpdated())
                 oos.writeObject(Server.getMemory());
-                oos.close();
-            }
-            catch(IOException e)
-            {
-                System.out.println("Couldn't send data to server");
-                return;
-            }
+
+            oos.close();
+        } 
+        catch (IOException e) 
+        {
+            System.out.println("Couldn't send data to server");
+            return;
         }
+        
+        
 	}
 }

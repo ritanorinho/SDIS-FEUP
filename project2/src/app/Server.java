@@ -52,7 +52,7 @@ public class Server {
 			tcp_addr = InetAddress.getByName(args[0]);
 			tcp_port = Integer.parseInt(args[1]);
 
-			/*SSLSocket s1 = Peer.createSocket(InetAddress.getByName(args[2]), Integer.parseInt(args[3])),
+			SSLSocket s1 = Peer.createSocket(InetAddress.getByName(args[2]), Integer.parseInt(args[3])),
 				s2 = Peer.createSocket(InetAddress.getByName(args[4]), Integer.parseInt(args[5]));
 
 			servers.put(args[2], new Pair<Integer, SSLSocket>(Integer.parseInt(args[3]), s1));
@@ -62,7 +62,7 @@ public class Server {
 				s1.startHandshake();
 
 			if(s2 != null)
-				s2.startHandshake();*/
+				s2.startHandshake();
 		} 
 		catch (Exception e) 
 		{
@@ -194,10 +194,10 @@ public class Server {
 		Entry<String, Pair<Integer, SSLSocket>> entry;
 		Iterator<Entry<String, Pair<Integer, SSLSocket>>> it = servers.entrySet().iterator();
 
+		System.out.println("SYNC initiated");
+
 		while(it.hasNext())
 		{
-			System.out.println("SYNC call");
-
 			entry = it.next();
 			socket = entry.getValue().getValue();
 
@@ -208,7 +208,9 @@ public class Server {
 					socket = Peer.createSocket(InetAddress.getByName(entry.getKey()), entry.getValue().getKey());
 
 					if(socket != null)
-						socket.startHandshake(); 
+						socket.startHandshake();
+					else
+						continue; 
 				}
 				catch(Exception e)
 				{
@@ -218,13 +220,14 @@ public class Server {
 
 			try 
 			{
+				socket.setSoTimeout(500);
+
 				OutputStream ostream = socket.getOutputStream();
 				PrintWriter pwrite = new PrintWriter(ostream, true);
 				ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
 
 				pwrite.println("SYNC " + Server.getAddress().getHostAddress() + " " + Server.getMemory().getLastUpdated());
-                socket.setSoTimeout(5000);
-
+                
 				try
 				{
 					Memory newMemory = (Memory) ois.readObject();
@@ -238,11 +241,15 @@ public class Server {
 					if(!(e instanceof SocketTimeoutException))
 						System.out.println("Couldn't save new memory");
 				}
+
+				System.out.println("exited");
+				socket.setSoTimeout(0);
 			} 
 			catch (IOException e) 
 			{
 				System.out.println("Couldn't sync");
 			}
 		}
-    }
+		
+	}
 }
