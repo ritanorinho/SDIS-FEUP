@@ -55,14 +55,14 @@ public class Peer implements RMIInterface {
 			return;
 
 		servers.add(createSocket(sa1, sp1));
-		servers.add(createSocket(sa2, sp2));
-		servers.add(createSocket(sa3, sp3));
+		//servers.add(createSocket(sa2, sp2));
+		//servers.add(createSocket(sa3, sp3));
 
-		if(servers.get(0) == null || servers.get(1) == null || servers.get(2) == null) 
+		/*if(servers.get(0) == null || servers.get(1) == null || servers.get(2) == null) 
 		{
 			System.out.println("Couldn't connect to server(s)");
 			return;
-		}
+		}*/
 
 		executor = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(250);
 
@@ -164,7 +164,6 @@ public class Peer implements RMIInterface {
 
 		validateArgs(args);
 		loadMemory();
-		loadOccurrences();
 	}
 
 	public static boolean checkStores() 
@@ -440,97 +439,6 @@ public class Peer implements RMIInterface {
 		pwrite.println(msg);
 		pwrite.flush();
 	}
-
-	public static void loadMemory() {
-		System.out.println();
-		String storedDirectory = "Peer" + Peer.getId() + "/STORED/";
-		File storedFile = new File(storedDirectory);
-		if (!storedFile.exists()) {
-			System.out.println("Peer " + Peer.getId() + " has no data in memory.");
-			return;
-		} else {
-
-			String[] allFiles;
-			if (storedFile.isDirectory()) {
-				allFiles = storedFile.list();
-				for (int i = 0; i < allFiles.length; i++) {
-					String fileDirectory = storedDirectory + allFiles[i];
-					File file = new File(fileDirectory);
-					if (file.isDirectory()) {
-						String[] allChunks = file.list();
-						for (int j = 0; j < allChunks.length; j++) {
-							String chunkDirectory = fileDirectory + "/" + allChunks[j];
-							String[] splitChunkId = allChunks[j].trim().split("-");
-							int chunkNo = Integer.parseInt(splitChunkId[0]);
-							int replicationDegree = Integer.parseInt(splitChunkId[1]);
-							File chunkFile = new File(chunkDirectory);
-							byte[] content = new byte[(int) chunkFile.length()];
-							FileInputStream in;
-							try {
-								in = new FileInputStream(chunkFile);
-								in.read(content);
-								in.close();
-							} catch (IOException e) {
-								e.printStackTrace();
-							}
-							String chunkId = allFiles[i].trim() + "-" + chunkNo;
-							Chunk chunk = new Chunk(allFiles[i].trim(), chunkNo, content, (int) chunkFile.length(),
-									chunkId.trim(), replicationDegree);
-							if (!memory.savedChunks.containsKey(chunkId))
-								memory.savedChunks.put(chunkId, chunk);
-						}
-					}
-
-				}
-			}
-		}
-	}
-
-	public static void loadOccurrences() {
-		String storedDirectory = "Peer" + Peer.getId() + "/SAVED/savedOccurrences.txt";
-		File storedFile = new File(storedDirectory);
-		if (!storedFile.exists()) {
-			System.out.println("Peer " + Peer.getId() + " has no data in memory.");
-		} else {
-			FileInputStream in;
-			try {
-				in = new FileInputStream(storedFile);
-				BufferedReader buf = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
-				String line;
-
-				while ((line = buf.readLine()) != null) {
-					String[] splitLine = line.trim().split(" ");
-					String chunkId = splitLine[0].trim();
-					int occurrences = Integer.parseInt(splitLine[1]);
-					if (!memory.savedOcurrences.containsKey(chunkId))
-						memory.savedOcurrences.put(chunkId, occurrences);
-				}
-				buf.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-
-		}
-	}
-
-	public static List<String> sortChunksToDelete() {
-		ArrayList<String> chunksToSort = new ArrayList<String>();
-		for (String key : memory.savedChunks.keySet()) {
-			int diff = memory.savedOcurrences.get(key) - memory.savedChunks.get(key).getReplicationDegree();
-			String chunk = key + ":" + diff;
-			chunksToSort.add(chunk);
-		}
-		chunksToSort.sort((o1, o2) -> {
-			int chunk1 = Integer.valueOf(o1.split(":")[1]);
-			int chunk2 = Integer.valueOf(o2.split(":")[1]);
-			return Integer.compare(chunk1, chunk2);
-		});
-
-		List<String> returnList = chunksToSort;
-		Collections.reverse(returnList);
-		return returnList;
-	}
-
 	public static SSLSocket getServerSocket()
 	{
 		return servers.get(serverIndex);

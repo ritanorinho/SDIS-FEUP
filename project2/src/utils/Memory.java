@@ -19,6 +19,7 @@ public class Memory implements Serializable
 	public ConcurrentHashMap<String, Pair<Socket, Integer>> conections = new ConcurrentHashMap<String, Pair<Socket, Integer>>();
 	public ArrayList<String> serverSavedChunks = new ArrayList<String>();  //chunkId, peerId
 	public ArrayList<String> deletedFiles= new ArrayList<String>();
+	public ConcurrentHashMap<Integer,Boolean> peersAlive = new ConcurrentHashMap<Integer,Boolean>();
 	public int capacity = 999999999;
 	public int memoryUsed = 0;
 	public int availableCapacity= capacity - memoryUsed;
