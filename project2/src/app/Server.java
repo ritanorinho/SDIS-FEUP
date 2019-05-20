@@ -36,7 +36,7 @@ public class Server {
 			tcp_addr = InetAddress.getByName(args[0]);
 			tcp_port = Integer.parseInt(args[1]);
 
-			SSLSocket s1 = Peer.createSocket(InetAddress.getByName(args[2]), Integer.parseInt(args[3])),
+			/*SSLSocket s1 = Peer.createSocket(InetAddress.getByName(args[2]), Integer.parseInt(args[3])),
 				s2 = Peer.createSocket(InetAddress.getByName(args[4]), Integer.parseInt(args[5]));
 
 			servers.put(args[2], new Pair<Integer, SSLSocket>(Integer.parseInt(args[3]), s1));
@@ -46,7 +46,7 @@ public class Server {
 				s1.startHandshake();
 
 			if(s2 != null)
-				s2.startHandshake();
+				s2.startHandshake();*/
 		} 
 		catch (Exception e) 
 		{
