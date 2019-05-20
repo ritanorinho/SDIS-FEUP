@@ -4,11 +4,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
+import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.Socket;
 
 
-public class Memory {
+public class Memory implements Serializable
+{
 	public ArrayList<FileInfo> files = new ArrayList<FileInfo>(); //key: fileId-ChunkNo
 	public ConcurrentHashMap<String,Chunk> savedChunks= new ConcurrentHashMap<String,Chunk>(); //key: fileId-ChunkNo String: fileId
 	public HashMap<String,String> chunksToRestore= new HashMap<String,String>();
@@ -21,6 +23,7 @@ public class Memory {
 	public int memoryUsed = 0;
 	public int availableCapacity= capacity - memoryUsed;
 	private long lastUpdated = 0;
+	private static final long serialVersionUID = 1L; //assign a long value
 	
 	public boolean hasFileByID(String fileId) {
 		for (int i = 0; i < files.size(); i++) {

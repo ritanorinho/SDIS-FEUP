@@ -206,8 +206,6 @@ public class Peer implements RMIInterface {
 		int sp1 = Integer.parseInt(args[5]), sp2 = Integer.parseInt(args[7]), sp3 = Integer.parseInt(args[9]),
 			peerPort = Integer.parseInt(args[3]);
 
-		protocolVersion = Double.parseDouble("1.0"); //TODO Remove
-
 		Peer peer = new Peer(sp1, sa1, sp2, sa2, sp3, sa3, peerPort, peerAddress);
 		RMIInterface stub = (RMIInterface) UnicastRemoteObject.exportObject(peer, 0);
 

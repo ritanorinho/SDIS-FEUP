@@ -199,7 +199,7 @@ public class ServerListenerThread extends Thread {
 
         if(lUpdt < Peer.getMemory().getLastUpdated())
         {
-            //TODO Memory
+            
         }
         
 	}
