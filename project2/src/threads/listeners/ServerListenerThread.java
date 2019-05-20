@@ -95,6 +95,27 @@ public class ServerListenerThread extends Thread {
             peer = splitMessage[2];
             return getAvailablePeers(peer, Integer.parseInt(splitMessage[3]), splitMessage[1]);
 
+        case "RESTORE":
+            if (!connected)
+            return "";
+
+            peer = splitMessage[2];
+            file = splitMessage[1];
+            return getPeersWithFile(file);
+
+        case "CHUNK":
+
+        System.out.println("CHUNK HERE");
+            if (!connected)
+            return "";
+
+            peer = splitMessage[2];
+            file = splitMessage[1];
+            // deleteChunks(peer, file);
+            Server.getMemory().updateMemory();
+            break;
+
+
         case "STORED":
 
             if (!connected)
@@ -116,6 +137,7 @@ public class ServerListenerThread extends Thread {
             peer = splitMessage[2];
             file = splitMessage[1];
             return getPeersWithFile(file);
+            
         case "DELETED":
 
             if (!connected)
@@ -139,7 +161,6 @@ public class ServerListenerThread extends Thread {
                 Server.getMemory().peersAlive.put(id,false);
                 }
             } catch (UnknownHostException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             }
             break;
@@ -161,6 +182,10 @@ public class ServerListenerThread extends Thread {
                 iterator.remove();
 
         }
+    }
+
+    private void restoreFile(String peer, String file){
+        System.out.println("FILE IS RESTORED HERE");
     }
 
     private String getPeersWithFile(String file) {

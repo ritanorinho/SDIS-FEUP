@@ -300,27 +300,57 @@ public class Peer implements RMIInterface {
 			System.out.println(filename + "has never backed up!");
 			return;
 		} else {
-
-			for (int i = 0; i < memory.files.size(); i++) {
-				if (memory.files.get(i).getFileId().equals(fileId)) {
-					fileInfo = memory.files.get(i);
-					chunks = memory.files.get(i).getChunks();
-					break;
+			try {
+				for (int i = 0; i < memory.files.size(); i++) {
+					if (memory.files.get(i).getFileId().equals(fileId)) {
+						fileInfo = memory.files.get(i);
+						chunks = memory.files.get(i).getChunks();
+						break;
+					}
 				}
+				for (int i = 0; i < chunks.size(); i++) {
+					header = "GETCHUNK " + " " + serverID + " " + fileInfo.getFileId() + " "
+							+ chunks.get(i).getChunkNo() + " " + "\r\n\r\n";
+	
+					System.out.println("SENT: " + header);
+
+					byte[] message = header.getBytes();
+
+					OutputStream ostream = getServerSocket().getOutputStream();
+					PrintWriter pwrite = new PrintWriter(ostream, true);
+					InputStream istream = getServerSocket().getInputStream();
+					BufferedReader receiveRead = new BufferedReader(new InputStreamReader(istream));
+	
+					String restoreMessage = "RESTORE " + fileInfo.getFileId() + " Peer" + serverID + "\n";
+					pwrite.println(restoreMessage);
+					pwrite.flush();
+
+					String receiveMessage;
+					System.out.println(restoreMessage);
+	
+					if ((receiveMessage = receiveRead.readLine()) != null){
+						System.out.println("RECEIVED FROM SERVER: " + receiveMessage);
+						String[] splitMessage = receiveMessage.split(" ");
+
+						System.out.println("Peers to connect " + receiveMessage);
+	
+						for (int j = 0; j < splitMessage.length; j++) {
+							String[] split = splitMessage[j].split("-");
+							int port = Integer.parseInt(split[1]);
+							InetAddress address = InetAddress.getByName(split[0]);
+							SSLSocket peerSocket = null;
+							peerSocket = createSocket(address, port);
+							System.out.println(port + " " + address);
+							peerSocket.startHandshake();
+							executor.execute(new SenderSocket(peerSocket, message));
+							executor.execute(new ReceiverSocket(peerSocket, message, executor));
+	
+						}
+					}
+				}
+			} catch (Exception e) {
+				System.out.println("Restore Failed");
 			}
-			for (int i = 0; i < chunks.size(); i++) {
-				header = "GETCHUNK " + serverID + " " + fileInfo.getFileId() + " " + chunks.get(i).getChunkNo() + " "
-						+ "\r\n\r\n";
-
-				byte[] message = header.getBytes();
-
-				System.out.println("SENT: " + header);
-				// TODO: send message to server
-
-			}
-			Peer.executor.schedule(
-					new RestoreFileThread(fileInfo.getFilename(), fileInfo.getFileId(), chunks.size(), 1.0), 10,
-					TimeUnit.SECONDS);
 		}
 	}
 

@@ -124,6 +124,20 @@ public class AnalizeMessageThread implements Runnable {
 		}
 	}
 
+	private void getchunk() {
+	System.out.println("GETCHUNK THREAD");
+		String[] messageArray = this.message.trim().split("\\s+");
+
+		Random random = new Random();
+		int delay = random.nextInt(401);
+
+		if (Peer.getId() != senderId) {
+			Peer.getExecutor().schedule(
+				new GetchunkThread(messageArray,socket), delay, TimeUnit.MILLISECONDS);
+		}
+
+	}
+
 	private synchronized void delete() {
 
 		String fileId = messageArray[2];
@@ -142,25 +156,11 @@ public class AnalizeMessageThread implements Runnable {
 	}
 
 	private void chunk() {
-		
+		System.out.println("CHUNK THREAD");
 			if (Chunk.processChunk(this.messageBytes, Peer.getId()))
 				Peer.getMemory().chunksToRestore.put(chunkId, messageArray[3]);
 
 	}
-
-	private void getchunk() {
-
-		String[] messageArray = this.message.trim().split("\\s+");
-
-		Random random = new Random();
-		int delay = random.nextInt(401);
-
-		if (Peer.getId() != senderId && Peer.getMemory().savedChunks.containsKey(chunkId)) {
-			Peer.getExecutor().schedule(new GetchunkThread(messageArray), delay, TimeUnit.MILLISECONDS);
-		}
-
-	}
-
 
 	private void confirmChunk() {
 

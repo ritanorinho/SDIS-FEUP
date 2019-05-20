@@ -4,6 +4,12 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.Socket;
 
 
 import app.Peer;
@@ -12,37 +18,13 @@ public class GetchunkThread implements Runnable {
 	private String[] messageArray;
 	private String chunkId;
 	private double senderVersion;
+	private Socket socket;
 
-	public GetchunkThread(String[] msg) {
+	public GetchunkThread(String[] msg, Socket socket) {
 		this.messageArray = msg;
 		this.chunkId = messageArray[3] + "-" + messageArray[4];
 		this.senderVersion = Double.parseDouble(messageArray[1]);
-	}
-
-
-	@Override
-	public void run() {
-
-		if (!Peer.getMemory().savedChunks.containsKey(chunkId)) {
-			System.out.println("This peer doesn't contain this chunk: "+chunkId);
-			return;
-		}
-		
-		int senderId = Integer.parseInt(messageArray[2]);
-
-		if (Peer.getId() != senderId) {
-			String msg = "";
-			byte[] message = chunkMessage(msg);
-
-			if(this.senderVersion==1.0){
-				sendChunkMulticast(message);
-				System.out.println(msg);		
-			}else{
-				int port = this.attributePort();
-				this.sendConfirmChunk(port);
-				(new TCPRestoreServer(port, chunkId, message)).start();
-			}
-		}
+		this.socket = socket;
 	}
 
 	public String sendConfirmChunk(int port){
@@ -88,6 +70,19 @@ public class GetchunkThread implements Runnable {
 		}
 	}
 
+	public void sendChunk(byte[] message){
+		System.out.println("\nSENT lalala" + message);
+		try{
+			OutputStream outputStream = socket.getOutputStream();
+			DataOutputStream dataOutputStream = new DataOutputStream(outputStream);
+			dataOutputStream.writeInt(message.length);
+			dataOutputStream.write(message);
+		}
+		catch(Exception e){
+			System.out.println("Error sending chunk to RESTORE");
+		}
+	}
+
 	public int attributePort(){
 		Random random = new Random();
 		int port;
@@ -109,5 +104,32 @@ public class GetchunkThread implements Runnable {
         } catch (IOException e) {}
 
         return result;
-    }
+	}
+	
+	@Override
+	public void run() {
+		System.out.println("GETCHUNK THREAD WORKING FINE");
+		if (!Peer.getMemory().savedChunks.containsKey(chunkId)) {
+			System.out.println("This peer doesn't contain this chunk: "+chunkId);
+			return;
+		}
+		
+		int senderId = Integer.parseInt(messageArray[2]);
+
+		if (Peer.getId() != senderId) {
+			String msg = "";
+			byte[] message = chunkMessage(msg);
+
+			if(this.senderVersion==1.0){
+				System.out.println("SENDING CHUNK");
+				sendChunk(message);
+				// sendChunkMulticast(message);
+				System.out.println(msg);		
+			}else{
+				int port = this.attributePort();
+				this.sendConfirmChunk(port);
+				(new TCPRestoreServer(port, chunkId, message)).start();
+			}
+		}
+	}
 }
