@@ -128,16 +128,21 @@ public class ServerListenerThread extends Thread {
             break;
         case "UNAVAILABLE":   
             try {
-                int peerPort = Integer.parseInt(splitMessage[0]);
-                InetAddress peerAddress = InetAddress.getByName(splitMessage[1]);
+
+                int peerPort = Integer.parseInt(splitMessage[1]);
+                InetAddress peerAddress = InetAddress.getByName(splitMessage[2]);
                 String id = Server.getMemory().getPeerId(peerPort, peerAddress);
+                System.out.println(id);
+                if (id != ""){
+                System.out.println("null id");
                 Server.getMemory().peersAlive.remove(id);
                 Server.getMemory().peersAlive.put(id,false);
-                break;
+                }
             } catch (UnknownHostException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
+            break;
 
             default:
                 System.out.println("Unknown message: " + splitMessage[0].trim());

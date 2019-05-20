@@ -108,16 +108,16 @@ public class Peer implements RMIInterface {
 		} catch (IOException e) {
 			System.out.println("Failed to create SSLSocket");
 			OutputStream ostream;
-			/*try {
+			try {
 				ostream = Peer.getServerSocket().getOutputStream();
 				PrintWriter pwrite1 = new PrintWriter(ostream, true);
-				String unavailableMessage = "UNAVAILABLE " + " " + port + " " + address + "\n";
+				String unavailableMessage = "UNAVAILABLE "+ port + " " + address.getHostAddress() + "\n";
 				pwrite1.println(unavailableMessage);
 				pwrite1.flush();
 			} catch (IOException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
-			}*/
+			}
 
 			return null;
 		}
