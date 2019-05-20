@@ -1,14 +1,24 @@
 package app;
 
 import java.net.InetAddress;
+import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
 import utils.Memory;
 import utils.Pair;
+
+import java.util.Iterator;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.security.*;
 import javax.net.ssl.*;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.io.File;
 import java.security.cert.X509Certificate;
 import threads.listeners.ServerThread;
@@ -16,7 +26,7 @@ import threads.listeners.ServerThread;
 public class Server {
 	private static SSLServerSocket serverSocket;
 	public static ScheduledThreadPoolExecutor executor;
-	private static final Memory memory = new Memory();
+	private static Memory memory = new Memory();
 	private static InetAddress tcp_addr;
 	public static int tcp_port;
 	private static ConcurrentHashMap<String, Pair<Integer, SSLSocket>> servers;
@@ -64,7 +74,7 @@ public class Server {
 		try {
 			serverSocket = (SSLServerSocket) ssf.createServerSocket(tcp_port, 30, tcp_addr);
 
-			serverSocket.setNeedClientAuth(false);
+			serverSocket.setNeedClientAuth(true);
 			serverSocket.setEnabledCipherSuites(new String[] 
 			{ 
 				"SSL_RSA_WITH_RC4_128_MD5", "SSL_RSA_WITH_RC4_128_SHA", "SSL_RSA_WITH_NULL_MD5",
@@ -82,6 +92,14 @@ public class Server {
 
 		executor = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(250);
 		executor.execute(new ServerThread(serverSocket, executor));	
+		executor.scheduleAtFixedRate(new Runnable()
+		{
+			@Override
+			public void run() 
+			{
+				startSync();
+			}
+		}, 10, 10, TimeUnit.SECONDS);
 	}
 
 	public static boolean setCertificateHandling()
@@ -152,10 +170,6 @@ public class Server {
 		return memory;
 	}
 
-	public static String message() {
-		return "abc";
-	}
-
 	public static InetAddress getAddress()
 	{
 		return tcp_addr;
@@ -166,4 +180,69 @@ public class Server {
 		return tcp_port;
 	}
 
+	public static void setMemory(Memory newMemory)
+	{
+		ConcurrentHashMap<String, Pair<Socket, Integer>> connections = memory.conections;
+
+		memory = newMemory;
+		memory.conections = connections;
+	}
+
+	public static void startSync()
+	{
+		SSLSocket socket;
+		Entry<String, Pair<Integer, SSLSocket>> entry;
+		Iterator<Entry<String, Pair<Integer, SSLSocket>>> it = servers.entrySet().iterator();
+
+		while(it.hasNext())
+		{
+			System.out.println("SYNC call");
+
+			entry = it.next();
+			socket = entry.getValue().getValue();
+
+			if(socket == null)
+			{
+				try
+				{
+					socket = Peer.createSocket(InetAddress.getByName(entry.getKey()), entry.getValue().getKey());
+
+					if(socket != null)
+						socket.startHandshake(); 
+				}
+				catch(Exception e)
+				{
+					continue;
+				}
+			}
+
+			try 
+			{
+				OutputStream ostream = socket.getOutputStream();
+				PrintWriter pwrite = new PrintWriter(ostream, true);
+				ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
+
+				pwrite.println("SYNC " + Server.getAddress().getHostAddress() + " " + Server.getMemory().getLastUpdated());
+                socket.setSoTimeout(5000);
+
+				try
+				{
+					Memory newMemory = (Memory) ois.readObject();
+
+					Server.setMemory(newMemory);
+
+					System.out.println("Updated memory");
+				}
+				catch(Exception e)
+				{
+					if(!(e instanceof SocketTimeoutException))
+						System.out.println("Couldn't save new memory");
+				}
+			} 
+			catch (IOException e) 
+			{
+				System.out.println("Couldn't sync");
+			}
+		}
+    }
 }

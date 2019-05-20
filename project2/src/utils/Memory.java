@@ -64,6 +64,11 @@ public class Memory implements Serializable
 		 }
 		
 	}
+
+	public void updateMemory()
+	{
+		this.lastUpdated = System.currentTimeMillis();
+	}
 	
 	public void updateMemoryUsed(int memory) {
 		this.memoryUsed+=memory; 

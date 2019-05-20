@@ -105,6 +105,7 @@ public class ServerListenerThread extends Thread {
             String key = chunkID + "-" + peer;
             System.out.println("Peer id " + peer);
             Server.getMemory().serverSavedChunks.add(key);
+            Server.getMemory().updateMemory();
             break;
 
         case "DELETE":
@@ -123,6 +124,7 @@ public class ServerListenerThread extends Thread {
             peer = splitMessage[2];
             file = splitMessage[1];
             deleteChunks(peer, file);
+            Server.getMemory().updateMemory();
             break;
         case "UNAVAILABLE":   
             try {
