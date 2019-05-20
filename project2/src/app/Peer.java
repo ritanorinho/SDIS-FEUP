@@ -108,6 +108,18 @@ public class Peer implements RMIInterface {
 			socket = (SSLSocket) ssf.createSocket(address, port);
 		} catch (IOException e) {
 			System.out.println("Failed to create SSLSocket");
+			OutputStream ostream;
+			try {
+				ostream = Peer.getServerSocket().getOutputStream();
+				PrintWriter pwrite1 = new PrintWriter(ostream, true);
+				String unavailableMessage = "UNAVAILABLE " + " " + port + " " + address + "\n";
+				pwrite1.println(unavailableMessage);
+				pwrite1.flush();
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+
 			return null;
 		}
 
@@ -264,30 +276,18 @@ public class Peer implements RMIInterface {
 						int port = Integer.parseInt(split[1]);
 						InetAddress address = InetAddress.getByName(split[0]);
 						SSLSocket peerSocket = null;
-						try {
-							peerSocket = createSocket(address, port);
-							System.out.println(port + " " + address);
-
-							peerSocket.startHandshake();
-						} catch (IOException exception) {
-
-							OutputStream ostream1 = getServerSocket().getOutputStream();
-							PrintWriter pwrite1 = new PrintWriter(ostream1, true);
-							String unavailableMessage = "UNAVAILABLE " + " " + port + " " + split[0] + "\n";
-							pwrite1.println(unavailableMessage);
-							pwrite1.flush();
-
-						}
-
+						peerSocket = createSocket(address, port);
+						System.out.println(port + " " + address);
+						peerSocket.startHandshake();
 						executor.execute(new SenderSocket(peerSocket, message));
 						executor.execute(new ReceiverSocket(peerSocket, message, executor));
+
 					}
 
 				}
 			}
 		} catch (Exception e) {
 			System.out.println("Backup Failed");
-			e.printStackTrace();
 		}
 	}
 
@@ -366,26 +366,17 @@ public class Peer implements RMIInterface {
 					String[] split = splitMessage[j].split("-");
 					int port = Integer.parseInt(split[1]);
 					SSLSocket peerSocket = null;
-					try {
-						InetAddress address = InetAddress.getByName(split[0]);
-						peerSocket = createSocket(address, port);
 
-						System.out.println(port + " " + address);
+					InetAddress address = InetAddress.getByName(split[0]);
+					peerSocket = createSocket(address, port);
 
-						peerSocket.startHandshake();
-					} catch (IOException exception) {
-						OutputStream ostream1 = getServerSocket().getOutputStream();
-						PrintWriter pwrite1 = new PrintWriter(ostream1, true);
-						String unavailableMessage = "UNAVAILABLE " + " " + port + " " + split[0] + "\n";
-						pwrite1.println(unavailableMessage);
-						pwrite1.flush();
+					System.out.println(port + " " + address);
 
-					}
+					peerSocket.startHandshake();
 
 					executor.execute(new SenderSocket(peerSocket, message));
 					executor.execute(new ReceiverSocket(peerSocket, message, executor));
 				}
-
 			}
 
 		} catch (Exception e) {

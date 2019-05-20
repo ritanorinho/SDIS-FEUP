@@ -89,8 +89,12 @@ public class Memory implements Serializable
 	}
 
 	public void addConnection(String peerID, Socket socket, int port){
-		conections.put(peerID, new Pair<Socket, Integer>(socket, port));
-		peersAlive.put(peerID,true);
+		if (peersAlive.containsKey(peerID)){
+			conections.remove(peerID);
+			peersAlive.remove(peerID);
+		}
+			conections.put(peerID, new Pair<Socket, Integer>(socket, port));
+			peersAlive.put(peerID,true);
 	}
 
 	public String getPeerPort(String peerID){
