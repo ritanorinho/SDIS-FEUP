@@ -79,7 +79,6 @@ public class Peer implements RMIInterface {
 				pwrite.println(peerID);
 				pwrite.flush();
 
-				System.out.println(peerID);
 
 				if ((receivedMessage = receiveRead.readLine()) != null) // receive from server
 				{
@@ -128,9 +127,7 @@ public class Peer implements RMIInterface {
 		SSLServerSocket sSocket;
 
 		try {
-			System.out.println("port " + this.peerPort);
 			sSocket = (SSLServerSocket) ssf.createServerSocket(this.peerPort);
-			System.out.println("port " + sSocket.getLocalPort());
 		} catch (IOException e) {
 			e.printStackTrace();
 			System.out.println("Failed to create server socket");

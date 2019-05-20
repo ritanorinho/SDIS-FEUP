@@ -17,3 +17,6 @@ src/scripts/test/
 project2/src/Peer1/
 
 project2/src/Peer2/
+project2/src/\.DS_Store
+
+project2/\.DS_Store

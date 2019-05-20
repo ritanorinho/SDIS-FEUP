@@ -43,7 +43,6 @@ public class StoredChunkThread implements Runnable {
 				+ this.replicationDegree;
 
 		try {
-			System.out.println("create file chunk");
 			File file = new File(filename);
 			file.getParentFile().mkdirs();
 			file.createNewFile();
@@ -61,7 +60,6 @@ public class StoredChunkThread implements Runnable {
 
 		Chunk chunk = new Chunk(this.fileId, Integer.parseInt(this.chunkNo), this.data, this.data.length, this.chunkId,
 				this.replicationDegree);
-		System.out.println("save chunk");
 		if (!Peer.getMemory().savedChunks.containsKey(this.chunkId)) {
 			Peer.getMemory().savedChunks.put(this.chunkId, chunk);
 			Peer.getMemory().updateMemoryUsed(this.data.length);
