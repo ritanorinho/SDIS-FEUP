@@ -125,17 +125,28 @@ public class AnalizeMessageThread implements Runnable {
 	}
 
 	private void getchunk() {
-	System.out.println("GETCHUNK THREAD");
+	System.out.println("RECEIVING GETCHUNK");
 		String[] messageArray = this.message.trim().split("\\s+");
 
 		Random random = new Random();
 		int delay = random.nextInt(401);
 
 		if (Peer.getId() != senderId) {
-			System.out.println("ESTA A LANCAR A THREAD");
 			Peer.getExecutor().schedule(
 				new GetchunkThread(messageArray,socket), delay, TimeUnit.MILLISECONDS);
 		}
+
+	}
+
+	private void chunk() {
+		System.out.println("RECEIVING CHUNK");
+		String[] messageArray = this.message.trim().split("\\s+");
+		System.out.println("CHUNK MESSAGE ARRAY BEGIN");
+		System.out.println(messageArray[0] + ";;;" + messageArray[1] + ":::" + messageArray[2] + ";;;" + messageArray[3]);
+		System.out.println("CHUNK MESSAGE ARRAY END");
+
+		
+		Peer.getMemory().chunksToRestore.put(chunkId, messageArray[3]);
 
 	}
 
@@ -154,14 +165,6 @@ public class AnalizeMessageThread implements Runnable {
 
 		}
 		System.out.println("Deleted chunks of file: " + fileId);
-	}
-
-	private void chunk() {
-		System.out.println("CHUNK THREAD");
-		System.out.println("TODO: RESTORE FILE");
-			// if (Chunk.processChunk(this.messageBytes, Peer.getId()))
-			// 	Peer.getMemory().chunksToRestore.put(chunkId, messageArray[3]);
-
 	}
 
 	private void confirmChunk() {

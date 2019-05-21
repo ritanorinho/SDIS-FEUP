@@ -19,9 +19,13 @@ public class GetchunkThread implements Runnable {
 	private String chunkId;
 	private double senderVersion;
 	private Socket socket;
+	private String fileId;
+	private String chunkNo;
 
 	public GetchunkThread(String[] msg, Socket socket) {
 		this.messageArray = msg;
+		this.fileId = messageArray[2];
+		this.chunkNo = messageArray[3];
 		this.chunkId = messageArray[2] + "-" + messageArray[3];
 		this.senderVersion = Double.parseDouble(messageArray[1]);
 		this.socket = socket;
@@ -71,7 +75,6 @@ public class GetchunkThread implements Runnable {
 	}
 
 	public void sendChunk(byte[] message){
-		System.out.println("\nSENT lalala" + message);
 		try{
 			OutputStream outputStream = socket.getOutputStream();
 			DataOutputStream dataOutputStream = new DataOutputStream(outputStream);
@@ -108,7 +111,6 @@ public class GetchunkThread implements Runnable {
 	
 	@Override
 	public void run() {
-		System.out.println("THREAD A CORRER");
 		if (!Peer.getMemory().savedChunks.containsKey(chunkId)) {
 			System.out.println("This peer doesn't contain this chunk: "+chunkId);
 			return;
@@ -116,10 +118,7 @@ public class GetchunkThread implements Runnable {
 		
 		String msg = "";
 		byte[] message = chunkMessage(msg);
-		System.out.println("SENDER VERSIOn");
-		System.out.println(this.senderVersion);
 		if(this.senderVersion==1){
-			System.out.println("ENTRA NA VERSAO");
 			sendChunk(message);
 			// sendChunkMulticast(message);
 			System.out.println(msg);		

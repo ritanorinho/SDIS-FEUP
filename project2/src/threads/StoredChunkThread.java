@@ -28,12 +28,10 @@ public class StoredChunkThread implements Runnable {
 		this.byteMessage = storedMessage;
 		this.data = data;
 		this.msg = new String(this.byteMessage, 0, this.byteMessage.length);
-		System.out.println("stored "+this.msg);
 		this.messageArray = msg.split("\\s+");
 		this.senderId = Integer.parseInt(messageArray[0]);
 		this.fileId = messageArray[1];
 		this.chunkNo = messageArray[2];
-		System.out.println("FILEID:" + fileId + " :::: CHUNKNO: " + chunkNo);
 		this.chunkId = this.fileId + "-" + this.chunkNo;
 		this.replicationDegree = replicationDegree;
 		this.socket = socket;

@@ -105,15 +105,20 @@ public class ServerListenerThread extends Thread {
             return getPeersWithFile(file);
 
         case "CHUNK":
-
-        System.out.println("CHUNK HERE");
             if (!connected)
             return "";
 
             peer = splitMessage[2];
             file = splitMessage[1];
+
+            // System.out.println("Peer id " + peer);
+            System.out.println("BEGIN SPLIT MESSAGE IN SERVER LISTENER");
+            for (int i = 0; i < splitMessage.length; i++){
+                System.out.println(splitMessage[i]);
+            }
+            System.out.println("END SPLIT MESSAGE IN SERVER LISTENER");
             // deleteChunks(peer, file);
-            Server.getMemory().updateMemory();
+            // Server.getMemory().updateMemory();
             break;
 
 
