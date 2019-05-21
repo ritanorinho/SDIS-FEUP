@@ -58,9 +58,8 @@ public class ServerListenerThread extends Thread {
         {
             System.out.println("Disconect detected");
 
-            //TODO Revisit need for heartbeat/alive
             if(peerId != null)
-                Server.getMemory().peersAlive.put(peerId, false);
+                Server.getMemory().conections.remove(peerId);
         }
     }
 
@@ -71,14 +70,24 @@ public class ServerListenerThread extends Thread {
 
         switch (splitMessage[0].trim()) {
         case "Peer":
-            int port = Integer.parseInt(splitMessage[2]);
+            int port = Integer.parseInt(splitMessage[3]);
+            String peerAddr = splitMessage[2];
 
             peerID = splitMessage[1];
 
-            Server.getMemory().addConnection(peerID, socket, port);
+            try
+            {
+                Server.getMemory().addConnection(peerID, InetAddress.getByName(peerAddr), port);
+            }
+            catch(UnknownHostException e)
+            {
+                System.out.println("Couldn't find peer");
+                break;
+            }
+            
             connected = true;
 
-            System.out.println("New peer connected: Peer" + peerID + "@" + socket.getInetAddress() + ":" + port);
+            System.out.println("New peer connected: Peer" + peerID + "@" + peerAddr + ":" + port);
 
             this.peerId = peerID;
 
@@ -154,18 +163,7 @@ public class ServerListenerThread extends Thread {
             deleteChunks(peer, file);
             Server.getMemory().updateMemory();
             break;
-        case "UNAVAILABLE":   
-            try {
-                int peerPort = Integer.parseInt(splitMessage[0]);
-                InetAddress peerAddress = InetAddress.getByName(splitMessage[1]);
-                String id = Server.getMemory().getPeerId(peerPort, peerAddress);
-                Server.getMemory().peersAlive.remove(id);
-                Server.getMemory().peersAlive.put(id,false);
-                break;
-            } catch (UnknownHostException e) {
-                e.printStackTrace();
-            }
-
+      
             default:
                 System.out.println("Unknown message: " + splitMessage[0].trim());
         }
@@ -201,7 +199,7 @@ public class ServerListenerThread extends Thread {
             System.out.println(Server.getMemory().serverSavedChunks.get(i));
             if (fileId.equals(file)) {
                 String peer = split[2].trim();
-                if (!peerPorts.containsKey(peer) && Server.getMemory().peersAlive.get(peer)) {
+                if (!peerPorts.containsKey(peer)) {
                     sb.append(Server.getMemory().getPeerPort(peer));
                     sb.append(" ");
                     peerPorts.put(peer, Server.getMemory().getPeerPort(peer));
@@ -219,9 +217,9 @@ public class ServerListenerThread extends Thread {
 
         for (String key : Server.getMemory().conections.keySet()) {
             if (replicationDegree > 0) {
-                if (!key.equals(peer) && !Server.getMemory().serverSavedChunks.contains(chunckId + "-" + peer)) { // TODO Check if other peer doesn't have chunk already => Better algorythm
-                                         // maybe?
-                    sb += Server.getMemory().conections.get(key).getKey().getInetAddress().getHostAddress() + "-"
+                if (!key.equals(peer) && !Server.getMemory().serverSavedChunks.contains(chunckId + "-" + peer)) 
+                { 
+                    sb += Server.getMemory().conections.get(key).getKey().getHostAddress() + "-"
                             + Server.getMemory().conections.get(key).getValue() + " ";
                     replicationDegree--;
                 }
@@ -230,6 +228,10 @@ public class ServerListenerThread extends Thread {
 
         }
 
+        if(replicationDegree > 0)
+            System.out.println("Warning: There aren't enough peers to meet replication demand");
+
+            
         return sb;
     }
 

@@ -109,7 +109,7 @@ public class Server {
 			FileInputStream fi =  new FileInputStream(new File("Server/memory"));
 			ObjectInputStream oi = new ObjectInputStream(fi);
 			memory = (Memory) oi.readObject();
-			memory.conections = new ConcurrentHashMap<String, Pair<Socket, Integer>>();
+			memory.conections = new ConcurrentHashMap<String, Pair<InetAddress, Integer>>();
 			System.out.println("Loaded memory successfully");
 			oi.close();
 		} catch (FileNotFoundException e) {
@@ -202,7 +202,7 @@ public class Server {
 
 	public static void setMemory(Memory newMemory)
 	{
-		ConcurrentHashMap<String, Pair<Socket, Integer>> connections = memory.conections;
+		ConcurrentHashMap<String, Pair<InetAddress, Integer>> connections = memory.conections;
 
 		memory = newMemory;
 		memory.conections = connections;
@@ -245,36 +245,31 @@ public class Server {
 				
 				pwrite.println("SYNC " + Server.getAddress().getHostAddress() + " " + Server.getMemory().getLastUpdated());
 				
-				try
-				{
-					ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
+				ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
 				
-					Memory newMemory = (Memory) ois.readObject();
+				Memory newMemory = (Memory) ois.readObject();
 
-					if(newMemory == null)
-					{
-						System.out.println("Up-to-date: " + memory.getLastUpdated());
-						continue;
-					}
-						
-					Server.setMemory(newMemory);
-
-					System.out.println("Updated memory");
+				if (newMemory == null) {
+					System.out.println("Up-to-date: " + memory.getLastUpdated());
+					continue;
 				}
-				catch(Exception e)
-				{
-					if(!(e instanceof SocketTimeoutException))
-						System.out.println("Couldn't save new memory");
 
-					e.printStackTrace();
-				}
+				Server.setMemory(newMemory);
+
+				System.out.println("Updated memory");
+
+		
 
 			} 
-			catch (IOException e) 
+			catch (Exception e) 
 			{
 				System.out.println("Couldn't sync");
 
-				e.printStackTrace();
+				if(e instanceof IOException)
+				{
+					servers.put(entry.getKey(), new Pair<Integer, SSLSocket>(entry.getValue().getKey(), null));
+				}
+		
 			}
 		}
 		

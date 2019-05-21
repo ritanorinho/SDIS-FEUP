@@ -15,10 +15,9 @@ public class Memory implements Serializable
 	public HashMap<String,String> chunksToRestore= new HashMap<String,String>();
 	public ConcurrentHashMap<String,Integer> savedOcurrences = new ConcurrentHashMap<String,Integer>();
 	public HashMap<String, Pair<Integer, InetAddress>> confirmedChunks = new HashMap<String, Pair<Integer, InetAddress>>(); //chunkid < port, address>
-	public transient ConcurrentHashMap<String, Pair<Socket, Integer>> conections = new ConcurrentHashMap<String, Pair<Socket, Integer>>();
+	public transient ConcurrentHashMap<String, Pair<InetAddress, Integer>> conections = new ConcurrentHashMap<String, Pair<InetAddress, Integer>>();
 	public ArrayList<String> serverSavedChunks = new ArrayList<String>();  //chunkId-peerId
 	public ArrayList<String> deletedFiles= new ArrayList<String>();
-	public ConcurrentHashMap<String,Boolean> peersAlive = new ConcurrentHashMap<String,Boolean>();
 	public int capacity = 999999999;
 	public int memoryUsed = 0;
 	public int availableCapacity= capacity - memoryUsed;
@@ -87,25 +86,19 @@ public class Memory implements Serializable
 		return usedMemory;
 	}
 
-	public void addConnection(String peerID, Socket socket, int port){
-		if (peersAlive.containsKey(peerID)){
-			conections.remove(peerID);
-			peersAlive.remove(peerID);
-		}
-			conections.put(peerID, new Pair<Socket, Integer>(socket, port));
-			peersAlive.put(peerID,true);
+	public void addConnection(String peerID, InetAddress address, int port)
+	{
+		conections.put(peerID, new Pair<InetAddress, Integer>(address, port));
 	}
 
-	public String getPeerPort(String peerID){
-		
-	return conections.get(peerID).getKey().getInetAddress().getHostAddress()+
-	       "-"+conections.get(peerID).getValue().toString();
-			
+	public String getPeerPort(String peerID)
+	{
+		return conections.get(peerID).getKey().getHostAddress() + "-" + conections.get(peerID).getValue();
 	}
 
 	public String getPeerId(int peerPort, InetAddress peerAddress){
 		for(String key : conections.keySet()){
-			if (conections.get(key).getValue() == peerPort && conections.get(key).getKey().getInetAddress().equals(peerAddress))
+			if (conections.get(key).getValue() == peerPort && conections.get(key).getKey().getHostAddress().equals(peerAddress.getHostAddress()))
 			return key;
 		}
 		return "";
