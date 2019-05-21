@@ -52,7 +52,7 @@ public class TestApp {
         fileName = args[2];
         replicationDegree = Integer.parseInt(args[3]);
 			try {
-				stub.backup(fileName, replicationDegree, false);
+				stub.backup(fileName, replicationDegree);
 			} catch (UnsupportedEncodingException e) {
 				e.printStackTrace();
 			}
@@ -65,7 +65,7 @@ public class TestApp {
         
         replicationDegree = 3;
         fileName = args[2];
-        stub.restore(fileName, false);
+        stub.restore(fileName);
         break;
 
       case "DELETE":
