@@ -18,7 +18,6 @@ public class Memory implements Serializable
 	public transient ConcurrentHashMap<String, Pair<Socket, Integer>> conections = new ConcurrentHashMap<String, Pair<Socket, Integer>>();
 	public ArrayList<String> serverSavedChunks = new ArrayList<String>();  //chunkId-peerId
 	public ArrayList<String> deletedFiles= new ArrayList<String>();
-	public ConcurrentHashMap<String,Boolean> peersAlive = new ConcurrentHashMap<String,Boolean>();
 	public int capacity = 999999999;
 	public int memoryUsed = 0;
 	public int availableCapacity= capacity - memoryUsed;
@@ -87,13 +86,9 @@ public class Memory implements Serializable
 		return usedMemory;
 	}
 
-	public void addConnection(String peerID, Socket socket, int port){
-		if (peersAlive.containsKey(peerID)){
-			conections.remove(peerID);
-			peersAlive.remove(peerID);
-		}
-			conections.put(peerID, new Pair<Socket, Integer>(socket, port));
-			peersAlive.put(peerID,true);
+	public void addConnection(String peerID, Socket socket, int port)
+	{
+		conections.put(peerID, new Pair<Socket, Integer>(socket, port));
 	}
 
 	public String getPeerPort(String peerID){

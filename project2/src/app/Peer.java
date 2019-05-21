@@ -211,26 +211,6 @@ public class Peer implements RMIInterface {
 		}
 	}
 
-	public void sendUnavailable(InetAddress address, int port)
-	{
-		OutputStream ostream;
-
-		try 
-		{
-			ostream = Peer.getServerSocket().getOutputStream();
-			PrintWriter pwrite1 = new PrintWriter(ostream, true);
-			String unavailableMessage = "UNAVAILABLE " + " " + port + " " + address.getHostAddress() + "\n";
-			pwrite1.println(unavailableMessage);
-			pwrite1.flush();
-		}
-		catch (IOException e1) 
-		{
-			// TODO Auto-generated catch block
-			System.out.println("Couldn't send UNAVAILABLE");
-			e1.printStackTrace();
-		}
-	}
-
 	// protocols
 	@Override
 	public void backup(String filename, int repDegree, boolean enhancement)
@@ -244,9 +224,6 @@ public class Peer implements RMIInterface {
 			for (int i = 0; i < chunks.size(); i++) {
 				byte[] header = Utils.getHeader("PUTCHUNK", serverID, fileInfo.getFileId(), chunks.get(i).getChunkNo(),
 						repDegree);
-				String headerString = new String(header, 0, header.length);
-
-				System.out.println("SENT: " + headerString);
 
 				chunkId = fileInfo.getFileId() + "-" + chunks.get(i).getChunkNo();
 
@@ -274,10 +251,19 @@ public class Peer implements RMIInterface {
 
 				System.out.println(backupMessage);
 
-				if ((receiveMessage = receiveRead.readLine()) != null) {
+				if ((receiveMessage = receiveRead.readLine()) != null) {	
 					String[] splitMessage = receiveMessage.split(" ");
 
 					System.out.println("Peers to connect " + receiveMessage);
+
+					if(receiveMessage.equals(" "))
+					{
+						System.out.println("No peers available");
+						continue;
+					}
+
+					if(splitMessage.length < repDegree)
+						System.out.println("Warning: There aren't enough peers to meet replication demand");
 
 					for (int j = 0; j < splitMessage.length; j++) {
 						String[] split = splitMessage[j].split("-");
@@ -285,13 +271,6 @@ public class Peer implements RMIInterface {
 						InetAddress address = InetAddress.getByName(split[0]);
 						SSLSocket peerSocket = null;
 						peerSocket = createSocket(address, port);
-
-						if(peerSocket == null)
-						{
-							sendUnavailable(address, port);
-							backup(filename, repDegree, enhancement);
-							return;
-						}
 
 						System.out.println(port + " " + address);
 						peerSocket.startHandshake();
@@ -415,13 +394,6 @@ public class Peer implements RMIInterface {
 
 					InetAddress address = InetAddress.getByName(split[0]);
 					peerSocket = createSocket(address, port);
-
-					if(peerSocket == null)
-					{
-						sendUnavailable(address, port);
-						delete(filename);
-						return;
-					}
 
 					System.out.println(port + " " + address);
 
