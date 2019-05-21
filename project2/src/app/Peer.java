@@ -17,6 +17,8 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
+
 import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.SSLSocket;
@@ -53,19 +55,17 @@ public class Peer implements RMIInterface {
 		servers.add(createSocket(sa2, sp2));
 		servers.add(createSocket(sa3, sp3));
 
-		if(servers.get(0) == null && servers.get(1) == null && servers.get(2) == null) 
-		{
+		if (servers.get(0) == null && servers.get(1) == null && servers.get(2) == null) {
 			System.out.println("Couldn't connect to servers");
 			return;
 		}
 
 		executor = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(250);
 
-		for (SSLSocket serverSocket : servers) 
-		{
-			if(serverSocket == null)
+		for (SSLSocket serverSocket : servers) {
+			if (serverSocket == null)
 				continue;
-				
+
 			serverSocket.startHandshake();
 
 			try {
@@ -78,7 +78,6 @@ public class Peer implements RMIInterface {
 
 				pwrite.println(peerID);
 				pwrite.flush();
-
 
 				if ((receivedMessage = receiveRead.readLine()) != null) // receive from server
 				{
@@ -103,12 +102,9 @@ public class Peer implements RMIInterface {
 		SSLSocketFactory ssf = (SSLSocketFactory) SSLSocketFactory.getDefault();
 		SSLSocket socket;
 
-		try 
-		{
+		try {
 			socket = (SSLSocket) ssf.createSocket(address, port);
-		} 
-		catch (IOException e) 
-		{
+		} catch (IOException e) {
 			System.out.println("Failed to create SSLSocket");
 			return null;
 		}
@@ -213,8 +209,7 @@ public class Peer implements RMIInterface {
 
 	// protocols
 	@Override
-	public void backup(String filename, int repDegree, boolean enhancement)
-			throws RemoteException, InterruptedException {
+	public void backup(String filename, int repDegree) throws RemoteException, InterruptedException {
 		File file = new File(filename);
 		FileInfo fileInfo = new FileInfo(file, filename, repDegree);
 		ArrayList<Chunk> chunks = fileInfo.getChunks();
@@ -240,8 +235,16 @@ public class Peer implements RMIInterface {
 				System.arraycopy(header, 0, message, 0, header.length);
 				System.arraycopy(body, 0, message, header.length, body.length);
 
-				OutputStream ostream = getServerSocket().getOutputStream();
+				OutputStream ostream = null;
+				try {
+					ostream = getServerSocket().getOutputStream();
+				} catch (IOException e) {
+					changeServer();
+					backup(filename, repDegree);
+					return;
+				}
 				PrintWriter pwrite = new PrintWriter(ostream, true);
+
 				InputStream istream = getServerSocket().getInputStream();
 				BufferedReader receiveRead = new BufferedReader(new InputStreamReader(istream));
 				String backupMessage = "BACKUP " + chunkId + " " + serverID + " " + repDegree + "\n", receiveMessage;
@@ -287,7 +290,7 @@ public class Peer implements RMIInterface {
 	}
 
 	@Override
-	public void restore(String filename, boolean enhancement) throws RemoteException {
+	public void restore(String filename) throws RemoteException {
 		File file = new File(filename);
 		String fileId = Utils.createFileId(file);
 		ArrayList<Chunk> chunks = new ArrayList<Chunk>();
@@ -309,29 +312,35 @@ public class Peer implements RMIInterface {
 				for (int i = 0; i < chunks.size(); i++) {
 					header = "GETCHUNK " + " " + serverID + " " + fileInfo.getFileId() + " "
 							+ chunks.get(i).getChunkNo() + " " + "\r\n\r\n";
-	
+
 					System.out.println("SENT: " + header);
 
 					byte[] message = header.getBytes();
-
-					OutputStream ostream = getServerSocket().getOutputStream();
+					OutputStream ostream = null;
+					try{
+					 ostream = getServerSocket().getOutputStream();
+					}catch(IOException e){
+						changeServer();
+						restore(filename);
+						return;
+					}
 					PrintWriter pwrite = new PrintWriter(ostream, true);
 					InputStream istream = getServerSocket().getInputStream();
 					BufferedReader receiveRead = new BufferedReader(new InputStreamReader(istream));
-	
+
 					String restoreMessage = "RESTORE " + fileInfo.getFileId() + " Peer" + serverID + "\n";
 					pwrite.println(restoreMessage);
 					pwrite.flush();
 
 					String receiveMessage;
 					System.out.println(restoreMessage);
-	
-					if ((receiveMessage = receiveRead.readLine()) != null){
+
+					if ((receiveMessage = receiveRead.readLine()) != null) {
 						System.out.println("RECEIVED FROM SERVER: " + receiveMessage);
 						String[] splitMessage = receiveMessage.split(" ");
 
 						System.out.println("Peers to connect " + receiveMessage);
-	
+
 						for (int j = 0; j < splitMessage.length; j++) {
 							String[] split = splitMessage[j].split("-");
 							int port = Integer.parseInt(split[1]);
@@ -342,7 +351,7 @@ public class Peer implements RMIInterface {
 							peerSocket.startHandshake();
 							executor.execute(new SenderSocket(peerSocket, message));
 							executor.execute(new ReceiverSocket(peerSocket, message, executor));
-	
+
 						}
 					}
 				}
@@ -365,7 +374,14 @@ public class Peer implements RMIInterface {
 		try {
 			String deleteMessage = "DELETE " + fileInfo.getFileId() + " Peer" + serverID + "\n";
 
-			OutputStream ostream = getServerSocket().getOutputStream();
+			OutputStream ostream = null;
+			try{
+			ostream = getServerSocket().getOutputStream();
+			}catch(IOException e){
+				changeServer();
+				delete(filename);
+				return;
+			}
 			PrintWriter pwrite = new PrintWriter(ostream, true);
 
 			InputStream istream = getServerSocket().getInputStream();
@@ -466,4 +482,13 @@ public class Peer implements RMIInterface {
 	public static SSLSocket getServerSocket() {
 		return servers.get(serverIndex);
 	}
+
+	public static void changeServer() {
+		if (serverIndex == servers.size() - 1)
+			serverIndex = 0;
+		else
+			serverIndex++;
+
+	}
+
 }

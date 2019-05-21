@@ -22,7 +22,7 @@ public class GetchunkThread implements Runnable {
 
 	public GetchunkThread(String[] msg, Socket socket) {
 		this.messageArray = msg;
-		this.chunkId = messageArray[3] + "-" + messageArray[4];
+		this.chunkId = messageArray[2] + "-" + messageArray[3];
 		this.senderVersion = Double.parseDouble(messageArray[1]);
 		this.socket = socket;
 	}
@@ -50,7 +50,7 @@ public class GetchunkThread implements Runnable {
 		byte[] chunkData = Peer.getMemory().savedChunks.get(chunkId).getData();
 	
 		restoredChunk = "CHUNK " + messageArray[1] + " " + messageArray[2] + " " + messageArray[3] + " "
-				+ messageArray[4] + " " + "\r\n\r\n";
+				 + " " + "\r\n\r\n";
 		byte[] data = restoredChunk.getBytes();
 		byte[] message = new byte[data.length + chunkData.length];
 
@@ -108,28 +108,25 @@ public class GetchunkThread implements Runnable {
 	
 	@Override
 	public void run() {
-		System.out.println("GETCHUNK THREAD WORKING FINE");
+		System.out.println("THREAD A CORRER");
 		if (!Peer.getMemory().savedChunks.containsKey(chunkId)) {
 			System.out.println("This peer doesn't contain this chunk: "+chunkId);
 			return;
 		}
 		
-		int senderId = Integer.parseInt(messageArray[2]);
-
-		if (Peer.getId() != senderId) {
-			String msg = "";
-			byte[] message = chunkMessage(msg);
-
-			if(this.senderVersion==1.0){
-				System.out.println("SENDING CHUNK");
-				sendChunk(message);
-				// sendChunkMulticast(message);
-				System.out.println(msg);		
-			}else{
-				int port = this.attributePort();
-				this.sendConfirmChunk(port);
-				(new TCPRestoreServer(port, chunkId, message)).start();
-			}
+		String msg = "";
+		byte[] message = chunkMessage(msg);
+		System.out.println("SENDER VERSIOn");
+		System.out.println(this.senderVersion);
+		if(this.senderVersion==1){
+			System.out.println("ENTRA NA VERSAO");
+			sendChunk(message);
+			// sendChunkMulticast(message);
+			System.out.println(msg);		
+		}else{
+			int port = this.attributePort();
+			this.sendConfirmChunk(port);
+			(new TCPRestoreServer(port, chunkId, message)).start();
 		}
 	}
 }
