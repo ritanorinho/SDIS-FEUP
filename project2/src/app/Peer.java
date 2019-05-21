@@ -44,7 +44,7 @@ public class Peer implements RMIInterface {
 	public Peer(int sp1, InetAddress sa1, int sp2, InetAddress sa2, int sp3, InetAddress sa3, int peerPort,
 			InetAddress peerAddress) throws IOException {
 		this.peerPort = peerPort;
-		this.peerAddress = peerAddress;
+		this.peerAddress = InetAddress.getLocalHost();
 
 		servers = new ArrayList<SSLSocket>();
 
@@ -72,7 +72,7 @@ public class Peer implements RMIInterface {
 
 				OutputStream ostream = serverSocket.getOutputStream();
 				PrintWriter pwrite = new PrintWriter(ostream, true);
-				String peerID = "Peer " + Peer.getId() + " " + peerPort + "\n", receivedMessage;
+				String peerID = "Peer " + Peer.getId() + " " + this.peerAddress.getHostAddress() + " " +  peerPort + "\n", receivedMessage;
 				InputStream istream = serverSocket.getInputStream();
 				BufferedReader receiveRead = new BufferedReader(new InputStreamReader(istream));
 
@@ -123,7 +123,7 @@ public class Peer implements RMIInterface {
 		SSLServerSocket sSocket;
 
 		try {
-			sSocket = (SSLServerSocket) ssf.createServerSocket(this.peerPort);
+			sSocket = (SSLServerSocket) ssf.createServerSocket(this.peerPort, 30, this.peerAddress);
 		} catch (IOException e) {
 			e.printStackTrace();
 			System.out.println("Failed to create server socket");
@@ -484,10 +484,14 @@ public class Peer implements RMIInterface {
 	}
 
 	public static void changeServer() {
+		System.out.print("Changing server from " + serverIndex);
+		
 		if (serverIndex == servers.size() - 1)
 			serverIndex = 0;
 		else
 			serverIndex++;
+
+		System.out.println(" to " + serverIndex);
 
 	}
 

@@ -70,14 +70,24 @@ public class ServerListenerThread extends Thread {
 
         switch (splitMessage[0].trim()) {
         case "Peer":
-            int port = Integer.parseInt(splitMessage[2]);
+            int port = Integer.parseInt(splitMessage[3]);
+            String peerAddr = splitMessage[2];
 
             peerID = splitMessage[1];
 
-            Server.getMemory().addConnection(peerID, socket, port);
+            try
+            {
+                Server.getMemory().addConnection(peerID, InetAddress.getByName(peerAddr), port);
+            }
+            catch(UnknownHostException e)
+            {
+                System.out.println("Couldn't find peer");
+                break;
+            }
+            
             connected = true;
 
-            System.out.println("New peer connected: Peer" + peerID + "@" + socket.getInetAddress() + ":" + port);
+            System.out.println("New peer connected: Peer" + peerID + "@" + peerAddr + ":" + port);
 
             this.peerId = peerID;
 
@@ -198,13 +208,13 @@ public class ServerListenerThread extends Thread {
     }
 
     public static String getAvailablePeers(String peer, int replicationDegree, String chunckId) {
-        String sb = " ";
+        String sb = "";
 
         for (String key : Server.getMemory().conections.keySet()) {
             if (replicationDegree > 0) {
                 if (!key.equals(peer) && !Server.getMemory().serverSavedChunks.contains(chunckId + "-" + peer)) 
                 { 
-                    sb += Server.getMemory().conections.get(key).getKey().getInetAddress().getHostAddress() + "-"
+                    sb += Server.getMemory().conections.get(key).getKey().getHostAddress() + "-"
                             + Server.getMemory().conections.get(key).getValue() + " ";
                     replicationDegree--;
                 }
@@ -216,6 +226,7 @@ public class ServerListenerThread extends Thread {
         if(replicationDegree > 0)
             System.out.println("Warning: There aren't enough peers to meet replication demand");
 
+            
         return sb;
     }
 
