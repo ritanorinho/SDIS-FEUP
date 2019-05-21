@@ -132,6 +132,7 @@ public class AnalizeMessageThread implements Runnable {
 		int delay = random.nextInt(401);
 
 		if (Peer.getId() != senderId) {
+			System.out.println("ESTA A LANCAR A THREAD");
 			Peer.getExecutor().schedule(
 				new GetchunkThread(messageArray,socket), delay, TimeUnit.MILLISECONDS);
 		}
@@ -157,8 +158,9 @@ public class AnalizeMessageThread implements Runnable {
 
 	private void chunk() {
 		System.out.println("CHUNK THREAD");
-			if (Chunk.processChunk(this.messageBytes, Peer.getId()))
-				Peer.getMemory().chunksToRestore.put(chunkId, messageArray[3]);
+		System.out.println("TODO: RESTORE FILE");
+			// if (Chunk.processChunk(this.messageBytes, Peer.getId()))
+			// 	Peer.getMemory().chunksToRestore.put(chunkId, messageArray[3]);
 
 	}
 
