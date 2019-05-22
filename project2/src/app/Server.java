@@ -69,7 +69,7 @@ public class Server {
 		}
 		catch (Exception e) 
 		{
-			
+			e.printStackTrace();
 		}
 
 		SSLServerSocketFactory ssf = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();

@@ -11,7 +11,7 @@ import java.util.Arrays;
 public class FileInfo {
 	
 	
-	private static int MAX_SIZE = 64000;
+	private static int MAX_SIZE = 16000;
 	private String fileId;
 	private ArrayList<Chunk> chunks = new ArrayList<Chunk>();
 	private File file ;
@@ -45,7 +45,7 @@ public class FileInfo {
 				
 			}
 			
-			if (this.file.length() %64000==0) {
+			if (this.file.length() %16000==0) {
 				 chunkId = this.fileId+"-"+chunksCount;
 				this.chunks.add(new Chunk(this.fileId,chunksCount,null,0,chunkId,this.replicationDegree));
 			}
