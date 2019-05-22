@@ -24,6 +24,7 @@ import javax.net.ssl.SSLSocketFactory;
 import threads.sockets.*;
 import threads.listeners.PeerThread;
 import utils.*;
+import java.util.Random;
 
 public class Peer implements RMIInterface {
 
@@ -291,6 +292,7 @@ public class Peer implements RMIInterface {
 		ArrayList<Chunk> chunks = new ArrayList<Chunk>();
 		FileInfo fileInfo = null;
 		String header = null;
+		SSLSocket peerSocket = null;
 
 		if (!memory.hasFileByID(fileId)) {
 			System.out.println(filename + "has never backed up!");
@@ -340,7 +342,6 @@ public class Peer implements RMIInterface {
 							String[] split = splitMessage[j].split("-");
 							int port = Integer.parseInt(split[1]);
 							InetAddress address = InetAddress.getByName(split[0]);
-							SSLSocket peerSocket = null;
 							peerSocket = createSocket(address, port);
 							System.out.println(port + " " + address);
 							peerSocket.startHandshake();
@@ -350,7 +351,14 @@ public class Peer implements RMIInterface {
 						}
 					}
 				}
-			} catch (Exception e) {
+
+				Random random = new Random();
+				int delay = 2000;
+				this.getExecutor().schedule(
+					new RestoreFileThread(filename, fileInfo.getFileId(), chunks.size(),1.0), delay, TimeUnit.MILLISECONDS);
+			}
+
+			catch (Exception e) {
 				System.out.println("Restore Failed");
 			}
 		}

@@ -67,6 +67,9 @@ public class AnalizeMessageThread implements Runnable {
 		case "CHUNK":
 			chunk();
 			break;
+		case "RESTOREFILE":
+			restoreFile();
+			break;
 		case "CONFIRMCHUNK":
 			confirmChunk();
 			break;
@@ -125,18 +128,41 @@ public class AnalizeMessageThread implements Runnable {
 	}
 
 	private void getchunk() {
-	System.out.println("GETCHUNK THREAD");
+	System.out.println("RECEIVING GETCHUNK");
 		String[] messageArray = this.message.trim().split("\\s+");
 
 		Random random = new Random();
 		int delay = random.nextInt(401);
 
 		if (Peer.getId() != senderId) {
-			System.out.println("ESTA A LANCAR A THREAD");
 			Peer.getExecutor().schedule(
 				new GetchunkThread(messageArray,socket), delay, TimeUnit.MILLISECONDS);
 		}
 
+	}
+
+	private void chunk() {
+		System.out.println("RECEIVING CHUNK");
+		String[] messageArray = this.message.trim().split("\\s+");
+
+		if (Chunk.processChunk(this.messageBytes, Peer.getId())){
+			Peer.getMemory().chunksToRestore.put(messageArray[2]+ "-" + messageArray[3], messageArray[3]);
+		}
+
+	}
+
+	private void restoreFile(){
+		System.out.println("RESTORE THREAD IS HERE");
+		String[] messageArray = this.message.trim().split("\\s+");
+
+		Random random = new Random();
+		int delay = random.nextInt(401);
+
+		if (Peer.getId() != senderId) {
+			System.out.println("RESTORE THREAD WORKING");
+			Peer.getExecutor().schedule(
+				new RestoreFileThread(messageArray[1], messageArray[2], Integer.parseInt(messageArray[3]),1.0), delay, TimeUnit.MILLISECONDS);
+		}
 	}
 
 	private synchronized void delete() {
@@ -154,14 +180,6 @@ public class AnalizeMessageThread implements Runnable {
 
 		}
 		System.out.println("Deleted chunks of file: " + fileId);
-	}
-
-	private void chunk() {
-		System.out.println("CHUNK THREAD");
-		System.out.println("TODO: RESTORE FILE");
-			// if (Chunk.processChunk(this.messageBytes, Peer.getId()))
-			// 	Peer.getMemory().chunksToRestore.put(chunkId, messageArray[3]);
-
 	}
 
 	private void confirmChunk() {
