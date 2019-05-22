@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
@@ -169,16 +171,20 @@ public class AnalizeMessageThread implements Runnable {
 
 		String fileId = messageArray[2];
 		Peer.getMemory().removeChunks(fileId);
-		String localDirPath = "Peer" + Peer.getId() + "/STORED/" + fileId;
-		File localDir = new File(localDirPath);
-		FileInfo.deleteFolder(localDir);
-		try{
-		String msg = "DELETED "+fileId+" "+Peer.getId();
-		Peer.sendMessageToServer(msg);
-		}
-		catch(Exception e){
 
+		Path folderPath = Paths.get("Peer" + Peer.getId() + "/STORED/" + fileId);
+
+		try {
+			FileInfo.deleteFolder(folderPath);
+		} catch (IOException e1) {
+			e1.printStackTrace();
 		}
+
+		try{
+			String msg = "DELETED "+fileId+" "+Peer.getId();
+			Peer.sendMessageToServer(msg);
+		} catch(Exception e){}
+
 		System.out.println("Deleted chunks of file: " + fileId);
 	}
 

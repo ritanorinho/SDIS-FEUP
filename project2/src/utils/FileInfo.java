@@ -5,6 +5,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.LinkOption;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -66,20 +71,16 @@ public class FileInfo {
 		this.fileId = Utils.createFileId(file);	
 	}
 
-	public static void deleteFolder(File folder) {
-		File[] files = folder.listFiles();
-		if(files!=null) { 
-			for(File f: files) {
-				if(f.isDirectory()) {
-					deleteFolder(f);
-				} else {
-					f.delete();
-				}
+	public static void deleteFolder(Path folderPath) throws IOException {
+		
+		if (Files.isDirectory(folderPath, LinkOption.NOFOLLOW_LINKS)) {
+			try (DirectoryStream<Path> entries = Files.newDirectoryStream(folderPath)) {
+			  for (Path entry : entries) {
+				deleteFolder(entry);
+			  }
 			}
-		}
-		
-		folder.delete();
-		
+		  }
+		Files.delete(folderPath);
 	}
 	
 	public ArrayList<Chunk> getChunks(){ return this.chunks; }
