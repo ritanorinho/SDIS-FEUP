@@ -84,6 +84,13 @@ public class TestApp {
         }
         stub.state();
         break;
+      case "RECLAIM":
+      if (args.length != 3) {
+        System.out.println("ERROR: TestApp parameters must be: <peer_ap> RECLAIM <space> ");
+        return;
+      }
+      stub.reclaim(Integer.parseInt(args[2]));
+
 		}
 	}
 }

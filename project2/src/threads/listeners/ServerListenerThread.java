@@ -47,18 +47,17 @@ public class ServerListenerThread extends Thread {
 
                 if (analize.equals("end"))
                     continue;
-            
+
                 if (!analize.equals("")) {
                     pwrite.println(analize);
                     pwrite.flush();
                 }
             }
 
-        } catch (IOException e) 
-        {
+        } catch (IOException e) {
             System.out.println("Disconect detected");
 
-            if(peerId != null)
+            if (peerId != null)
                 Server.getMemory().conections.remove(peerId);
         }
     }
@@ -75,16 +74,13 @@ public class ServerListenerThread extends Thread {
 
             peerID = splitMessage[1];
 
-            try
-            {
+            try {
                 Server.getMemory().addConnection(peerID, InetAddress.getByName(peerAddr), port);
-            }
-            catch(UnknownHostException e)
-            {
+            } catch (UnknownHostException e) {
                 System.out.println("Couldn't find peer");
                 break;
             }
-            
+
             connected = true;
 
             System.out.println("New peer connected: Peer" + peerID + "@" + peerAddr + ":" + port);
@@ -107,7 +103,7 @@ public class ServerListenerThread extends Thread {
 
         case "RESTORE":
             if (!connected)
-            return "";
+                return "";
 
             peer = splitMessage[2];
             file = splitMessage[1];
@@ -115,21 +111,20 @@ public class ServerListenerThread extends Thread {
 
         case "CHUNK":
             if (!connected)
-            return "";
+                return "";
 
             peer = splitMessage[2];
             file = splitMessage[1];
 
             // System.out.println("Peer id " + peer);
             System.out.println("BEGIN SPLIT MESSAGE IN SERVER LISTENER");
-            for (int i = 0; i < splitMessage.length; i++){
+            for (int i = 0; i < splitMessage.length; i++) {
                 System.out.println(splitMessage[i]);
             }
             System.out.println("END SPLIT MESSAGE IN SERVER LISTENER");
             // deleteChunks(peer, file);
             // Server.getMemory().updateMemory();
             break;
-
 
         case "STORED":
 
@@ -140,8 +135,10 @@ public class ServerListenerThread extends Thread {
             String chunkID = splitMessage[2];
             String key = chunkID + "-" + peer;
             System.out.println("Peer id " + peer);
+            if (!Server.getMemory().serverSavedChunks.contains(key)){
             Server.getMemory().serverSavedChunks.add(key);
             Server.getMemory().updateMemory();
+            }
             break;
 
         case "DELETE":
@@ -152,7 +149,7 @@ public class ServerListenerThread extends Thread {
             peer = splitMessage[2];
             file = splitMessage[1];
             return getPeersWithFile(file);
-            
+
         case "DELETED":
 
             if (!connected)
@@ -163,12 +160,38 @@ public class ServerListenerThread extends Thread {
             deleteChunks(peer, file);
             Server.getMemory().updateMemory();
             break;
-      
-            default:
-                System.out.println("Unknown message: " + splitMessage[0].trim());
+        case "REMOVED":
+            peer = splitMessage[1];
+            file = splitMessage[2];
+            int chunkNo = Integer.parseInt(splitMessage[3]);
+            int repDegree = Integer.parseInt(splitMessage[4]);
+            return receiveRemoved(peer, file, chunkNo, repDegree);
+
+        default:
+            System.out.println("Unknown message: " + splitMessage[0].trim());
         }
 
         return "";
+    }
+
+    private String receiveRemoved(String peer, String file, int chunkNo, int repDegree) {
+
+        String chunkId = file + "-" + chunkNo;
+        String key = chunkId + "-" + peer;
+        Server.getMemory().serverSavedChunks.remove(key);
+        int count = 0;
+        System.out.println(chunkId+"\n");
+        for (int i = 0; i < Server.getMemory().serverSavedChunks.size(); i++) {
+            String[] splitMessage = Server.getMemory().serverSavedChunks.get(i).split("-");
+            String chunkId1 = splitMessage[0] + "-" + splitMessage[1];
+            System.out.println(chunkId1);
+            if (chunkId.equals(chunkId1)) {
+                count++;
+            }
+        }
+        int delta = repDegree - count;
+        System.out.println(delta + " " + count + " " + repDegree);
+         return ""+delta;
     }
 
     private void deleteChunks(String peer, String file) {
@@ -183,7 +206,7 @@ public class ServerListenerThread extends Thread {
         }
     }
 
-    private void restoreFile(String peer, String file){
+    private void restoreFile(String peer, String file) {
         System.out.println("FILE IS RESTORED HERE");
     }
 
@@ -212,13 +235,12 @@ public class ServerListenerThread extends Thread {
         return conectionPorts;
     }
 
-    public static String getAvailablePeers(String peer, int replicationDegree, String chunckId) {
+    public static String getAvailablePeers(String peer, int replicationDegree, String chunkId) {
         String sb = "";
 
         for (String key : Server.getMemory().conections.keySet()) {
             if (replicationDegree > 0) {
-                if (!key.equals(peer) && !Server.getMemory().serverSavedChunks.contains(chunckId + "-" + peer)) 
-                { 
+                if (!key.equals(peer) && !Server.getMemory().serverSavedChunks.contains(chunkId + "-" + peer)) {
                     sb += Server.getMemory().conections.get(key).getKey().getHostAddress() + "-"
                             + Server.getMemory().conections.get(key).getValue() + " ";
                     replicationDegree--;
@@ -228,40 +250,32 @@ public class ServerListenerThread extends Thread {
 
         }
 
-        if(replicationDegree > 0)
+        if (replicationDegree > 0)
             System.out.println("Warning: There aren't enough peers to meet replication demand");
 
-            
         return sb;
     }
 
-	public void handleSync(String syncMsg)
-	{
+    public void handleSync(String syncMsg) {
         String[] msgParams = syncMsg.split(" ");
 
-        if(msgParams.length != 3)
+        if (msgParams.length != 3)
             return;
 
         long lUpdt = Long.parseLong(msgParams[2]);
 
-        try 
-        {
+        try {
             ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
 
-            if(lUpdt < Server.getMemory().getLastUpdated())
-            {
+            if (lUpdt < Server.getMemory().getLastUpdated()) {
                 oos.writeObject(Server.getMemory());
                 System.out.println("Sent new memory");
-            }
-            else
+            } else
                 oos.writeObject(null);
-        } 
-        catch (IOException e) 
-        {
+        } catch (IOException e) {
             System.out.println("Couldn't send data to server");
             return;
         }
-        
-        
-	}
+
+    }
 }

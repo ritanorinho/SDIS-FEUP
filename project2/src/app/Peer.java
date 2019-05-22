@@ -12,6 +12,9 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -58,7 +61,8 @@ public class Peer implements RMIInterface {
 
 				OutputStream ostream = serverSocket.getOutputStream();
 				PrintWriter pwrite = new PrintWriter(ostream, true);
-				String peerID = "Peer " + Peer.getId() + " " + Peer.peerAddress.getHostAddress() + " " +  Peer.peerPort + "\n", receivedMessage;
+				String peerID = "Peer " + Peer.getId() + " " + this.peerAddress.getHostAddress() + " " + peerPort
+						+ "\n", receivedMessage;
 				InputStream istream = serverSocket.getInputStream();
 				BufferedReader receiveRead = new BufferedReader(new InputStreamReader(istream));
 
@@ -252,18 +256,17 @@ public class Peer implements RMIInterface {
 
 				System.out.println(backupMessage);
 
-				if ((receiveMessage = receiveRead.readLine()) != null) {	
+				if ((receiveMessage = receiveRead.readLine()) != null) {
 					String[] splitMessage = receiveMessage.split(" ");
 
 					System.out.println("Peers to connect " + receiveMessage);
 
-					if(receiveMessage.equals(" "))
-					{
+					if (receiveMessage.equals(" ")) {
 						System.out.println("No peers available");
 						continue;
 					}
 
-					if(splitMessage.length < repDegree)
+					if (splitMessage.length < repDegree)
 						System.out.println("Warning: There aren't enough peers to meet replication demand");
 
 					for (int j = 0; j < splitMessage.length; j++) {
@@ -316,9 +319,9 @@ public class Peer implements RMIInterface {
 
 					byte[] message = header.getBytes();
 					OutputStream ostream = null;
-					try{
-					 ostream = getServerSocket().getOutputStream();
-					}catch(IOException e){
+					try {
+						ostream = getServerSocket().getOutputStream();
+					} catch (IOException e) {
 						changeServer();
 						restore(filename);
 						return;
@@ -380,9 +383,9 @@ public class Peer implements RMIInterface {
 			String deleteMessage = "DELETE " + fileInfo.getFileId() + " Peer" + serverID + "\n";
 
 			OutputStream ostream = null;
-			try{
-			ostream = getServerSocket().getOutputStream();
-			}catch(IOException e){
+			try {
+				ostream = getServerSocket().getOutputStream();
+			} catch (IOException e) {
 				changeServer();
 				delete(filename);
 				return;
@@ -423,11 +426,88 @@ public class Peer implements RMIInterface {
 					executor.execute(new SenderSocket(peerSocket, message));
 					executor.execute(new ReceiverSocket(peerSocket, message, executor));
 				}
+
 			}
 
 		} catch (Exception e) {
 
 		}
+	}
+
+	@Override
+	public void reclaim(int space) throws RemoteException {
+
+		int currentSpaceToFree = memory.getUsedMemory() - space; // space to free
+
+		if (currentSpaceToFree > 0) {
+
+			List<String> sortedChunks = sortChunksToDelete();
+
+			for (Iterator<String> iterator = sortedChunks.iterator(); iterator.hasNext();) {
+				String[] splitString = iterator.next().trim().split(":");
+				String key = splitString[0];
+
+				if (currentSpaceToFree > 0) {
+					currentSpaceToFree -= memory.savedChunks.get(key).getChunkSize();
+					String header = "REMOVED " + serverID + " " + memory.savedChunks.get(key).getFileId() + " "
+							+ memory.savedChunks.get(key).getChunkNo() + " "
+							+ memory.savedChunks.get(key).getReplicationDegree() + "\r\n\r\n";
+					System.out.print(header);
+
+					OutputStream ostream = null;
+					try {
+						ostream = getServerSocket().getOutputStream();
+					} catch (IOException e) {
+						changeServer();
+						reclaim(space);
+						return;
+					}
+					PrintWriter pwrite = new PrintWriter(ostream, true);
+
+					InputStream istream = null;
+					try {
+						istream = getServerSocket().getInputStream();
+						BufferedReader receiveRead = new BufferedReader(new InputStreamReader(istream));
+						pwrite.println(header);
+						pwrite.flush();
+						String receiveMessage;
+						if ((receiveMessage = receiveRead.readLine()) != null) {
+							int repDegree = Integer.parseInt(receiveMessage);
+							String chunkId = memory.savedChunks.get(key).getFileId() + "-"
+							+ memory.savedChunks.get(key).getChunkNo();
+							if (repDegree > 0) {
+								String backupMessage = "BACKUP " + chunkId + " " + serverID + " " + repDegree + "\n";
+								//pwrite.println(backupMessage);
+								//pwrite.flush();
+							}
+
+							System.out.println("Peers to connect " + receiveMessage);
+						}
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+
+					String[] splitKey = key.trim().split("-");
+					String filePath = "Peer" + Peer.getId() + "/" + "STORED" + "/" + splitKey[0] + "/" + splitKey[1]
+							+ "-" + memory.savedChunks.get(key).getReplicationDegree();
+					File fileToDelete = new File(filePath);
+					fileToDelete.delete();
+					iterator.remove();
+					Peer.getMemory().savedChunks.remove(key);
+				}
+
+			}
+		}
+
+		Peer.getMemory().capacity = space;
+		Peer.getMemory().memoryUsed = Peer.getMemory().getUsedMemory();
+		System.out.println("Memory used: " + Peer.getMemory().memoryUsed + " of " + Peer.getMemory().capacity);
+
+	}
+
+	public void sendChunk(String chunkId){
+
 	}
 
 	@Override
@@ -490,7 +570,7 @@ public class Peer implements RMIInterface {
 
 	public static void changeServer() {
 		System.out.print("Changing server from " + serverIndex);
-		
+
 		if (serverIndex == servers.size() - 1)
 			serverIndex = 0;
 		else
@@ -498,6 +578,24 @@ public class Peer implements RMIInterface {
 
 		System.out.println(" to " + serverIndex);
 
+	}
+
+	public static List<String> sortChunksToDelete() {
+		ArrayList<String> chunksToSort = new ArrayList<String>();
+		for (String key : memory.savedChunks.keySet()) {
+			int diff = memory.savedOcurrences.get(key) - memory.savedChunks.get(key).getReplicationDegree();
+			String chunk = key + ":" + diff;
+			chunksToSort.add(chunk);
+		}
+		chunksToSort.sort((o1, o2) -> {
+			int chunk1 = Integer.valueOf(o1.split(":")[1]);
+			int chunk2 = Integer.valueOf(o2.split(":")[1]);
+			return Integer.compare(chunk1, chunk2);
+		});
+
+		List<String> returnList = chunksToSort;
+		Collections.reverse(returnList);
+		return returnList;
 	}
 
 }
