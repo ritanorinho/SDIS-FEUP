@@ -7,7 +7,6 @@ import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.io.Serializable;
 import java.net.InetAddress;
-import java.net.Socket;
 import java.text.SimpleDateFormat;
 
 public class Memory implements Serializable
@@ -16,7 +15,6 @@ public class Memory implements Serializable
 	public ConcurrentHashMap<String,Chunk> savedChunks= new ConcurrentHashMap<String,Chunk>(); //key: fileId-ChunkNo String: fileId
 	public HashMap<String,String> chunksToRestore= new HashMap<String,String>();
 	public ConcurrentHashMap<String,Integer> savedOcurrences = new ConcurrentHashMap<String,Integer>();
-	public HashMap<String, Pair<Integer, InetAddress>> confirmedChunks = new HashMap<String, Pair<Integer, InetAddress>>(); //chunkid < port, address>
 	public transient ConcurrentHashMap<String, Pair<InetAddress, Integer>> conections = new ConcurrentHashMap<String, Pair<InetAddress, Integer>>();
 	public ArrayList<String> serverSavedChunks = new ArrayList<String>();  //chunkId-peerId
 	public HashMap<String,ArrayList<String>> backupInitiatorPeer = new HashMap<String,ArrayList<String>>(); //key: peerId value: array with backup files 

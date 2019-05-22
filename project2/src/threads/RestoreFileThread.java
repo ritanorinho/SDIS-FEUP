@@ -22,18 +22,15 @@ public class RestoreFileThread implements Runnable {
 	private Socket socket;
 	private double workingVersion;
 
-	public RestoreFileThread(String filename, String fileId, int numberChunks, double workingVersion) {
+	public RestoreFileThread(String filename, String fileId, int numberChunks) {
 		this.filename = filename;
 		this.fileId = fileId;
 		this.numberChunks = numberChunks;
-		this.workingVersion = workingVersion;
 	}
 
 	@Override
 	public void run() {
 
-		if (workingVersion == 1.1)
-			getChunks();
 		System.out.println("GOT ALL CHUNKS");
 
 		if (createFile())
@@ -42,46 +39,6 @@ public class RestoreFileThread implements Runnable {
 			System.out.println("Errror occured: Local file not created");
 	}
 
-	public void getChunks() {
-		String chunkId;
-
-		for (int i = 1; i <= numberChunks; i++) {
-			chunkId = fileId + "-" + i;
-			int port = Peer.getMemory().confirmedChunks.get(chunkId).getKey();
-			InetAddress InetAddress = Peer.getMemory().confirmedChunks.get(chunkId).getValue();
-			System.out.println(
-					"for chunk no" + i + " connect to port" + ": " + Peer.getMemory().confirmedChunks.get(chunkId).getKey());
-
-			try {
-				// new socket
-				socket = new Socket(InetAddress, port);
-
-				// input stream
-				InputStream inputStream = socket.getInputStream();
-				DataInputStream dataInputStream = new DataInputStream(inputStream);
-
-				// read messages
-				int length = dataInputStream.readInt();
-				byte[] data = new byte[length];
-				dataInputStream.read(data, 0, length);
-
-				// mark chunk to be restored
-				markChunk(chunkId, data);
-
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-
-		}
-	}
-
-	public void markChunk(String chunkId, byte[] received) {
-		String[] receivedStrings = Utils.byteArrayToStringArray(received);
-
-		if (Chunk.processChunk(received, Peer.getId()))
-			Peer.getMemory().chunksToRestore.put(chunkId, receivedStrings[3]);
-
-	}
 
 	public boolean createFile() {
 

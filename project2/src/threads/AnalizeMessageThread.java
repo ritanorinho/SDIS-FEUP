@@ -60,12 +60,6 @@ public class AnalizeMessageThread implements Runnable {
 		case "RESTOREFILE":
 			restoreFile();
 			break;
-		case "CONFIRMCHUNK":
-			confirmChunk();
-			break;
-		case "ALIVE":
-			alive();
-			break;
 		default:
 		}
 	}
@@ -151,7 +145,7 @@ public class AnalizeMessageThread implements Runnable {
 		if (Peer.getId() != senderId) {
 			System.out.println("RESTORE THREAD WORKING");
 			Peer.getExecutor().schedule(
-				new RestoreFileThread(messageArray[1], messageArray[2], Integer.parseInt(messageArray[3]),1.0), delay, TimeUnit.MILLISECONDS);
+				new RestoreFileThread(messageArray[1], messageArray[2], Integer.parseInt(messageArray[3])), delay, TimeUnit.MILLISECONDS);
 		}
 	}
 
@@ -174,16 +168,6 @@ public class AnalizeMessageThread implements Runnable {
 		} catch(Exception e){}
 
 		System.out.println("Deleted chunks of file: " + fileId);
-	}
-
-	private void confirmChunk() {
-
-		String chunkid = messageArray[3].trim();
-		int port = Integer.parseInt(this.messageArray[4].trim());
-		if (senderId != Peer.getId() && !Peer.getMemory().confirmedChunks.containsKey(chunkid)) {
-			Peer.getMemory().confirmedChunks.put(chunkid, new Pair<Integer, InetAddress>(port, this.InetAddress));
-		}
-
 	}
 
 }

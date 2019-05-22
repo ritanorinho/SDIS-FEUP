@@ -347,7 +347,7 @@ public class Peer implements RMIInterface {
 				Random random = new Random();
 				int delay = 2000;
 				Peer.getExecutor().schedule(
-					new RestoreFileThread(filename, fileInfo.getFileId(), chunks.size(),1.0), delay, TimeUnit.MILLISECONDS);
+					new RestoreFileThread(filename, fileInfo.getFileId(), chunks.size()), delay, TimeUnit.MILLISECONDS);
 			}
 
 			catch (Exception e) {
