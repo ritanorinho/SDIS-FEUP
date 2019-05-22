@@ -31,28 +31,10 @@ public class GetchunkThread implements Runnable {
 		this.socket = socket;
 	}
 
-	public String sendConfirmChunk(int port){
-		String storedMessage = null;
-
-		/*
-		try {
-			storedMessage = "CONFIRMCHUNK "+this.senderVersion+" "+Peer.getId()+" "+ chunkId +" "+port+"\r\n\r\n";
-			Peer.getMCListener().message(storedMessage.getBytes("US-ASCII"));
-			System.out.println(storedMessage);
-
-
-		} catch (IOException e) {
-			e.printStackTrace();
-		} */
-
-		return storedMessage;
-	}
-
-
 	public byte[] chunkMessage(String restoredChunk){
 
 		byte[] chunkData = Peer.getMemory().savedChunks.get(chunkId).getData();
-	
+
 		restoredChunk = "CHUNK " + messageArray[1] + " " + messageArray[2] + " " + messageArray[3] + " "
 				 + " " + "\r\n\r\n";
 		byte[] data = restoredChunk.getBytes();
@@ -62,16 +44,6 @@ public class GetchunkThread implements Runnable {
 		System.arraycopy(chunkData, 0, message, data.length, chunkData.length);
 
 		return message;
-	}
-
-	public void sendChunkMulticast(byte[] message){
-		String channel ="mdr";
-		Random random = new Random();
-		int delay = random.nextInt(401);
-		int senderId = Integer.parseInt(messageArray[2]);	
-		if (Peer.getId() != senderId ){	
-			
-		}
 	}
 
 	public void sendChunk(byte[] message){
@@ -94,7 +66,7 @@ public class GetchunkThread implements Runnable {
             port = random.nextInt(1000)+8000;
         }
 		while(isPortInUse(port));
-		
+
 		return port;
     }
 
@@ -108,23 +80,21 @@ public class GetchunkThread implements Runnable {
 
         return result;
 	}
-	
+
 	@Override
 	public void run() {
 		if (!Peer.getMemory().savedChunks.containsKey(chunkId)) {
 			System.out.println("This peer doesn't contain this chunk: "+chunkId);
 			return;
 		}
-		
+
 		String msg = "";
 		byte[] message = chunkMessage(msg);
 		if(this.senderVersion==1){
 			sendChunk(message);
-			// sendChunkMulticast(message);
-			System.out.println(msg);		
+			System.out.println(msg);
 		}else{
 			int port = this.attributePort();
-			this.sendConfirmChunk(port);
 			(new TCPRestoreServer(port, chunkId, message)).start();
 		}
 	}
