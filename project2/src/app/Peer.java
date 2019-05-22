@@ -14,6 +14,7 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import javax.net.ssl.SSLServerSocket;
@@ -22,6 +23,7 @@ import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 
 import threads.sockets.*;
+import threads.RestoreFileThread;
 import threads.listeners.PeerThread;
 import utils.*;
 import java.util.Random;
@@ -354,7 +356,7 @@ public class Peer implements RMIInterface {
 
 				Random random = new Random();
 				int delay = 2000;
-				this.getExecutor().schedule(
+				Peer.getExecutor().schedule(
 					new RestoreFileThread(filename, fileInfo.getFileId(), chunks.size(),1.0), delay, TimeUnit.MILLISECONDS);
 			}
 
