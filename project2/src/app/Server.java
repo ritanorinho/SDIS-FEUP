@@ -35,18 +35,19 @@ public class Server {
 	private static ConcurrentHashMap<String, Pair<Integer, SSLSocket>> servers;
 
 	public static void main(String args[]) {
-		if (args.length < 2) {
+		
+		if (args.length < 1) {
 			System.out.println(
-					"Wrong number of arguments\nUsage: Server (<server_addr> <server_port>)+");
+					"Wrong number of arguments\nUsage: Server server_port (<server_addr> <server_port>)*");
 			return;
-		}
+		} 
 
 		servers = new ConcurrentHashMap<String, Pair<Integer, SSLSocket>>();
 
 		try 
 		{
-			tcp_addr = InetAddress.getByName(args[0]);
-			tcp_port = Integer.parseInt(args[1]);
+			tcp_addr = InetAddress.getLocalHost();
+			tcp_port = Integer.parseInt(args[0]);
 		}
 		catch (Exception e) 
 		{
@@ -65,7 +66,7 @@ public class Server {
 		SSLServerSocketFactory ssf = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
 
 		try {
-			serverSocket = (SSLServerSocket) ssf.createServerSocket(tcp_port, 30, tcp_addr);
+			serverSocket = (SSLServerSocket) ssf.createServerSocket(tcp_port);
 
 			serverSocket.setNeedClientAuth(true);
 			serverSocket.setEnabledCipherSuites(new String[] { "SSL_RSA_WITH_RC4_128_MD5", "SSL_RSA_WITH_RC4_128_SHA",
@@ -82,7 +83,7 @@ public class Server {
 
 		try
 		{
-			for(int i = 2; i < args.length - 1; i += 2)
+			for(int i = 1; i < args.length - 1; i += 2)
 			{
 				InetAddress sa = InetAddress.getByName(args[i]);
 				int sp = Integer.parseInt(args[i + 1]);
