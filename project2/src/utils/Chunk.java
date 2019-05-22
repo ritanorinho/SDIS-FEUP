@@ -3,6 +3,14 @@ package utils;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.AsynchronousFileChannel;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 public class Chunk {
 
@@ -54,20 +62,26 @@ public class Chunk {
 
 		String[] messageArray = Utils.byteArrayToStringArray(messageBytes);
 
-		String chunkPath = "Peer" + peerID + "/" + "CHUNK" + "/" + messageArray[2] + "/" + messageArray[3];
-		File chunkFile = new File(chunkPath);
-		try {
-			if (!chunkFile.exists()) {
-				chunkFile.getParentFile().mkdirs();
-				chunkFile.createNewFile();
-			}
-			byte[] content = Utils.getBody(messageBytes);
-			FileOutputStream fos;
-			fos = new FileOutputStream(chunkFile);
-			fos.write(content);
-			fos.close();
+		Path chunkPath = Paths.get("Peer" + peerID + "/" + "CHUNK" + "/" + messageArray[2] + "/" + messageArray[3]);
 
-		} catch (IOException e) {
+		try {
+			if (!Files.exists(chunkPath)) {
+				Files.createDirectories(chunkPath);
+				Files.createFile(chunkPath);
+			}
+
+			byte[] content = Utils.getBody(messageBytes);
+
+			AsynchronousFileChannel fileChannel = AsynchronousFileChannel.open(chunkPath, StandardOpenOption.WRITE);
+
+			ByteBuffer buffer = ByteBuffer.allocate(FileInfo.MAX_SIZE);
+			buffer.put(content);
+			buffer.flip();
+
+			fileChannel.write(buffer, 0).get();
+			fileChannel.close();
+
+		} catch (IOException | InterruptedException | ExecutionException e) {
 			e.printStackTrace();
 			return false;
 		}

@@ -1,9 +1,5 @@
 package utils;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousFileChannel;
@@ -20,7 +16,7 @@ import java.util.concurrent.Future;
 
 public class FileInfo {
 
-	private static int MAX_SIZE = 16000;
+	static int MAX_SIZE = 16000;
 	private String fileId;
 	private ArrayList<Chunk> chunks = new ArrayList<Chunk>();
 	private Path filePath;
@@ -62,6 +58,8 @@ public class FileInfo {
 			} catch (InterruptedException | ExecutionException e) {
 				e.printStackTrace();
 			}
+
+			fileChannel.close();
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
