@@ -35,13 +35,25 @@ public class Server {
 	private static ConcurrentHashMap<String, Pair<Integer, SSLSocket>> servers;
 
 	public static void main(String args[]) {
-		if (args.length != 6) {
+		if (args.length < 2) {
 			System.out.println(
-					"Wrong number of arguments\nUsage: Server <server1_addr> <server1_port> <server2_addr> <server2_port> <server3_addr> <server3_port>");
+					"Wrong number of arguments\nUsage: Server (<server_addr> <server_port>)+");
 			return;
 		}
 
 		servers = new ConcurrentHashMap<String, Pair<Integer, SSLSocket>>();
+
+		try 
+		{
+			tcp_addr = InetAddress.getByName(args[0]);
+			tcp_port = Integer.parseInt(args[1]);
+		}
+		catch (Exception e) 
+		{
+			System.out.println("Couldn't find this server's host");
+			e.printStackTrace();
+			return;
+		}
 
 		if (!checkStores()) {
 			System.out.println("Couldn't create local key/trust stores");
@@ -49,28 +61,6 @@ public class Server {
 		}
 
 		loadMemory();
-
-		try 
-		{
-			tcp_addr = InetAddress.getByName(args[0]);
-			tcp_port = Integer.parseInt(args[1]);
-
-			SSLSocket s1 = Peer.createSocket(InetAddress.getByName(args[2]), Integer.parseInt(args[3])),
-				s2 = Peer.createSocket(InetAddress.getByName(args[4]), Integer.parseInt(args[5]));
-
-			servers.put(args[2], new Pair<Integer, SSLSocket>(Integer.parseInt(args[3]), s1));
-			servers.put(args[4], new Pair<Integer, SSLSocket>(Integer.parseInt(args[5]), s2));
-
-			if (s1 != null)
-				s1.startHandshake();
-
-			if (s2 != null)
-				s2.startHandshake();
-		}
-		catch (Exception e) 
-		{
-			
-		}
 
 		SSLServerSocketFactory ssf = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
 
@@ -89,6 +79,31 @@ public class Server {
 			System.out.println("Server - Failed to create SSLServerSocket");
 			return;
 		}
+
+		try
+		{
+			for(int i = 2; i < args.length - 1; i += 2)
+			{
+				InetAddress sa = InetAddress.getByName(args[i]);
+				int sp = Integer.parseInt(args[i + 1]);
+				SSLSocket socket = Peer.createSocket(sa, sp);
+
+				if(socket == null)
+				{
+					System.out.println("Couldn't connect to server, skipping...");
+					continue;
+				}
+
+				socket.startHandshake();
+				servers.put(args[i], new Pair<Integer, SSLSocket>(Integer.parseInt(args[i + 1]), socket));
+			}
+		}
+		catch(Exception e)
+		{
+			System.out.println("Fatal error, aborting...");
+			e.printStackTrace();
+		}
+		
 
 		SaveMemoryTask saveMemory = new SaveMemoryTask();
 		executor = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(250);
@@ -250,7 +265,8 @@ public class Server {
 				Memory newMemory = (Memory) ois.readObject();
 
 				if (newMemory == null) {
-					System.out.println("Up-to-date: " + memory.getLastUpdated());
+					System.out.print("Up-to-date: ");
+					memory.printLastUpdatedDate();
 					continue;
 				}
 
