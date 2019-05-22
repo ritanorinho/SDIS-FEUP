@@ -16,7 +16,7 @@ import java.util.concurrent.Future;
 
 public class FileInfo {
 
-	static int MAX_SIZE = 16000;
+	public static int MAX_SIZE = 16000;
 	private String fileId;
 	private ArrayList<Chunk> chunks = new ArrayList<Chunk>();
 	private Path filePath;

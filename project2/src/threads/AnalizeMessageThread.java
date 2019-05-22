@@ -1,6 +1,5 @@
 package threads;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
@@ -12,7 +11,6 @@ import java.util.concurrent.TimeUnit;
 import app.Peer;
 import utils.Chunk;
 import utils.FileInfo;
-import utils.Pair;
 import utils.Utils;
 
 public class AnalizeMessageThread implements Runnable {
@@ -129,7 +127,9 @@ public class AnalizeMessageThread implements Runnable {
 		System.out.println("RECEIVING CHUNK");
 		String[] messageArray = this.message.trim().split("\\s+");
 
-		if (Chunk.processChunk(this.messageBytes, Peer.getId())){
+		String path = "Peer" + Peer.getId() + "/" + "CHUNK" + "/" + messageArray[2] + "/" + messageArray[3];
+
+		if (Chunk.createChunkFile(path, Utils.getBody(messageBytes))){
 			Peer.getMemory().chunksToRestore.put(messageArray[2]+ "-" + messageArray[3], messageArray[3]);
 		}
 

@@ -3,11 +3,7 @@ package threads;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.Random;
-import java.util.concurrent.TimeUnit;
 import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.OutputStream;
 import java.net.Socket;
 
