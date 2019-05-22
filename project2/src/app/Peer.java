@@ -14,8 +14,10 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 
 import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
@@ -24,6 +26,7 @@ import javax.net.ssl.SSLSocketFactory;
 
 import threads.sockets.*;
 import threads.listeners.PeerThread;
+import threads.*;
 import utils.*;
 
 public class Peer implements RMIInterface {
@@ -45,7 +48,7 @@ public class Peer implements RMIInterface {
 
 		servers = new ArrayList<SSLSocket>();
 
-		if (!Utils.checkStores("peer", ""))
+		if (!checkStores())
 			return;
 
 		servers.add(createSocket(sa1, sp1));
@@ -147,6 +150,31 @@ public class Peer implements RMIInterface {
 		}
 
 		validateArgs(args);
+	}
+
+	public static boolean checkStores() {
+		File store = new File("keystore.jks");
+
+		if (!store.exists()) {
+			System.out.println("Couldn't find peer key store");
+
+			return false;
+		}
+
+		store = new File("truststore.jks");
+
+		if (!store.exists()) {
+			System.out.println("Couldn't find peer trust store");
+
+			return false;
+		}
+
+		System.setProperty("javax.net.ssl.keyStore", "keystore.jks");
+		System.setProperty("javax.net.ssl.keyStorePassword", "password");
+		System.setProperty("javax.net.ssl.trustStore", "truststore.jks");
+		System.setProperty("javax.net.ssl.trustStorePassword", "password");
+
+		return true;
 	}
 
 	private static void validateArgs(String[] args)

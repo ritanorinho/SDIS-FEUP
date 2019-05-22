@@ -1,10 +1,13 @@
 package app;
 
 import java.net.InetAddress;
+import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import utils.*;
+import utils.Memory;
+import utils.Pair;
 
 import java.util.Iterator;
 import java.util.Map.Entry;
@@ -40,7 +43,7 @@ public class Server {
 
 		servers = new ConcurrentHashMap<String, Pair<Integer, SSLSocket>>();
 
-		if (!Utils.checkStores("server", "Server/")) {
+		if (!checkStores()) {
 			System.out.println("Couldn't create local key/trust stores");
 			return;
 		}
@@ -151,7 +154,33 @@ public class Server {
 		return true;
 	}
 
-	
+	public static boolean checkStores() 
+	{
+		File store = new File("Server/keystore.jks");
+
+		if(!store.exists())
+		{
+			System.out.println("Couldn't find server key store");
+
+			return false;
+		}
+
+		store = new File("Server/truststore.jks");
+
+		if(!store.exists())
+		{
+			System.out.println("Couldn't find server trust store");
+
+			return false;
+		}
+
+		System.setProperty("javax.net.ssl.keyStore", "Server/keystore.jks");
+		System.setProperty("javax.net.ssl.keyStorePassword", "password");
+		System.setProperty("javax.net.ssl.trustStore", "Server/truststore.jks");
+		System.setProperty("javax.net.ssl.trustStorePassword", "password");
+
+		return true;
+	}
 
 	public static SSLServerSocket getServerSocket() {
 		return serverSocket;
