@@ -31,9 +31,9 @@ public class ReceiverSocket extends Thread {
         try {
 
             InputStream inputStream = this.socket.getInputStream();
-			DataInputStream dataInputStream = new DataInputStream(inputStream);
-		    int size = dataInputStream.readInt();
-			this.message = new byte[size];
+            DataInputStream dataInputStream = new DataInputStream(inputStream);
+            int size = dataInputStream.readInt();
+            this.message = new byte[size];
             dataInputStream.read(this.message);
             executor.execute(new AnalizeMessageThread(message, socket));
 	               

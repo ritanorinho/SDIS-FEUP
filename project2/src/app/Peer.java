@@ -263,6 +263,18 @@ public class Peer implements RMIInterface {
 		} catch (Exception e) {
 			System.out.println("Backup Failed");
 		}
+		OutputStream ostream = null;
+		try {
+			ostream = getServerSocket().getOutputStream();
+		} catch (IOException e) {
+			changeServer();
+			backup(filename, repDegree);
+			return;
+		}
+		PrintWriter pwrite = new PrintWriter(ostream, true);
+		pwrite.println("SAVED "+serverID+" "+fileInfo.getFileId());
+
+
 	}
 
 	@Override
@@ -448,8 +460,6 @@ public class Peer implements RMIInterface {
 						String receiveMessage;
 						if ((receiveMessage = receiveRead.readLine()) != null) {
 							int repDegree = Integer.parseInt(receiveMessage);
-							String chunkId = memory.savedChunks.get(key).getFileId() + "-"
-							+ memory.savedChunks.get(key).getChunkNo();
 							if (repDegree > 0) {
 								backupChunk(memory.savedChunks.get(key).getFileId(),memory.savedChunks.get(key).getChunkNo(),repDegree,memory.savedChunks.get(key).getData());	
 							}
@@ -533,8 +543,8 @@ public class Peer implements RMIInterface {
 						peerSocket.startHandshake();
 						executor.execute(new SenderSocket(peerSocket, message));
 						executor.execute(new ReceiverSocket(peerSocket, message, executor));
-
 					}
+					System.out.println("outside");
 				}
 		} catch (Exception e) {
 			System.out.println("Backup Failed");

@@ -10,6 +10,7 @@ import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -165,12 +166,29 @@ public class ServerListenerThread extends Thread {
             int chunkNo = Integer.parseInt(splitMessage[3]);
             int repDegree = Integer.parseInt(splitMessage[4]);
             return receiveRemoved(peer, file, chunkNo, repDegree);
-
+        case "SAVED":
+            peer = splitMessage[1];
+            file = splitMessage[2];
+            setInitiatorPeer(peer,file);
+            
+        break;
         default:
             System.out.println("Unknown message: " + splitMessage[0].trim());
         }
 
         return "";
+    }
+    public void setInitiatorPeer(String peer, String file){
+
+        if(Server.getMemory().backupInitiatorPeer.containsKey(peer)){
+            if (!Server.getMemory().backupInitiatorPeer.get(peer).contains(file)){
+                Server.getMemory().backupInitiatorPeer.get(peer).add(file);
+            }
+        } else {
+            Server.getMemory().backupInitiatorPeer.put(peer,new ArrayList<String>());
+            Server.getMemory().backupInitiatorPeer.get(peer).add(file);
+        }
+
     }
 
     private String receiveRemoved(String peer, String file, int chunkNo, int repDegree) {
@@ -233,13 +251,22 @@ public class ServerListenerThread extends Thread {
 
         return conectionPorts;
     }
+    public static boolean isInitiator(String peer, String file){
+        if (Server.getMemory().backupInitiatorPeer.containsKey(peer)){
+            if (Server.getMemory().backupInitiatorPeer.get(peer).contains(file))
+            return true;
+        }
+        return false;
+    }
 
     public static String getAvailablePeers(String peer, int replicationDegree, String chunkId) {
         String sb = "";
+        String file = chunkId.split("-")[0];
 
         for (String key : Server.getMemory().conections.keySet()) {
+            
             if (replicationDegree > 0) {
-                if (!key.equals(peer) && !Server.getMemory().serverSavedChunks.contains(chunkId + "-" + peer)) {
+                if (!isInitiator(key,file) && !key.equals(peer) && !Server.getMemory().serverSavedChunks.contains(chunkId + "-" + peer)) {
                     sb += Server.getMemory().conections.get(key).getKey().getHostAddress() + "-"
                             + Server.getMemory().conections.get(key).getValue() + " ";
                     replicationDegree--;
@@ -251,7 +278,6 @@ public class ServerListenerThread extends Thread {
 
         if (replicationDegree > 0)
             System.out.println("Warning: There aren't enough peers to meet replication demand");
-
         return sb;
     }
 

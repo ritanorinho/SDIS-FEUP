@@ -35,19 +35,7 @@ public class AnalizeMessageThread implements Runnable {
 			this.chunkId = this.messageArray[2];
 	}
 
-	public AnalizeMessageThread(byte[] message, InetAddress adress) {
-
-		this.messageBytes = message;
-		this.message = new String(this.messageBytes, 0, this.messageBytes.length);
-		this.messageArray = Utils.byteArrayToStringArray(message);
-
-		if (messageArray.length > 4)
-			this.chunkId = this.messageArray[2] + "-" + this.messageArray[3];
-		else if (messageArray.length > 3)
-			this.chunkId = this.messageArray[2];
-		this.InetAddress = adress;
-
-	}
+	
 
 	@Override
 	public void run() {

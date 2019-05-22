@@ -19,6 +19,7 @@ public class Memory implements Serializable
 	public HashMap<String, Pair<Integer, InetAddress>> confirmedChunks = new HashMap<String, Pair<Integer, InetAddress>>(); //chunkid < port, address>
 	public transient ConcurrentHashMap<String, Pair<InetAddress, Integer>> conections = new ConcurrentHashMap<String, Pair<InetAddress, Integer>>();
 	public ArrayList<String> serverSavedChunks = new ArrayList<String>();  //chunkId-peerId
+	public HashMap<String,ArrayList<String>> backupInitiatorPeer = new HashMap<String,ArrayList<String>>(); //key: peerId value: array with backup files 
 	public ArrayList<String> deletedFiles= new ArrayList<String>();
 	public int capacity = 999999999;
 	public int memoryUsed = 0;
