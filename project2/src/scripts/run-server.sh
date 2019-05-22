@@ -1,1 +1,1 @@
-java app/Server 127.0.0.1 $1 127.0.0.1 $2  127.0.0.1 $3
+java app/Server  $1 

@@ -451,12 +451,8 @@ public class Peer implements RMIInterface {
 							String chunkId = memory.savedChunks.get(key).getFileId() + "-"
 							+ memory.savedChunks.get(key).getChunkNo();
 							if (repDegree > 0) {
-								String backupMessage = "BACKUP " + chunkId + " " + serverID + " " + repDegree + "\n";
-								//pwrite.println(backupMessage);
-								//pwrite.flush();
+								backupChunk(memory.savedChunks.get(key).getFileId(),memory.savedChunks.get(key).getChunkNo(),repDegree,memory.savedChunks.get(key).getData());	
 							}
-
-							System.out.println("Peers to connect " + receiveMessage);
 						}
 					} catch (Exception e) {
 						// TODO Auto-generated catch block
@@ -481,9 +477,79 @@ public class Peer implements RMIInterface {
 
 	}
 
-	public void sendChunk(String chunkId){
+	public void backupChunk(String fileId,int chunkNo,int repDegree,byte[] body){
+		try{
+		byte[] header = Utils.getHeader("PUTCHUNK", serverID, fileId, chunkNo,
+						repDegree);
+
+				String chunkId = fileId +"-"+chunkNo;
+
+				
+				byte[] message = new byte[header.length + body.length];
+
+				System.arraycopy(header, 0, message, 0, header.length);
+				System.arraycopy(body, 0, message, header.length, body.length);
+
+				OutputStream ostream = null;
+				try {
+					ostream = getServerSocket().getOutputStream();
+				} catch (IOException e) {
+					changeServer();
+					backupChunk(fileId,chunkNo,repDegree,body);
+					return;
+				}
+				PrintWriter pwrite = new PrintWriter(ostream, true);
+
+				InputStream istream = getServerSocket().getInputStream();
+				BufferedReader receiveRead = new BufferedReader(new InputStreamReader(istream));
+				String backupMessage = "BACKUP " + chunkId + " " + serverID + " " + repDegree + "\n", receiveMessage;
+
+				pwrite.println(backupMessage);
+				pwrite.flush();
+
+				System.out.println(backupMessage);
+
+				if ((receiveMessage = receiveRead.readLine()) != null) {
+					String[] splitMessage = receiveMessage.split(" ");
+
+					System.out.println("Peers to connect " + receiveMessage);
+
+					if (receiveMessage.equals(" ")) {
+						System.out.println("No peers available");
+						return;
+					}
+
+					if (splitMessage.length < repDegree)
+						System.out.println("Warning: There aren't enough peers to meet replication demand");
+
+					for (int j = 0; j < splitMessage.length; j++) {
+						String[] split = splitMessage[j].split("-");
+						int port = Integer.parseInt(split[1]);
+						InetAddress address = InetAddress.getByName(split[0]);
+						SSLSocket peerSocket = null;
+						peerSocket = createSocket(address, port);
+
+						System.out.println(port + " " + address);
+						peerSocket.startHandshake();
+						executor.execute(new SenderSocket(peerSocket, message));
+						executor.execute(new ReceiverSocket(peerSocket, message, executor));
+
+					}
+				}
+		} catch (Exception e) {
+			System.out.println("Backup Failed");
+		}
 
 	}
+
+
+
+
+
+
+
+
+
 
 	@Override
 	public void state() throws RemoteException {
