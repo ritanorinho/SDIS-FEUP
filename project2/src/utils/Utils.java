@@ -4,6 +4,9 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.util.Arrays;
 
@@ -11,11 +14,35 @@ import app.Peer;
 
 public class Utils {
 	
+	
 	public static String createFileId(File file) {
 		
 		String fileId = file.getName()+"."+String.valueOf(file.lastModified());
 		return sha256(fileId);
 
+	}
+
+	public static boolean checkStores(String id, String prePath) {
+
+		Path truststorePath = Paths.get(prePath + "truststore.jks");
+		Path keystorePath = Paths.get(prePath + "keystore.jks");
+
+		if(!Files.exists(keystorePath)){
+			System.out.println("Couldn't find " + id + " key store");
+			return false;
+		}
+
+		if(!Files.exists(truststorePath)){
+			System.out.println("Couldn't find " + id + " trust store");
+			return false;
+		}
+
+		System.setProperty("javax.net.ssl.keyStore", "keystore.jks");
+		System.setProperty("javax.net.ssl.keyStorePassword", "password");
+		System.setProperty("javax.net.ssl.trustStore", "truststore.jks");
+		System.setProperty("javax.net.ssl.trustStorePassword", "password");
+
+		return true;
 	}
 	
 	public static final String sha256(String str) {
