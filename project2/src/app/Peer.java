@@ -139,35 +139,10 @@ public class Peer implements RMIInterface {
 			return;
 		}
 
-		if (!checkStores())
+		if (!Utils.checkStores("peer", ""))
 			return;
 
 		validateArgs(args);
-	}
-
-	public static boolean checkStores() {
-		File store = new File("keystore.jks");
-
-		if (!store.exists()) {
-			System.out.println("Couldn't find peer key store");
-
-			return false;
-		}
-
-		store = new File("truststore.jks");
-
-		if (!store.exists()) {
-			System.out.println("Couldn't find peer trust store");
-
-			return false;
-		}
-
-		System.setProperty("javax.net.ssl.keyStore", "keystore.jks");
-		System.setProperty("javax.net.ssl.keyStorePassword", "password");
-		System.setProperty("javax.net.ssl.trustStore", "truststore.jks");
-		System.setProperty("javax.net.ssl.trustStorePassword", "password");
-
-		return true;
 	}
 
 	private static void validateArgs(String[] args)

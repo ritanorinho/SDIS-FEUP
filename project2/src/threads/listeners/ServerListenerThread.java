@@ -116,7 +116,6 @@ public class ServerListenerThread extends Thread {
             peer = splitMessage[2];
             file = splitMessage[1];
 
-            // System.out.println("Peer id " + peer);
             System.out.println("BEGIN SPLIT MESSAGE IN SERVER LISTENER");
             for (int i = 0; i < splitMessage.length; i++) {
                 System.out.println(splitMessage[i]);
@@ -134,10 +133,10 @@ public class ServerListenerThread extends Thread {
             peer = splitMessage[1];
             String chunkID = splitMessage[2];
             String key = chunkID + "-" + peer;
-            System.out.println("Peer id " + peer);
+
             if (!Server.getMemory().serverSavedChunks.contains(key)){
-            Server.getMemory().serverSavedChunks.add(key);
-            Server.getMemory().updateMemory();
+                Server.getMemory().serverSavedChunks.add(key);
+                Server.getMemory().updateMemory();
             }
             break;
 
