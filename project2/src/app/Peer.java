@@ -17,11 +17,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
-
 import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.SSLSocket;
@@ -29,46 +26,33 @@ import javax.net.ssl.SSLSocketFactory;
 
 import threads.sockets.*;
 import threads.listeners.PeerThread;
-import threads.*;
 import utils.*;
+import java.util.Random;
 
 public class Peer implements RMIInterface {
 
 	private static int serverID;
 	private static String accessPoint;
-	private int peerPort;
-	private InetAddress peerAddress;
+	private static int peerPort;
+	private static InetAddress peerAddress;
 	private static ScheduledThreadPoolExecutor executor;
 	private static SSLServerSocket peerServerSocket;
 	private static Memory memory = new Memory();
 	private static ArrayList<SSLSocket> servers;
 	private static int serverIndex = 0;
 
-	public Peer(int sp1, InetAddress sa1, int sp2, InetAddress sa2, int sp3, InetAddress sa3, int peerPort,
-			InetAddress peerAddress) throws IOException {
-		this.peerPort = peerPort;
-		this.peerAddress = InetAddress.getLocalHost();
-
-		servers = new ArrayList<SSLSocket>();
-
-		if (!checkStores())
-			return;
-
-		servers.add(createSocket(sa1, sp1));
-		servers.add(createSocket(sa2, sp2));
-		servers.add(createSocket(sa3, sp3));
-
-		if (servers.get(0) == null && servers.get(1) == null && servers.get(2) == null) {
-			System.out.println("Couldn't connect to servers");
-			return;
-		}
-
+	public Peer() throws IOException 
+	{
 		executor = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(250);
 
-		for (SSLSocket serverSocket : servers) {
+		for (SSLSocket serverSocket : servers) 
+		{
 			if (serverSocket == null)
-				continue;
-
+			{
+				System.out.println("Couldn't connect to server...\nAborting");
+				return;
+			}
+				
 			serverSocket.startHandshake();
 
 			try {
@@ -127,7 +111,7 @@ public class Peer implements RMIInterface {
 		SSLServerSocket sSocket;
 
 		try {
-			sSocket = (SSLServerSocket) ssf.createServerSocket(this.peerPort, 30, this.peerAddress);
+			sSocket = (SSLServerSocket) ssf.createServerSocket(Peer.peerPort, 30, Peer.peerAddress);
 		} catch (IOException e) {
 			e.printStackTrace();
 			System.out.println("Failed to create server socket");
@@ -145,13 +129,16 @@ public class Peer implements RMIInterface {
 
 	public static void main(String args[]) throws InterruptedException, IOException, AlreadyBoundException {
 		System.setProperty("java.net.preferIPv4Stack", "true");
-		System.setProperty("java.rmi.server.hostname", "localhost"); // TODO Change ?
+		System.setProperty("java.rmi.server.hostname", "localhost");
 
-		if (args.length != 10) {
+		if (args.length < 5) {
 			System.out.println(
-					"Usage: Peer <PEER_ID> <SERVICE_ACCESS_POINT> <PEER_IP> <PEER_PORT> <SERVER1_IP> <SERVER1_PORT> <SERVER2_IP> <SERVER2_PORT> <SERVER3_IP> <SERVER3_PORT>");
+					"Usage: Peer <PEER_ID> <SERVICE_ACCESS_POINT> <PEER_PORT> (<SERVER_IP> <SERVER_PORT>)+");
 			return;
 		}
+
+		if (!checkStores())
+			return;
 
 		validateArgs(args);
 	}
@@ -183,15 +170,24 @@ public class Peer implements RMIInterface {
 
 	private static void validateArgs(String[] args)
 			throws RemoteException, InterruptedException, IOException, AlreadyBoundException {
-		serverID = Integer.parseInt(args[0]);
-		accessPoint = args[1];
+		Peer.servers = new ArrayList<SSLSocket>();
+		
+		Peer.peerAddress = InetAddress.getLocalHost();
+		Peer.serverID = Integer.parseInt(args[0]);
+		Peer.accessPoint = args[1];
+		Peer.peerPort = Integer.parseInt(args[2]);
+		
+		
+		for(int i = 3; i < args.length - 1; i += 2)
+		{
+			InetAddress sa = InetAddress.getByName(args[i]);
+			int sp = Integer.parseInt(args[i + 1]);
 
-		InetAddress sa1 = InetAddress.getByName(args[4]), sa2 = InetAddress.getByName(args[6]),
-				sa3 = InetAddress.getByName(args[8]), peerAddress = InetAddress.getByName(args[2]);
-		int sp1 = Integer.parseInt(args[5]), sp2 = Integer.parseInt(args[7]), sp3 = Integer.parseInt(args[9]),
-				peerPort = Integer.parseInt(args[3]);
+			Peer.servers.add(createSocket(sa, sp));
+		}
 
-		Peer peer = new Peer(sp1, sa1, sp2, sa2, sp3, sa3, peerPort, peerAddress);
+		Peer peer = new Peer();
+		
 		RMIInterface stub = (RMIInterface) UnicastRemoteObject.exportObject(peer, 0);
 
 		Registry registry = null;
@@ -299,6 +295,7 @@ public class Peer implements RMIInterface {
 		ArrayList<Chunk> chunks = new ArrayList<Chunk>();
 		FileInfo fileInfo = null;
 		String header = null;
+		SSLSocket peerSocket = null;
 
 		if (!memory.hasFileByID(fileId)) {
 			System.out.println(filename + "has never backed up!");
@@ -348,7 +345,6 @@ public class Peer implements RMIInterface {
 							String[] split = splitMessage[j].split("-");
 							int port = Integer.parseInt(split[1]);
 							InetAddress address = InetAddress.getByName(split[0]);
-							SSLSocket peerSocket = null;
 							peerSocket = createSocket(address, port);
 							System.out.println(port + " " + address);
 							peerSocket.startHandshake();
@@ -358,7 +354,14 @@ public class Peer implements RMIInterface {
 						}
 					}
 				}
-			} catch (Exception e) {
+
+				Random random = new Random();
+				int delay = 2000;
+				this.getExecutor().schedule(
+					new RestoreFileThread(filename, fileInfo.getFileId(), chunks.size(),1.0), delay, TimeUnit.MILLISECONDS);
+			}
+
+			catch (Exception e) {
 				System.out.println("Restore Failed");
 			}
 		}

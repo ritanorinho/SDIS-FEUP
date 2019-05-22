@@ -54,7 +54,7 @@ public class Chunk {
 
 		String[] messageArray = Utils.byteArrayToStringArray(messageBytes);
 
-		String chunkPath = "Peer" + peerID + "/" + "CHUNK" + "/" + messageArray[3] + "/" + messageArray[4];
+		String chunkPath = "Peer" + peerID + "/" + "CHUNK" + "/" + messageArray[2] + "/" + messageArray[3];
 		File chunkFile = new File(chunkPath);
 		try {
 			if (!chunkFile.exists()) {

@@ -1,12 +1,14 @@
 package utils;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.text.SimpleDateFormat;
 
 public class Memory implements Serializable
 {
@@ -110,9 +112,15 @@ public class Memory implements Serializable
 			System.out.println(key);
 	}
 
-
 	public long getLastUpdated()
 	{
 		return lastUpdated;
+	}
+
+	public void printLastUpdatedDate()
+	{
+		SimpleDateFormat sdf = new SimpleDateFormat("MMM dd,yyyy HH:mm");    
+		Date resultdate = new Date(lastUpdated);
+		System.out.println(sdf.format(resultdate));
 	}
 }
