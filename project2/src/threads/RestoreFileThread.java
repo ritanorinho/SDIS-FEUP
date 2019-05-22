@@ -34,6 +34,7 @@ public class RestoreFileThread implements Runnable {
 
 		if (workingVersion == 1.1)
 			getChunks();
+		System.out.println("GOT ALL CHUNKS");
 
 		if (createFile())
 			System.out.println("Local file restored");
@@ -89,7 +90,6 @@ public class RestoreFileThread implements Runnable {
 		HashMap<String, String> requiredChunks = Peer.getMemory().chunksToRestore;
 		ArrayList<String> sortedChunks = new ArrayList<String>();
 		for (String key : requiredChunks.keySet()) {
-			if (requiredChunks.get(key).equals(this.fileId))
 				sortedChunks.add(key);
 		}
 
@@ -98,11 +98,15 @@ public class RestoreFileThread implements Runnable {
 			int chunk2 = Integer.valueOf(o2.split("-")[1]);
 			return Integer.compare(chunk1, chunk2);
 		});
+
+		System.out.println("SORTED ALL CHUNKS");
 		
 		if (sortedChunks.size() < this.numberChunks) {
+			System.out.println(requiredChunks.size());
 			System.out.println("Could not find all the chunks needed to restore the requested file\n");
 			return false;
 		} else {
+			System.out.println("ALL CHUNKS");
 			try {
 				if (!finalFile.exists()) {
 					finalFile.getParentFile().mkdirs();
@@ -116,6 +120,7 @@ public class RestoreFileThread implements Runnable {
 					String[] splitChunkName = key.trim().split("-");
 					String chunkPath = "Peer" + Peer.getId() + "/" + "CHUNK" + "/" + splitChunkName[0] + "/"
 							+ splitChunkName[1];
+					System.out.println(chunkPath);
 					File chunkFile = new File(chunkPath);
 					if (!chunkFile.exists()) {
 						return false;
