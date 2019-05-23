@@ -99,7 +99,7 @@ public class AnalizeMessageThread implements Runnable {
 	}
 
 	private void getchunk() {
-	System.out.println("RECEIVING GETCHUNK");
+
 		String[] messageArray = this.message.trim().split("\\s+");
 
 		Random random = new Random();
@@ -113,7 +113,7 @@ public class AnalizeMessageThread implements Runnable {
 	}
 
 	private void chunk() {
-		System.out.println("RECEIVING CHUNK");
+
 		String[] messageArray = this.message.trim().split("\\s+");
 
 		String path = "Peer" + Peer.getId() + "/" + "CHUNK" + "/" + messageArray[2] + "/" + messageArray[3];
@@ -125,7 +125,7 @@ public class AnalizeMessageThread implements Runnable {
 	}
 
 	private void restoreFile(){
-		System.out.println("RESTORE THREAD IS HERE");
+
 		String[] messageArray = this.message.trim().split("\\s+");
 
 		Random random = new Random();
