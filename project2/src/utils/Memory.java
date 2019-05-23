@@ -3,6 +3,8 @@ package utils;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.io.Serializable;
@@ -32,6 +34,16 @@ public class Memory implements Serializable
 		}
 
 		return false;
+	}
+
+	public void removeFile(String fileId){
+		List<FileInfo> listFiles = files;
+		for (Iterator<FileInfo> iterator = listFiles.iterator(); iterator.hasNext();){
+			FileInfo fileInfo = iterator.next();
+			if (fileInfo.getFileId().equals(fileId)){
+				iterator.remove();
+			}
+		}
 	}
 
 	public boolean hasFileByName(String filename) {

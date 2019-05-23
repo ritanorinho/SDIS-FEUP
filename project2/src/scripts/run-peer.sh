@@ -1,1 +1,1 @@
-java app/Peer $1 Peer$1 $2 127.0.0.1 6789
+java app/Peer $1 Peer$1 $2 $3 $4 $5 $6

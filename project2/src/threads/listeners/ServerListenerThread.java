@@ -53,6 +53,7 @@ public class ServerListenerThread extends Thread {
                     pwrite.println(analize);
                     pwrite.flush();
                 }
+               
             }
 
         } catch (IOException e) {
@@ -148,6 +149,7 @@ public class ServerListenerThread extends Thread {
 
             peer = splitMessage[2];
             file = splitMessage[1];
+            //Server.getMemory().backupInitiatorPeer.get(peer).remove(file);
             return getPeersWithFile(file);
 
         case "DELETED":
@@ -236,7 +238,6 @@ public class ServerListenerThread extends Thread {
         for (int i = 0; i < Server.getMemory().serverSavedChunks.size(); i++) {
             String[] split = Server.getMemory().serverSavedChunks.get(i).split("-");
             String fileId = split[0].trim();
-            System.out.println(Server.getMemory().serverSavedChunks.get(i));
             if (fileId.equals(file)) {
                 String peer = split[2].trim();
                 if (!peerPorts.containsKey(peer)) {

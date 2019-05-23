@@ -191,6 +191,11 @@ public class Peer implements RMIInterface {
 		FileInfo fileInfo = new FileInfo(file, filename, repDegree);
 		ArrayList<Chunk> chunks = fileInfo.getChunks();
 		String chunkId;
+		if (memory.hasFileByID(fileInfo.getFileId())){
+			System.out.println("This file has already backed up!");
+			return;
+		}
+			memory.files.add(fileInfo);
 
 		try {
 			for (int i = 0; i < chunks.size(); i++) {
@@ -198,9 +203,6 @@ public class Peer implements RMIInterface {
 						repDegree);
 
 				chunkId = fileInfo.getFileId() + "-" + chunks.get(i).getChunkNo();
-
-				if (!memory.hasFileByID(fileInfo.getFileId()))
-					memory.files.add(fileInfo);
 
 				if (!memory.savedOcurrences.containsKey(chunkId)) {
 					memory.savedOcurrences.put(chunkId, 0);
@@ -287,7 +289,7 @@ public class Peer implements RMIInterface {
 		SSLSocket peerSocket = null;
 
 		if (!memory.hasFileByID(fileId)) {
-			System.out.println(filename + "has never backed up!");
+			System.out.println(filename + " has never backed up!");
 			return;
 		} else {
 			try {
@@ -325,6 +327,7 @@ public class Peer implements RMIInterface {
 					System.out.println(restoreMessage);
 
 					if ((receiveMessage = receiveRead.readLine()) != null) {
+
 						System.out.println("RECEIVED FROM SERVER: " + receiveMessage);
 						String[] splitMessage = receiveMessage.split(" ");
 
@@ -361,9 +364,11 @@ public class Peer implements RMIInterface {
 		File file = new File(filename);
 		FileInfo fileInfo = new FileInfo(file, filename, 0);
 
-		if (!memory.hasFileByName(file.getName())) {
+		if (!memory.hasFileByID(fileInfo.getFileId())) {
 			System.out.println(filename + " has never backed up!");
 			return;
+		} else {
+			memory.removeFile(fileInfo.getFileId());
 		}
 
 		try {
@@ -393,6 +398,10 @@ public class Peer implements RMIInterface {
 			System.arraycopy(data, 0, message, 0, data.length);
 
 			if ((receiveMessage = receiveRead.readLine()) != null) {
+				if (receiveMessage.equals("impossible")){
+					System.out.println("impossible");
+					return;
+				}
 				String[] splitMessage = receiveMessage.split(" ");
 
 				System.out.println("Peers to connect " + receiveMessage);
