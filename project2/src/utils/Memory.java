@@ -20,6 +20,7 @@ public class Memory implements Serializable
 	public transient ConcurrentHashMap<String, Pair<InetAddress, Integer>> conections = new ConcurrentHashMap<String, Pair<InetAddress, Integer>>();
 	public ArrayList<String> serverSavedChunks = new ArrayList<String>();  //chunkId-peerId
 	public HashMap<String,ArrayList<String>> backupInitiatorPeer = new HashMap<String,ArrayList<String>>(); //key: peerId value: array with backup files 
+	public HashMap<String,Integer> peersMemory = new HashMap<String,Integer>();
 	public ArrayList<String> deletedFiles= new ArrayList<String>();
 	public int capacity = 999999999;
 	public int memoryUsed = 0;
@@ -44,6 +45,17 @@ public class Memory implements Serializable
 				iterator.remove();
 			}
 		}
+	}
+
+	public void removeServerFile(String peerId, String fileId){
+		List<String> listFiles = backupInitiatorPeer.get(peerId);
+		for (Iterator<String> iterator = listFiles.iterator(); iterator.hasNext();){
+			String filename = iterator.next();
+			if (filename.equals(fileId)){
+				iterator.remove();
+			}
+		}
+
 	}
 
 	public boolean hasFileByName(String filename) {
@@ -133,5 +145,12 @@ public class Memory implements Serializable
 		SimpleDateFormat sdf = new SimpleDateFormat("MMM dd,yyyy HH:mm");    
 		Date resultdate = new Date(lastUpdated);
 		System.out.println(sdf.format(resultdate));
+	}
+
+	public void updatePeerMemory(String peer, int memory) {
+		if (peersMemory.containsKey(peer)){
+			peersMemory.remove(peer);
+		}
+		peersMemory.put(peer,memory);
 	}
 }

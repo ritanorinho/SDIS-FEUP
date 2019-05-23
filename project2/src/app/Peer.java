@@ -63,8 +63,8 @@ public class Peer implements RMIInterface {
 
 				OutputStream ostream = serverSocket.getOutputStream();
 				PrintWriter pwrite = new PrintWriter(ostream, true);
-				String peerID = "Peer " + Peer.getId() + " " + this.peerAddress.getHostAddress() + " " + peerPort
-						+ "\n", receivedMessage;
+				String peerID = "Peer " + Peer.getId() + " " + peerAddress.getHostAddress() + " " + peerPort
+						+ " "+memory.availableCapacity +"\n", receivedMessage;
 				InputStream istream = serverSocket.getInputStream();
 				BufferedReader receiveRead = new BufferedReader(new InputStreamReader(istream));
 
@@ -228,7 +228,7 @@ public class Peer implements RMIInterface {
 
 				InputStream istream = getServerSocket().getInputStream();
 				BufferedReader receiveRead = new BufferedReader(new InputStreamReader(istream));
-				String backupMessage = "BACKUP " + chunkId + " " + serverID + " " + repDegree + "\n", receiveMessage;
+				String backupMessage = "BACKUP " + chunkId + " " + serverID + " " + repDegree + " "+chunks.get(i).getChunkSize()+"\n", receiveMessage;
 
 				pwrite.println(backupMessage);
 				pwrite.flush();
@@ -364,6 +364,9 @@ public class Peer implements RMIInterface {
 	@Override
 	public void delete(String filename) throws RemoteException {
 
+		File file = new File(filename);	
+		FileInfo fileInfo = new FileInfo(filename, 0);
+		
 		if (!memory.hasFileByID(fileInfo.getFileId())) {
 			System.out.println(filename + " has never backed up!");
 			return;
@@ -447,7 +450,7 @@ public class Peer implements RMIInterface {
 					currentSpaceToFree -= memory.savedChunks.get(key).getChunkSize();
 					String header = "REMOVED " + serverID + " " + memory.savedChunks.get(key).getFileId() + " "
 							+ memory.savedChunks.get(key).getChunkNo() + " "
-							+ memory.savedChunks.get(key).getReplicationDegree() + "\r\n\r\n";
+							+ memory.savedChunks.get(key).getReplicationDegree() + " "+space+ "\r\n\r\n";
 					System.out.print(header);
 
 					OutputStream ostream = null;
@@ -521,7 +524,7 @@ public class Peer implements RMIInterface {
 
 				InputStream istream = getServerSocket().getInputStream();
 				BufferedReader receiveRead = new BufferedReader(new InputStreamReader(istream));
-				String backupMessage = "BACKUP " + chunkId + " " + serverID + " " + repDegree + "\n", receiveMessage;
+				String backupMessage = "BACKUP " + chunkId + " " + serverID + " " + repDegree + " "+body.length+"\n", receiveMessage;
 
 				pwrite.println(backupMessage);
 				pwrite.flush();
@@ -553,7 +556,6 @@ public class Peer implements RMIInterface {
 						executor.execute(new SenderSocket(peerSocket, message));
 						executor.execute(new ReceiverSocket(peerSocket, message, executor));
 					}
-					System.out.println("outside");
 				}
 		} catch (Exception e) {
 			System.out.println("Backup Failed");

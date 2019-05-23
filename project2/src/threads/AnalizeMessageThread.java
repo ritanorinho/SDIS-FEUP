@@ -62,28 +62,17 @@ public class AnalizeMessageThread implements Runnable {
 		}
 	}
 
-	private void alive() {
-		int senderId = Integer.parseInt(this.messageArray[1]);
-		if (senderId != Peer.getId()) {
-			for (int i = 0; i < Peer.getMemory().deletedFiles.size(); i++) {
-				String deletedMessage = "DELETE " + this.messageArray[1] + " " + Peer.getId() + " "
-						+ Peer.getMemory().deletedFiles.get(i) + " " + "\r\n\r\n";
-				System.out.println("\n SENT " + deletedMessage);
-			}
-		}
-
-	}
 
 	private synchronized void stored() {
 		String chunkId = messageArray[2] + "-" + messageArray[3];
 		if (Peer.getMemory().savedOcurrences.containsKey(chunkId) && Peer.getId() != senderId) {
 			Peer.getMemory().savedOcurrences.put(chunkId, Peer.getMemory().savedOcurrences.get(chunkId) + 1);
+			Peer.getMemory().getUsedMemory();
 			Utils.savedOccurrencesFile();
 		}
 
 		try {
-			
-			Peer.sendMessageToServer("STORED " +  messageArray[1] + " "+chunkId);
+			Peer.sendMessageToServer("STORED " +  messageArray[1] + " "+chunkId+" "+messageArray[4]);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -163,7 +152,7 @@ public class AnalizeMessageThread implements Runnable {
 		}
 
 		try{
-			String msg = "DELETED "+fileId+" "+Peer.getId();
+			String msg = "DELETED "+fileId+" "+Peer.getId()+" "+Peer.getMemory().availableCapacity;
 			Peer.sendMessageToServer(msg);
 		} catch(Exception e){}
 

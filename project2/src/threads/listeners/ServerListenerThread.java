@@ -67,17 +67,18 @@ public class ServerListenerThread extends Thread {
     public String analizeMessage(String message) {
 
         String[] splitMessage = message.trim().split("\\s+");
-        String peer, peerID, file;
+        String peer, file;
+        peer = "1";
 
         switch (splitMessage[0].trim()) {
         case "Peer":
             int port = Integer.parseInt(splitMessage[3]);
             String peerAddr = splitMessage[2];
 
-            peerID = splitMessage[1];
+            peer = splitMessage[1];
 
             try {
-                Server.getMemory().addConnection(peerID, InetAddress.getByName(peerAddr), port);
+                Server.getMemory().addConnection(peer, InetAddress.getByName(peerAddr), port);
             } catch (UnknownHostException e) {
                 System.out.println("Couldn't find peer");
                 break;
@@ -85,10 +86,10 @@ public class ServerListenerThread extends Thread {
 
             connected = true;
 
-            System.out.println("New peer connected: Peer" + peerID + "@" + peerAddr + ":" + port);
+            System.out.println("New peer connected: Peer" + peer + "@" + peerAddr + ":" + port);
 
-            this.peerId = peerID;
-
+            this.peerId = peer;
+            Server.getMemory().updatePeerMemory(peer, Integer.parseInt(splitMessage[4]));
             return "connected";
 
         case "SYNC":
@@ -101,7 +102,8 @@ public class ServerListenerThread extends Thread {
                 return "";
 
             peer = splitMessage[2];
-            return getAvailablePeers(peer, Integer.parseInt(splitMessage[3]), splitMessage[1]);
+            int memory = Integer.parseInt(splitMessage[4]);
+            return getAvailablePeers(peer, Integer.parseInt(splitMessage[3]), splitMessage[1],memory);
 
         case "RESTORE":
             if (!connected)
@@ -128,7 +130,6 @@ public class ServerListenerThread extends Thread {
             break;
 
         case "STORED":
-
             if (!connected)
                 return "";
 
@@ -138,6 +139,7 @@ public class ServerListenerThread extends Thread {
 
             if (!Server.getMemory().serverSavedChunks.contains(key)){
                 Server.getMemory().serverSavedChunks.add(key);
+                Server.getMemory().updatePeerMemory(peer,Integer.parseInt(splitMessage[3]));
                 Server.getMemory().updateMemory();
             }
             break;
@@ -149,7 +151,7 @@ public class ServerListenerThread extends Thread {
 
             peer = splitMessage[2];
             file = splitMessage[1];
-            //Server.getMemory().backupInitiatorPeer.get(peer).remove(file);
+            Server.getMemory().removeServerFile(peerId, file);
             return getPeersWithFile(file);
 
         case "DELETED":
@@ -160,6 +162,7 @@ public class ServerListenerThread extends Thread {
             peer = splitMessage[2];
             file = splitMessage[1];
             deleteChunks(peer, file);
+            Server.getMemory().updatePeerMemory(peer, Integer.parseInt(splitMessage[4]));
             Server.getMemory().updateMemory();
             break;
         case "REMOVED":
@@ -167,8 +170,10 @@ public class ServerListenerThread extends Thread {
             file = splitMessage[2];
             int chunkNo = Integer.parseInt(splitMessage[3]);
             int repDegree = Integer.parseInt(splitMessage[4]);
+            Server.getMemory().updatePeerMemory(peer, Integer.parseInt(splitMessage[5]));
             return receiveRemoved(peer, file, chunkNo, repDegree);
-        case "SAVED":
+        
+            case "SAVED":
             peer = splitMessage[1];
             file = splitMessage[2];
             setInitiatorPeer(peer,file);
@@ -177,6 +182,7 @@ public class ServerListenerThread extends Thread {
         default:
             System.out.println("Unknown message: " + splitMessage[0].trim());
         }
+        System.out.println("peer"+peer+Server.getMemory().peersMemory.get(peer));
 
         return "";
     }
@@ -260,14 +266,14 @@ public class ServerListenerThread extends Thread {
         return false;
     }
 
-    public static String getAvailablePeers(String peer, int replicationDegree, String chunkId) {
+    public static String getAvailablePeers(String peer, int replicationDegree, String chunkId, int memory) {
         String sb = "";
         String file = chunkId.split("-")[0];
 
         for (String key : Server.getMemory().conections.keySet()) {
             
             if (replicationDegree > 0) {
-                if (!isInitiator(key,file) && !key.equals(peer) && !Server.getMemory().serverSavedChunks.contains(chunkId + "-" + peer)) {
+                if (!isInitiator(key,file) && !key.equals(peer) && !Server.getMemory().serverSavedChunks.contains(chunkId + "-" + peer) && Server.getMemory().peersMemory.get(key) >= memory) {
                     sb += Server.getMemory().conections.get(key).getKey().getHostAddress() + "-"
                             + Server.getMemory().conections.get(key).getValue() + " ";
                     replicationDegree--;
