@@ -14,11 +14,17 @@ import app.Peer;
 
 public class Utils {
 	
-	public static String createFileId(File file) {
+	public static String createFileId(Path file) {
 		
-		String fileId = file.getName()+"."+String.valueOf(file.lastModified());
-		return sha256(fileId);
+		String fileId;
+		try {
+			fileId = file.getFileName().toString() + "." + String.valueOf(Files.getLastModifiedTime(file));
+			return sha256(fileId);
 
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
 	}
 
 	public static boolean checkStores(String id, String prePath) {

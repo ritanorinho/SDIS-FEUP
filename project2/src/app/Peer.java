@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.InetAddress;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.rmi.AlreadyBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -187,8 +189,8 @@ public class Peer implements RMIInterface {
 	// protocols
 	@Override
 	public void backup(String filename, int repDegree) throws RemoteException, InterruptedException {
-		File file = new File(filename);
-		FileInfo fileInfo = new FileInfo(file, filename, repDegree);
+		
+		FileInfo fileInfo = new FileInfo(filename, repDegree);
 		ArrayList<Chunk> chunks = fileInfo.getChunks();
 		String chunkId;
 		if (memory.hasFileByID(fileInfo.getFileId())){
@@ -281,7 +283,7 @@ public class Peer implements RMIInterface {
 
 	@Override
 	public void restore(String filename) throws RemoteException {
-		File file = new File(filename);
+		Path file = Paths.get(filename);
 		String fileId = Utils.createFileId(file);
 		ArrayList<Chunk> chunks = new ArrayList<Chunk>();
 		FileInfo fileInfo = null;
@@ -361,8 +363,6 @@ public class Peer implements RMIInterface {
 
 	@Override
 	public void delete(String filename) throws RemoteException {
-		File file = new File(filename);
-		FileInfo fileInfo = new FileInfo(file, filename, 0);
 
 		if (!memory.hasFileByID(fileInfo.getFileId())) {
 			System.out.println(filename + " has never backed up!");
