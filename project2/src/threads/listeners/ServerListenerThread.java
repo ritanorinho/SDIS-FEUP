@@ -68,7 +68,7 @@ public class ServerListenerThread extends Thread {
 
         String[] splitMessage = message.trim().split("\\s+");
         String peer, file;
-        peer = "1";
+        peer = "";
 
         switch (splitMessage[0].trim()) {
         case "Peer":
@@ -231,10 +231,6 @@ public class ServerListenerThread extends Thread {
         }
     }
 
-    private void restoreFile(String peer, String file) {
-        System.out.println("FILE IS RESTORED HERE");
-    }
-
     private String getPeersWithFile(String file) {
         StringBuilder sb = new StringBuilder();
         String conectionPorts = "";
@@ -285,6 +281,7 @@ public class ServerListenerThread extends Thread {
 
         if (replicationDegree > 0)
             System.out.println("Warning: There aren't enough peers to meet replication demand");
+        
         return sb;
     }
 

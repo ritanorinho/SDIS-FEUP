@@ -70,8 +70,6 @@ public class AnalizeMessageThread implements Runnable {
 		String chunkId = messageArray[2] + "-" + messageArray[3];
 		if (Peer.getMemory().savedOcurrences.containsKey(chunkId) && Peer.getId() != senderId) {
 			Peer.getMemory().savedOcurrences.put(chunkId, Peer.getMemory().savedOcurrences.get(chunkId) + 1);
-			Peer.getMemory().getUsedMemory();
-			Utils.savedOccurrencesFile();
 		}
 
 		try {
@@ -89,7 +87,6 @@ public class AnalizeMessageThread implements Runnable {
 		if (Peer.getId() != id && !Peer.getMemory().savedChunks.containsKey(chunkId)) {
 			if (!Peer.getMemory().savedOcurrences.containsKey(chunkId)) {
 				Peer.getMemory().savedOcurrences.put(chunkId, 0);
-				Utils.savedOccurrencesFile();
 			}
 			String storedMessage =messageArray[1] + " " + messageArray[2] + " "
 					+ messageArray[3];

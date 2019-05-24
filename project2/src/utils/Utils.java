@@ -95,30 +95,6 @@ public class Utils {
 
 		return byteHeader;
 	}
-	
-	public static void savedOccurrencesFile() {
-		try {
-		String filename = "Peer"+Peer.getId() +"/"+"SAVED"+"/"+"savedOccurrences.txt";
-		File savedOcurrencesfile= new File(filename);
-		if (!savedOcurrencesfile.exists()) {
-			savedOcurrencesfile.getParentFile().mkdirs();
-		savedOcurrencesfile.createNewFile();
-		}
-		FileOutputStream fos = new FileOutputStream(savedOcurrencesfile);
-		for(String key: Peer.getMemory().savedOcurrences.keySet()) {
-		
-				
-				String content = key + " "+Peer.getMemory().savedOcurrences.get(key)+"\n";
-				byte[] byteContent= content.getBytes();
-				fos.write(byteContent);
-			
-		}
-		fos.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		
-	}
 
 
 	public static String[] byteArrayToStringArray(byte[] array){
