@@ -1,6 +1,7 @@
 package utils;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousFileChannel;
 import java.nio.file.DirectoryStream;
@@ -14,24 +15,34 @@ import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
-public class FileInfo {
+public class FileInfo implements Serializable{
 
+	private static final long serialVersionUID = 1L;
 	public static int MAX_SIZE = 16000;
 	public static int MAX_SIZE_FILE = 6400000;
 
 	private String fileId;
 	private ArrayList<Chunk> chunks = new ArrayList<Chunk>();
-	private Path filePath;
+	private transient Path filePath = null;
+	private String stringPath;
 	private int replicationDegree;
 
 	public FileInfo(String filePath, int repDegree) {
+		this.stringPath = filePath;
 		this.filePath = Paths.get(filePath);
 		this.replicationDegree = repDegree;
 		fileId();
 		calculateNumberChunks();
 	}
 
+	public void checkPath(){
+		if(filePath==null)
+			filePath = Paths.get(this.stringPath);
+	}
+
 	public void calculateNumberChunks() {
+
+		checkPath();
 
 		int position = 0;
 		int bytesRead = 0;
@@ -80,6 +91,7 @@ public class FileInfo {
 	}
 	
 	public void fileId() {
+		checkPath();
 		this.fileId = Utils.createFileId(this.filePath);	
 	}
 
@@ -99,9 +111,15 @@ public class FileInfo {
 
 	public String getFileId() { return this.fileId;}
 
-	public String getFilename() { return this.filePath.getFileName().toString(); }
+	public String getFilename() { 
+		checkPath();
+		return this.filePath.getFileName().toString(); 
+	}
 
-	public String getFilePath() { return this.filePath.toString(); }
+	public String getFilePath() { 
+		checkPath();
+		return this.filePath.toString(); 
+	}
 
 	public int getReplicationDegree() { return this.replicationDegree; }
 
@@ -152,5 +170,7 @@ public class FileInfo {
 
 		return buffer.array();
 	}
+
+	
 
 }

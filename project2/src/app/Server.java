@@ -16,9 +16,6 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.security.cert.X509Certificate;
 import threads.listeners.ServerThread;
 import threads.scheduled.SaveMemoryTask;
@@ -58,7 +55,7 @@ public class Server {
 			return;
 		}
 
-		loadMemory();
+		Utils.loadMemory("Server/memory", memory);
 
 		SSLServerSocketFactory ssf = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
 
@@ -103,7 +100,7 @@ public class Server {
 		}
 		
 
-		SaveMemoryTask saveMemory = new SaveMemoryTask();
+		SaveMemoryTask saveMemory = new SaveMemoryTask("Server/memory", "server");
 		executor = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(250);
 		executor.scheduleAtFixedRate(saveMemory, 1, 1, TimeUnit.MINUTES);
 
@@ -114,25 +111,6 @@ public class Server {
 				startSync();
 			}
 		}, 30, 30, TimeUnit.SECONDS);
-	}
-
-	public static void loadMemory() {
-		
-		try {
-			FileInputStream fi =  new FileInputStream(new File("Server/memory"));
-			ObjectInputStream oi = new ObjectInputStream(fi);
-			memory = (Memory) oi.readObject();
-			memory.conections = new ConcurrentHashMap<String, Pair<InetAddress, Integer>>();
-			System.out.println("Loaded memory successfully");
-			oi.close();
-		} catch (FileNotFoundException e) {
-			System.out.println("No memory to load.");
-		}catch (IOException e) {
-			e.printStackTrace();
-		}catch (ClassNotFoundException e) {
-			e.printStackTrace();
-		}
-
 	}
 
 	public static boolean setCertificateHandling()

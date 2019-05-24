@@ -1,8 +1,5 @@
 package threads;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousFileChannel;
@@ -13,7 +10,6 @@ import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 
 import app.Peer;
 import utils.FileInfo;
@@ -67,7 +63,6 @@ public class RestoreFileThread implements Runnable {
 					byte[] content = new byte[(int) Files.size(chunkPath)];
 
 					content	= FileInfo.readFromFile(chunkPath);
-					System.out.println("Chunk no " + splitChunkName[1]);
 
 					AsynchronousFileChannel fileChannel = AsynchronousFileChannel.open(restoredFilePath, StandardOpenOption.WRITE);
 
@@ -78,8 +73,7 @@ public class RestoreFileThread implements Runnable {
 
 					buffer.flip();
 
-					Future<Integer> operation = fileChannel.write(buffer, position);
-					operation.get();
+					fileChannel.write(buffer, position).get();
 					position += size;
 			
 					fileChannel.close();
