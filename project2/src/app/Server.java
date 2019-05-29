@@ -23,7 +23,7 @@ import threads.scheduled.SaveMemoryTask;
 public class Server {
 	private static SSLServerSocket serverSocket;
 	public static ScheduledThreadPoolExecutor executor;
-	private static Memory memory = new Memory();
+	private static Memory memory;
 	private static InetAddress tcp_addr;
 	public static int tcp_port;
 	private static ConcurrentHashMap<String, Pair<Integer, SSLSocket>> servers;
@@ -55,7 +55,7 @@ public class Server {
 			return;
 		}
 
-		Utils.loadMemory("Server/memory", memory);
+		memory = Utils.loadMemory("Server/memory");
 
 		SSLServerSocketFactory ssf = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
 

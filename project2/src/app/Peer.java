@@ -41,13 +41,15 @@ public class Peer implements RMIInterface {
 	private static InetAddress peerAddress;
 	private static ScheduledThreadPoolExecutor executor;
 	private static SSLServerSocket peerServerSocket;
-	private static Memory memory = new Memory();
+	private static Memory memory;
 	private static ArrayList<SSLSocket> servers;
 	private static int serverIndex = 0;
 
 	public Peer() throws IOException 
 	{
 		executor = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(250);
+
+		memory = Utils.loadMemory(accessPoint + "/memory");
 
 		for (SSLSocket serverSocket : servers) 
 		{
@@ -171,8 +173,6 @@ public class Peer implements RMIInterface {
 
 		Registry registry = null;
 
-		Utils.loadMemory(accessPoint + "/memory", memory);
-
 		try {
 			registry = LocateRegistry.getRegistry();
 			registry.rebind(accessPoint, stub);
@@ -189,7 +189,7 @@ public class Peer implements RMIInterface {
 
 		SaveMemoryTask saveMemory = new SaveMemoryTask(accessPoint + "/memory", "peer");
 		executor = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(100);
-		executor.scheduleAtFixedRate(saveMemory, 1, 1, TimeUnit.MINUTES);
+		executor.scheduleAtFixedRate(saveMemory, 1, 10, TimeUnit.SECONDS);
 	}
 
 	// protocols

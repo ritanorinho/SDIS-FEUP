@@ -114,11 +114,13 @@ public class Utils {
 		return body;
 	}
 
-	public static void loadMemory(String path, Memory memory) {
-		
-		try {
+	public static Memory loadMemory(String path) {
+		Memory memory = new Memory();
+
+		try {	
 			FileInputStream fi =  new FileInputStream(new File(path));
 			ObjectInputStream oi = new ObjectInputStream(fi);
+
 			memory = (Memory) oi.readObject();
 			memory.conections = new ConcurrentHashMap<String, Pair<InetAddress, Integer>>();
 			System.out.println("Loaded memory successfully");
@@ -131,6 +133,7 @@ public class Utils {
 		}catch (ClassNotFoundException e) {
 			e.printStackTrace();
 		}
-	}
 
+		return memory;
+	}
 }
