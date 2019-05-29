@@ -143,8 +143,6 @@ public class Peer implements RMIInterface {
 
 		if (!Utils.checkStores("peer", ""))
 			return;
-
-		Utils.loadMemory(accessPoint + "/memory", memory);
 	
 		validateArgs(args);
 	}
@@ -172,6 +170,8 @@ public class Peer implements RMIInterface {
 		RMIInterface stub = (RMIInterface) UnicastRemoteObject.exportObject(peer, 0);
 
 		Registry registry = null;
+
+		Utils.loadMemory(accessPoint + "/memory", memory);
 
 		try {
 			registry = LocateRegistry.getRegistry();
