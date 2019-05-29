@@ -25,15 +25,18 @@ public class SaveMemoryTask implements Runnable {
         FileOutputStream fileOut;
         
 		try {
-            if(Files.notExists(Paths.get(this.path)))
+            if(!Files.exists(Paths.get(this.path))){
+                Files.createDirectories(Paths.get(this.path).getParent());
                 Files.createFile(Paths.get(this.path));
+            }
             
             fileOut = new FileOutputStream(this.path);
             ObjectOutputStream objectOut = new ObjectOutputStream(fileOut);
 
-            if(this.actor == "server")
+            if(this.actor.equals("server"))
                 objectOut.writeObject(Server.getMemory());
-            else  objectOut.writeObject(Peer.getMemory());
+            else if(this.actor.equals("peer"))
+                objectOut.writeObject(Peer.getMemory());
             objectOut.close();
 
 		} catch (FileNotFoundException e) {
