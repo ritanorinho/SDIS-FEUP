@@ -68,6 +68,7 @@ public class ServerListenerThread extends Thread {
 
         String[] splitMessage = message.trim().split("\\s+");
         String peer, file;
+        int newMemory;
         peer = "";
 
         switch (splitMessage[0].trim()) {
@@ -169,9 +170,10 @@ public class ServerListenerThread extends Thread {
         case "REMOVED":
             peer = splitMessage[1];
             file = splitMessage[2];
+            newMemory = Integer.parseInt(splitMessage[5]);
             int chunkNo = Integer.parseInt(splitMessage[3]);
             int repDegree = Integer.parseInt(splitMessage[4]);
-            Server.getMemory().updatePeerMemory(peer, Integer.parseInt(splitMessage[5]));
+            Server.getMemory().updatePeerMemory(peer, newMemory);
             return receiveRemoved(peer, file, chunkNo, repDegree);
         
             case "SAVED":
@@ -179,7 +181,14 @@ public class ServerListenerThread extends Thread {
             file = splitMessage[2];
             setInitiatorPeer(peer,file);
             break;
-            
+
+        case "MEMORY":
+            newMemory =  Integer.parseInt(splitMessage[2]);
+            peer = splitMessage[1];
+            Server.getMemory().updatePeerMemory(peer, newMemory);
+            System.out.println("Updated memory of peer " + peer);
+            break;
+
         default:
             System.out.println("Unknown message: " + splitMessage[0].trim());
         }

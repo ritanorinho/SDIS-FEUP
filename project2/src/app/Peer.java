@@ -497,8 +497,20 @@ public class Peer implements RMIInterface {
 					iterator.remove();
 					Peer.getMemory().savedChunks.remove(key);
 				}
-
+	
 			}
+		}
+		else
+		{
+			try
+			{
+				sendMessageToServer("MEMORY " + serverID + " " + space);
+			}
+			catch(IOException e)
+			{
+				System.out.println("Couldn't send updated memory to server");
+			}
+			
 		}
 
 		Peer.getMemory().capacity = space;
