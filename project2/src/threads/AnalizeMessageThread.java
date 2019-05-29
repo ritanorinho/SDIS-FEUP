@@ -6,9 +6,12 @@ import java.net.Socket;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Random;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import app.Peer;
+import threads.scheduled.SaveMemoryTask;
 import utils.Chunk;
 import utils.FileInfo;
 import utils.Utils;
@@ -67,8 +70,6 @@ public class AnalizeMessageThread implements Runnable {
 		String chunkId = messageArray[2] + "-" + messageArray[3];
 		if (Peer.getMemory().savedOcurrences.containsKey(chunkId) && Peer.getId() != senderId) {
 			Peer.getMemory().savedOcurrences.put(chunkId, Peer.getMemory().savedOcurrences.get(chunkId) + 1);
-			Peer.getMemory().getUsedMemory();
-			Utils.savedOccurrencesFile();
 		}
 
 		try {
@@ -86,7 +87,6 @@ public class AnalizeMessageThread implements Runnable {
 		if (Peer.getId() != id && !Peer.getMemory().savedChunks.containsKey(chunkId)) {
 			if (!Peer.getMemory().savedOcurrences.containsKey(chunkId)) {
 				Peer.getMemory().savedOcurrences.put(chunkId, 0);
-				Utils.savedOccurrencesFile();
 			}
 			String storedMessage =messageArray[1] + " " + messageArray[2] + " "
 					+ messageArray[3];
@@ -99,7 +99,7 @@ public class AnalizeMessageThread implements Runnable {
 	}
 
 	private void getchunk() {
-	System.out.println("RECEIVING GETCHUNK");
+
 		String[] messageArray = this.message.trim().split("\\s+");
 
 		Random random = new Random();
@@ -113,7 +113,7 @@ public class AnalizeMessageThread implements Runnable {
 	}
 
 	private void chunk() {
-		System.out.println("RECEIVING CHUNK");
+
 		String[] messageArray = this.message.trim().split("\\s+");
 
 		String path = "Peer" + Peer.getId() + "/" + "CHUNK" + "/" + messageArray[2] + "/" + messageArray[3];
@@ -125,7 +125,7 @@ public class AnalizeMessageThread implements Runnable {
 	}
 
 	private void restoreFile(){
-		System.out.println("RESTORE THREAD IS HERE");
+
 		String[] messageArray = this.message.trim().split("\\s+");
 
 		Random random = new Random();

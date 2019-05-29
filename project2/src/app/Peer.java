@@ -30,8 +30,8 @@ import javax.net.ssl.SSLSocketFactory;
 import threads.sockets.*;
 import threads.RestoreFileThread;
 import threads.listeners.PeerThread;
+import threads.scheduled.SaveMemoryTask;
 import utils.*;
-import java.util.Random;
 
 public class Peer implements RMIInterface {
 
@@ -144,6 +144,8 @@ public class Peer implements RMIInterface {
 		if (!Utils.checkStores("peer", ""))
 			return;
 
+		Utils.loadMemory(accessPoint + "/memory", memory);
+	
 		validateArgs(args);
 	}
 
@@ -184,6 +186,10 @@ public class Peer implements RMIInterface {
 				e3.printStackTrace();
 			}
 		}
+
+		SaveMemoryTask saveMemory = new SaveMemoryTask(accessPoint + "/memory", "peer");
+		executor = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(100);
+		executor.scheduleAtFixedRate(saveMemory, 1, 1, TimeUnit.MINUTES);
 	}
 
 	// protocols
@@ -207,7 +213,6 @@ public class Peer implements RMIInterface {
 
 				if (!memory.savedOcurrences.containsKey(chunkId)) {
 					memory.savedOcurrences.put(chunkId, 0);
-					Utils.savedOccurrencesFile();
 				}
 
 				byte[] body = chunks.get(i).getData(), message = new byte[header.length + body.length];
@@ -218,7 +223,9 @@ public class Peer implements RMIInterface {
 				OutputStream ostream = null;
 				try {
 					ostream = getServerSocket().getOutputStream();
+					System.out.println("ostream "+serverIndex);
 				} catch (IOException e) {
+					System.out.println("before change server");
 					changeServer();
 					backup(filename, repDegree);
 					return;
@@ -320,7 +327,7 @@ public class Peer implements RMIInterface {
 					InputStream istream = getServerSocket().getInputStream();
 					BufferedReader receiveRead = new BufferedReader(new InputStreamReader(istream));
 
-					String restoreMessage = "RESTORE " + fileInfo.getFileId() + " Peer" + serverID + "\n";
+					String restoreMessage = "RESTORE " + fileInfo.getFileId() + " " + serverID + "\n";
 					pwrite.println(restoreMessage);
 					pwrite.flush();
 
@@ -356,7 +363,6 @@ public class Peer implements RMIInterface {
 					}
 				}
 
-				Random random = new Random();
 				int delay = 2000;
 				Peer.getExecutor().schedule(
 					new RestoreFileThread(filename, fileInfo.getFileId(), chunks.size()), delay, TimeUnit.MILLISECONDS);
@@ -371,7 +377,6 @@ public class Peer implements RMIInterface {
 	@Override
 	public void delete(String filename) throws RemoteException {
 
-		File file = new File(filename);	
 		FileInfo fileInfo = new FileInfo(filename, 0);
 		
 		if (!memory.hasFileByID(fileInfo.getFileId())) {
@@ -382,7 +387,7 @@ public class Peer implements RMIInterface {
 		}
 
 		try {
-			String deleteMessage = "DELETE " + fileInfo.getFileId() + " Peer" + serverID + "\n";
+			String deleteMessage = "DELETE " + fileInfo.getFileId() + " " + serverID + "\n";
 
 			OutputStream ostream = null;
 			try {
@@ -408,10 +413,7 @@ public class Peer implements RMIInterface {
 			System.arraycopy(data, 0, message, 0, data.length);
 
 			if ((receiveMessage = receiveRead.readLine()) != null) {
-				if (receiveMessage.equals("impossible")){
-					System.out.println("impossible");
-					return;
-				}
+				
 				String[] splitMessage = receiveMessage.split(" ");
 
 				System.out.println("Peers to connect " + receiveMessage);
@@ -484,7 +486,6 @@ public class Peer implements RMIInterface {
 							}
 						}
 					} catch (Exception e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 
@@ -569,14 +570,6 @@ public class Peer implements RMIInterface {
 		}
 
 	}
-
-
-
-
-
-
-
-
 
 
 	@Override
@@ -666,5 +659,6 @@ public class Peer implements RMIInterface {
 		Collections.reverse(returnList);
 		return returnList;
 	}
+
 
 }

@@ -7,6 +7,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
+
+import app.Peer;
+
 import java.io.Serializable;
 import java.net.InetAddress;
 import java.text.SimpleDateFormat;
@@ -77,7 +80,6 @@ public class Memory implements Serializable
 		   if(entry.getKey().split("-")[0].equals(fileId)){
 			   if (!deletedFiles.contains(fileId)) deletedFiles.add(fileId);
 			   savedOcurrences.remove(entry.getKey());
-			   Utils.savedOccurrencesFile();
 		   }
 		}		
 		for(Entry<String, Chunk> entry : savedChunks.entrySet())  {

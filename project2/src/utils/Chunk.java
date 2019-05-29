@@ -1,6 +1,7 @@
 package utils;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousFileChannel;
 import java.nio.file.Files;
@@ -9,8 +10,9 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.concurrent.ExecutionException;
 
-public class Chunk {
+public class Chunk implements Serializable {
 
+	private static final long serialVersionUID = 1L;
 	private String fileId;
 	private int chunkNo;
 	private byte[] data;

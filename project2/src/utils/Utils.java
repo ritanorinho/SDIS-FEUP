@@ -1,11 +1,16 @@
 package utils;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.InetAddress;
 import java.security.MessageDigest;
 import java.util.Arrays;
+import java.util.concurrent.ConcurrentHashMap;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -90,30 +95,7 @@ public class Utils {
 
 		return byteHeader;
 	}
-	
-	public static void savedOccurrencesFile() {
-		try {
-		String filename = "Peer"+Peer.getId() +"/"+"SAVED"+"/"+"savedOccurrences.txt";
-		File savedOcurrencesfile= new File(filename);
-		if (!savedOcurrencesfile.exists()) {
-			savedOcurrencesfile.getParentFile().mkdirs();
-		savedOcurrencesfile.createNewFile();
-		}
-		FileOutputStream fos = new FileOutputStream(savedOcurrencesfile);
-		for(String key: Peer.getMemory().savedOcurrences.keySet()) {
-		
-				
-				String content = key + " "+Peer.getMemory().savedOcurrences.get(key)+"\n";
-				byte[] byteContent= content.getBytes();
-				fos.write(byteContent);
-			
-		}
-		fos.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		
-	}
+
 
 	public static String[] byteArrayToStringArray(byte[] array){
 		String string = new String(array, 0, array.length);
@@ -130,6 +112,25 @@ public class Utils {
 		
 		byte[] body = Arrays.copyOfRange(messageBytes,i+4,messageBytes.length);		
 		return body;
+	}
+
+	public static void loadMemory(String path, Memory memory) {
+		
+		try {
+			FileInputStream fi =  new FileInputStream(new File(path));
+			ObjectInputStream oi = new ObjectInputStream(fi);
+			memory = (Memory) oi.readObject();
+			memory.conections = new ConcurrentHashMap<String, Pair<InetAddress, Integer>>();
+			System.out.println("Loaded memory successfully");
+			oi.close();
+
+		} catch (FileNotFoundException e) {
+			System.out.println("No memory to load.");
+		}catch (IOException e) {
+			e.printStackTrace();
+		}catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		}
 	}
 
 }

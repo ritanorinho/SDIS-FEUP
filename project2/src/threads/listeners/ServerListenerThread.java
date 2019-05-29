@@ -68,7 +68,7 @@ public class ServerListenerThread extends Thread {
 
         String[] splitMessage = message.trim().split("\\s+");
         String peer, file;
-        peer = "1";
+        peer = "";
 
         switch (splitMessage[0].trim()) {
         case "Peer":
@@ -230,10 +230,6 @@ public class ServerListenerThread extends Thread {
                 iterator.remove();
 
         }
-    }
-
-    private void restoreFile(String peer, String file) {
-        System.out.println("FILE IS RESTORED HERE");
     }
 
     private String getPeersWithFile(String file) {
