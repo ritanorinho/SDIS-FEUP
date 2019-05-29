@@ -203,8 +203,7 @@ public class Peer implements RMIInterface {
 			System.out.println("This file has already backed up!");
 			return;
 		}
-			memory.files.add(fileInfo);
-
+			
 		try {
 			for (int i = 0; i < chunks.size(); i++) {
 				byte[] header = Utils.getHeader("PUTCHUNK", serverID, fileInfo.getFileId(), chunks.get(i).getChunkNo(),
@@ -285,7 +284,7 @@ public class Peer implements RMIInterface {
 		PrintWriter pwrite = new PrintWriter(ostream, true);
 		pwrite.println("SAVED "+serverID+" "+fileInfo.getFileId());
 
-
+		memory.files.add(fileInfo);
 	}
 
 	@Override
@@ -341,6 +340,14 @@ public class Peer implements RMIInterface {
 						String[] splitMessage = receiveMessage.split(" ");
 
 						System.out.println("Peers to connect " + receiveMessage);
+
+						if(receiveMessage.equals(" "))
+						{
+							System.out.println("There weren't any peers with that chunk...\nAborting\n");
+							pwrite.close();
+							receiveRead.close();
+							return;
+						}
 
 						for (int j = 0; j < splitMessage.length; j++) {
 							String[] split = splitMessage[j].split("-");
@@ -490,8 +497,20 @@ public class Peer implements RMIInterface {
 					iterator.remove();
 					Peer.getMemory().savedChunks.remove(key);
 				}
-
+	
 			}
+		}
+		else
+		{
+			try
+			{
+				sendMessageToServer("MEMORY " + serverID + " " + space);
+			}
+			catch(IOException e)
+			{
+				System.out.println("Couldn't send updated memory to server");
+			}
+			
 		}
 
 		Peer.getMemory().capacity = space;
