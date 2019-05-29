@@ -165,6 +165,7 @@ public class ServerListenerThread extends Thread {
             Server.getMemory().updatePeerMemory(peer, Integer.parseInt(splitMessage[4]));
             Server.getMemory().updateMemory();
             break;
+
         case "REMOVED":
             peer = splitMessage[1];
             file = splitMessage[2];
@@ -177,8 +178,8 @@ public class ServerListenerThread extends Thread {
             peer = splitMessage[1];
             file = splitMessage[2];
             setInitiatorPeer(peer,file);
+            break;
             
-        break;
         default:
             System.out.println("Unknown message: " + splitMessage[0].trim());
         }
@@ -256,6 +257,9 @@ public class ServerListenerThread extends Thread {
         conectionPorts = sb.toString();
         System.out.println("conection ports " + conectionPorts);
 
+        if(conectionPorts.equals(""))
+            conectionPorts = " ";
+
         return conectionPorts;
     }
     public static boolean isInitiator(String peer, String file){
@@ -285,6 +289,10 @@ public class ServerListenerThread extends Thread {
 
         if (replicationDegree > 0)
             System.out.println("Warning: There aren't enough peers to meet replication demand");
+
+        if(sb.equals(""))
+            sb = " ";
+
         return sb;
     }
 
