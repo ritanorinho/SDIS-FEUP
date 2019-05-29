@@ -56,11 +56,19 @@ public class ServerListenerThread extends Thread {
                
             }
 
-        } catch (IOException e) {
-            System.out.println("Disconect detected");
+        } catch (IOException e) 
+        {
+            System.out.print("Disconect detected: ");
 
             if (peerId != null)
+            {
+                System.out.println("Peer " + peerId);
                 Server.getMemory().conections.remove(peerId);
+            }
+            else
+                System.out.println("Server @ " + socket.getInetAddress().getHostAddress());
+            
+                
         }
     }
 

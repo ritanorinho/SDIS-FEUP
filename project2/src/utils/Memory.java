@@ -7,9 +7,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
-
-import app.Peer;
-
 import java.io.Serializable;
 import java.net.InetAddress;
 import java.text.SimpleDateFormat;

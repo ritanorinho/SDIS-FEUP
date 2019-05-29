@@ -3,7 +3,6 @@ package utils;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.UnsupportedEncodingException;
@@ -14,8 +13,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-
-import app.Peer;
 
 public class Utils {
 	

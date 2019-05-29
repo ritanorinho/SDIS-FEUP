@@ -10,13 +10,11 @@ import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
-import java.security.*;
 import javax.net.ssl.*;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.security.cert.X509Certificate;
 import threads.listeners.ServerThread;
 import threads.scheduled.SaveMemoryTask;
 
@@ -84,13 +82,11 @@ public class Server {
 				SSLSocket socket = Peer.createSocket(sa, sp);
 
 				if(socket == null)
-				{
-					System.out.println("Couldn't connect to server, skipping...");
-					continue;
-				}
-
-				socket.startHandshake();
-				servers.put(args[i], new Pair<Integer, SSLSocket>(Integer.parseInt(args[i + 1]), socket));
+					System.out.println("Couldn't connect to server, ignoring...");
+				else
+					socket.startHandshake();
+				
+				servers.put(args[i] + "-" + args[i + 1], new Pair<Integer, SSLSocket>(Integer.parseInt(args[i + 1]), socket));
 			}
 		}
 		catch(Exception e)
@@ -113,39 +109,6 @@ public class Server {
 		}, 30, 30, TimeUnit.SECONDS);
 	}
 
-	public static boolean setCertificateHandling()
-	{
-		TrustManager[] trustAllCerts = new TrustManager[] 
-		{ 
-			new X509TrustManager() 
-			{     
-				public java.security.cert.X509Certificate[] getAcceptedIssuers() 
-				{ 
-					return new X509Certificate[0];
-				} 
-				
-				public void checkClientTrusted(java.security.cert.X509Certificate[] certs, String authType) {} 
-				public void checkServerTrusted(java.security.cert.X509Certificate[] certs, String authType) {}
-			} 
-		}; 
-		
-		// Install the all-trusting trust manager
-		try 
-		{
-			SSLContext sc = SSLContext.getInstance("SSL"); 
-			sc.init(null, trustAllCerts, new java.security.SecureRandom());
-			HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
-		} 
-		catch (GeneralSecurityException e) 
-		{
-			System.out.println("Couldn't install new trust manager");
-			return false;
-		} 
-
-		return true;
-	}
-
-
 	public static SSLServerSocket getServerSocket() {
 		return serverSocket;
 	}
@@ -164,6 +127,11 @@ public class Server {
 		return tcp_port;
 	}
 
+	public static ConcurrentHashMap<String, Pair<Integer, SSLSocket>> getServers()
+	{
+		return servers;
+	}
+
 	public static void setMemory(Memory newMemory)
 	{
 		ConcurrentHashMap<String, Pair<InetAddress, Integer>> connections = memory.conections;
@@ -178,7 +146,7 @@ public class Server {
 		Entry<String, Pair<Integer, SSLSocket>> entry;
 		Iterator<Entry<String, Pair<Integer, SSLSocket>>> it = servers.entrySet().iterator();
 
-		System.out.println("SYNC initiated");
+		System.out.println("SYNC initiated with " + servers.size() + " servers");
 
 		while(it.hasNext())
 		{
@@ -189,7 +157,8 @@ public class Server {
 			{
 				try
 				{
-					socket = Peer.createSocket(InetAddress.getByName(entry.getKey()), entry.getValue().getKey());
+					socket = Peer.createSocket(InetAddress.getByName(entry.getKey().split("-")[0]), 
+						entry.getValue().getKey());
 
 					if(socket != null)
 						socket.startHandshake();
@@ -198,6 +167,7 @@ public class Server {
 				}
 				catch(Exception e)
 				{
+					System.out.println("Error in server socket created");
 					continue;
 				}
 			}
@@ -222,9 +192,6 @@ public class Server {
 				Server.setMemory(newMemory);
 
 				System.out.println("Updated memory");
-
-		
-
 			} 
 			catch (Exception e) 
 			{

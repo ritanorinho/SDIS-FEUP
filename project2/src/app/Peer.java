@@ -223,7 +223,6 @@ public class Peer implements RMIInterface {
 				OutputStream ostream = null;
 				try {
 					ostream = getServerSocket().getOutputStream();
-					System.out.println("ostream "+serverIndex);
 				} catch (IOException e) {
 					System.out.println("before change server");
 					changeServer();

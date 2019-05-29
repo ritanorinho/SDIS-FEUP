@@ -21,4 +21,14 @@ public class Pair<T, U> implements Serializable{
         return right;
     }
 
+    public void setKey(T newKey)
+    {
+        left = newKey;
+    }
+
+    public void setValue(U newValue)
+    {
+        right = newValue;
+    }
+
 }
