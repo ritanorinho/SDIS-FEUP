@@ -239,11 +239,14 @@ public class Peer implements RMIInterface {
 				if ((receiveMessage = receiveRead.readLine()) != null) {
 					String[] splitMessage = receiveMessage.split(" ");
 
-					System.out.println("Peers to connect " + receiveMessage);
+					
 
 					if (receiveMessage.equals(" ")) {
 						System.out.println("No peers available");
 						continue;
+					} else {
+						System.out.println("Peers to connect " + receiveMessage);
+
 					}
 
 					if (splitMessage.length < repDegree)
@@ -329,13 +332,16 @@ public class Peer implements RMIInterface {
 						System.out.println("RECEIVED FROM SERVER: " + receiveMessage);
 						String[] splitMessage = receiveMessage.split(" ");
 
-						System.out.println("Peers to connect " + receiveMessage);
-
+						
 						if(receiveMessage.equals(" "))
 						{
 							System.out.println("There weren't any peers with that chunk...\nAborting\n");
 							receiveRead.close();
 							return;
+						} else {
+							System.out.println("Peers to connect " + receiveMessage);
+
+
 						}
 
 						for (int j = 0; j < splitMessage.length; j++) {
@@ -467,6 +473,7 @@ public class Peer implements RMIInterface {
 						istream = getServerSocket().getInputStream();
 						BufferedReader receiveRead = new BufferedReader(new InputStreamReader(istream));
 						String receiveMessage;
+						
 						if ((receiveMessage = receiveRead.readLine()) != null) {
 							int repDegree = Integer.parseInt(receiveMessage);
 							if (repDegree > 0) {
@@ -539,11 +546,14 @@ public class Peer implements RMIInterface {
 				if ((receiveMessage = receiveRead.readLine()) != null) {
 					String[] splitMessage = receiveMessage.split(" ");
 
-					System.out.println("Peers to connect " + receiveMessage);
+					
 
 					if (receiveMessage.equals(" ")) {
 						System.out.println("No peers available");
 						return;
+					} else {
+						System.out.println("Peers to connect " + receiveMessage);
+
 					}
 
 					if (splitMessage.length < repDegree)
