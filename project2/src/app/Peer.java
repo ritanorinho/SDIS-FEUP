@@ -63,15 +63,14 @@ public class Peer implements RMIInterface {
 
 			try {
 
-				OutputStream ostream = serverSocket.getOutputStream();
-				PrintWriter pwrite = new PrintWriter(ostream, true);
+			
 				String peerID = "Peer " + Peer.getId() + " " + peerAddress.getHostAddress() + " " + peerPort
 						+ " "+memory.availableCapacity +"\n", receivedMessage;
+				sendMessageToServer(peerID);
 				InputStream istream = serverSocket.getInputStream();
 				BufferedReader receiveRead = new BufferedReader(new InputStreamReader(istream));
 
-				pwrite.println(peerID);
-				pwrite.flush();
+
 
 				if ((receivedMessage = receiveRead.readLine()) != null) // receive from server
 				{
@@ -220,25 +219,22 @@ public class Peer implements RMIInterface {
 				System.arraycopy(header, 0, message, 0, header.length);
 				System.arraycopy(body, 0, message, header.length, body.length);
 
-				OutputStream ostream = null;
+				String backupMessage = "BACKUP " + chunkId + " " + serverID + " " + repDegree + " "+chunks.get(i).getChunkSize()+"\n", receiveMessage;
 				try {
-					ostream = getServerSocket().getOutputStream();
+					sendMessageToServer(backupMessage);
+					System.out.println(backupMessage);
+					
 				} catch (IOException e) {
 					System.out.println("before change server");
 					changeServer();
 					backup(filename, repDegree);
 					return;
 				}
-				PrintWriter pwrite = new PrintWriter(ostream, true);
 
 				InputStream istream = getServerSocket().getInputStream();
 				BufferedReader receiveRead = new BufferedReader(new InputStreamReader(istream));
-				String backupMessage = "BACKUP " + chunkId + " " + serverID + " " + repDegree + " "+chunks.get(i).getChunkSize()+"\n", receiveMessage;
 
-				pwrite.println(backupMessage);
-				pwrite.flush();
-
-				System.out.println(backupMessage);
+				
 
 				if ((receiveMessage = receiveRead.readLine()) != null) {
 					String[] splitMessage = receiveMessage.split(" ");
@@ -272,16 +268,14 @@ public class Peer implements RMIInterface {
 		} catch (Exception e) {
 			System.out.println("Backup Failed");
 		}
-		OutputStream ostream = null;
+		String savedMessage = "SAVED "+serverID+" "+fileInfo.getFileId();
 		try {
-			ostream = getServerSocket().getOutputStream();
+			sendMessageToServer(savedMessage);
 		} catch (IOException e) {
 			changeServer();
 			backup(filename, repDegree);
 			return;
 		}
-		PrintWriter pwrite = new PrintWriter(ostream, true);
-		pwrite.println("SAVED "+serverID+" "+fileInfo.getFileId());
 
 		memory.files.add(fileInfo);
 	}
@@ -314,21 +308,18 @@ public class Peer implements RMIInterface {
 					System.out.println("SENT: " + header);
 
 					byte[] message = header.getBytes();
-					OutputStream ostream = null;
+					String restoreMessage = "RESTORE " + fileInfo.getFileId() + " " + serverID + "\n";
 					try {
-						ostream = getServerSocket().getOutputStream();
+						sendMessageToServer(restoreMessage);
+					System.out.println(restoreMessage);
 					} catch (IOException e) {
 						changeServer();
 						restore(filename);
 						return;
 					}
-					PrintWriter pwrite = new PrintWriter(ostream, true);
 					InputStream istream = getServerSocket().getInputStream();
 					BufferedReader receiveRead = new BufferedReader(new InputStreamReader(istream));
 
-					String restoreMessage = "RESTORE " + fileInfo.getFileId() + " " + serverID + "\n";
-					pwrite.println(restoreMessage);
-					pwrite.flush();
 
 					String receiveMessage;
 					System.out.println(restoreMessage);
@@ -343,7 +334,6 @@ public class Peer implements RMIInterface {
 						if(receiveMessage.equals(" "))
 						{
 							System.out.println("There weren't any peers with that chunk...\nAborting\n");
-							pwrite.close();
 							receiveRead.close();
 							return;
 						}
@@ -387,21 +377,15 @@ public class Peer implements RMIInterface {
 
 		try {
 			String deleteMessage = "DELETE " + fileInfo.getFileId() + " " + serverID + "\n";
-
-			OutputStream ostream = null;
 			try {
-				ostream = getServerSocket().getOutputStream();
+				sendMessageToServer(deleteMessage);
 			} catch (IOException e) {
 				changeServer();
 				delete(filename);
 				return;
 			}
-			PrintWriter pwrite = new PrintWriter(ostream, true);
-
 			InputStream istream = getServerSocket().getInputStream();
 			BufferedReader receiveRead = new BufferedReader(new InputStreamReader(istream));
-			pwrite.println(deleteMessage);
-			pwrite.flush();
 			String receiveMessage;
 
 			String header = "DELETE " + serverID + " " + fileInfo.getFileId() + " " + "\r\n\r\n";
@@ -415,8 +399,16 @@ public class Peer implements RMIInterface {
 				
 				String[] splitMessage = receiveMessage.split(" ");
 
-				System.out.println("Peers to connect " + receiveMessage);
-
+				
+				if(receiveMessage.equals(" "))
+						{
+							System.out.println("There weren't any peers with that chunk...\nAborting\n");
+							receiveRead.close();
+							return;
+				}
+				else {
+					System.out.println("Peers to connect " + receiveMessage);
+				}
 				for (int j = 0; j < splitMessage.length; j++) {
 
 					String[] split = splitMessage[j].split("-");
@@ -461,22 +453,19 @@ public class Peer implements RMIInterface {
 							+ memory.savedChunks.get(key).getReplicationDegree() + " "+space+ "\r\n\r\n";
 					System.out.print(header);
 
-					OutputStream ostream = null;
+					
 					try {
-						ostream = getServerSocket().getOutputStream();
+						sendMessageToServer(header);
 					} catch (IOException e) {
 						changeServer();
 						reclaim(space);
 						return;
 					}
-					PrintWriter pwrite = new PrintWriter(ostream, true);
-
+				
 					InputStream istream = null;
 					try {
 						istream = getServerSocket().getInputStream();
 						BufferedReader receiveRead = new BufferedReader(new InputStreamReader(istream));
-						pwrite.println(header);
-						pwrite.flush();
 						String receiveMessage;
 						if ((receiveMessage = receiveRead.readLine()) != null) {
 							int repDegree = Integer.parseInt(receiveMessage);
@@ -531,22 +520,19 @@ public class Peer implements RMIInterface {
 				System.arraycopy(header, 0, message, 0, header.length);
 				System.arraycopy(body, 0, message, header.length, body.length);
 
-				OutputStream ostream = null;
+				String backupMessage = "BACKUP " + chunkId + " " + serverID + " " + repDegree + " "+body.length+"\n", receiveMessage;
+
 				try {
-					ostream = getServerSocket().getOutputStream();
+				sendMessageToServer(backupMessage);
 				} catch (IOException e) {
 					changeServer();
 					backupChunk(fileId,chunkNo,repDegree,body);
 					return;
 				}
-				PrintWriter pwrite = new PrintWriter(ostream, true);
 
 				InputStream istream = getServerSocket().getInputStream();
 				BufferedReader receiveRead = new BufferedReader(new InputStreamReader(istream));
-				String backupMessage = "BACKUP " + chunkId + " " + serverID + " " + repDegree + " "+body.length+"\n", receiveMessage;
-
-				pwrite.println(backupMessage);
-				pwrite.flush();
+			
 
 				System.out.println(backupMessage);
 

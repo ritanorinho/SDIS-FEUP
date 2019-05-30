@@ -98,7 +98,7 @@ public class Server {
 
 		SaveMemoryTask saveMemory = new SaveMemoryTask("Server/memory", "server");
 		executor = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(250);
-		executor.scheduleAtFixedRate(saveMemory, 1, 1, TimeUnit.MINUTES);
+		executor.scheduleAtFixedRate(saveMemory, 1, 15, TimeUnit.SECONDS);
 
 		executor.execute(new ServerThread(serverSocket, executor));
 		executor.scheduleAtFixedRate(new Runnable() {
