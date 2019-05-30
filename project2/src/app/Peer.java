@@ -104,8 +104,8 @@ public class Peer implements RMIInterface {
 		}
 
 		socket.setEnabledCipherSuites(new String[] { "SSL_RSA_WITH_RC4_128_MD5", "SSL_RSA_WITH_RC4_128_SHA",
-				"SSL_RSA_WITH_NULL_MD5", "TLS_RSA_WITH_AES_128_CBC_SHA", "TLS_DHE_RSA_WITH_AES_128_CBC_SHA",
-				"TLS_DHE_DSS_WITH_AES_128_CBC_SHA", "TLS_DH_anon_WITH_AES_128_CBC_SHA" });
+			"TLS_RSA_WITH_AES_128_CBC_SHA", "TLS_DHE_RSA_WITH_AES_128_CBC_SHA", 
+			"TLS_DHE_DSS_WITH_AES_128_CBC_SHA"});
 
 		socket.setEnabledProtocols(new String[] { "TLSv1.2" });
 
@@ -126,8 +126,8 @@ public class Peer implements RMIInterface {
 
 		sSocket.setNeedClientAuth(true);
 		sSocket.setEnabledCipherSuites(new String[] { "SSL_RSA_WITH_RC4_128_MD5", "SSL_RSA_WITH_RC4_128_SHA",
-				"SSL_RSA_WITH_NULL_MD5", "TLS_RSA_WITH_AES_128_CBC_SHA", "TLS_DHE_RSA_WITH_AES_128_CBC_SHA",
-				"TLS_DHE_DSS_WITH_AES_128_CBC_SHA", "TLS_DH_anon_WITH_AES_128_CBC_SHA" });
+				"TLS_RSA_WITH_AES_128_CBC_SHA", "TLS_DHE_RSA_WITH_AES_128_CBC_SHA",
+				"TLS_DHE_DSS_WITH_AES_128_CBC_SHA"});
 		sSocket.setEnabledProtocols(new String[] { "TLSv1.2" });
 
 		return sSocket;
