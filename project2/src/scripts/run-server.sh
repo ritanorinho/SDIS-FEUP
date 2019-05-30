@@ -1,1 +1,1 @@
-java app/Server  $1 
+java app/Server  $1 $2 $3
