@@ -143,7 +143,7 @@ public class Server {
 		Entry<String, Pair<Integer, SSLSocket>> entry;
 		Iterator<Entry<String, Pair<Integer, SSLSocket>>> it = servers.entrySet().iterator();
 
-		System.out.println("SYNC initiated with " + servers.size() + " servers");
+		//System.out.println("SYNC initiated with " + servers.size() + " servers");
 
 		while(it.hasNext())
 		{
@@ -181,14 +181,15 @@ public class Server {
 				Memory newMemory = (Memory) ois.readObject();
 
 				if (newMemory == null) {
-					System.out.print("Up-to-date: ");
-					memory.printLastUpdatedDate();
+					//System.out.print("Up-to-date: ");
+					//memory.printLastUpdatedDate();
 					continue;
 				}
 
 				Server.setMemory(newMemory);
 
-				System.out.println("Updated memory");
+				System.out.print("Updated memory: ");
+				memory.printLastUpdatedDate();
 			} 
 			catch (Exception e) 
 			{
