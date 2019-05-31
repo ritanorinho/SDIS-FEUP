@@ -118,7 +118,7 @@ public class ServerListenerThread extends Thread {
 
         case "RESTORE":
             if (!connected)
-                return "";
+                break;
 
             peer = splitMessage[2];
             file = splitMessage[1];
@@ -126,7 +126,7 @@ public class ServerListenerThread extends Thread {
 
         case "CHUNK":
             if (!connected)
-                return "";
+                break;
 
             peer = splitMessage[2];
             file = splitMessage[1];
@@ -142,7 +142,7 @@ public class ServerListenerThread extends Thread {
 
         case "STORED":
             if (!connected)
-                return "";
+              break;
 
             peer = splitMessage[1];
             String chunkID = splitMessage[2];
@@ -158,7 +158,7 @@ public class ServerListenerThread extends Thread {
         case "DELETE":
 
             if (!connected)
-                return "";
+                break;
 
             peer = splitMessage[2];
             file = splitMessage[1];
@@ -168,7 +168,7 @@ public class ServerListenerThread extends Thread {
         case "DELETED":
 
             if (!connected)
-                return "";
+               break;
 
             peer = splitMessage[2];
             file = splitMessage[1];
