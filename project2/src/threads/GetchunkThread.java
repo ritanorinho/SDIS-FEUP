@@ -13,13 +13,11 @@ import app.Peer;
 public class GetchunkThread implements Runnable {
 	private String[] messageArray;
 	private String chunkId;
-	private double senderVersion;
 	private Socket socket;
 
 	public GetchunkThread(String[] msg, Socket socket) {
 		this.messageArray = msg;
 		this.chunkId = messageArray[2] + "-" + messageArray[3];
-		this.senderVersion = Double.parseDouble(messageArray[1]);
 		this.socket = socket;
 	}
 
@@ -82,12 +80,8 @@ public class GetchunkThread implements Runnable {
 
 		String msg = "";
 		byte[] message = chunkMessage(msg);
-		if(this.senderVersion==1){
-			sendChunk(message);
-			System.out.println(msg);
-		}else{
-			int port = this.attributePort();
-			(new TCPRestoreServer(port, chunkId, message)).start();
-		}
+	
+		sendChunk(message);
+		System.out.println(msg);
 	}
 }
