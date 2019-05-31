@@ -348,6 +348,7 @@ public class Peer implements RMIInterface {
 			catch (Exception e) {
 				System.out.println("Restore Failed");
 				e.printStackTrace();
+				return;
 			}
 		}
 	}
@@ -423,7 +424,10 @@ public class Peer implements RMIInterface {
 		{
 			System.out.println("Delete failed");
 			e.printStackTrace();
+			return;
 		}
+
+
 
 		memory.removeFile(fileInfo.getFileId());
 	}
