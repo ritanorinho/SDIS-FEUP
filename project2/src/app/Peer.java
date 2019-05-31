@@ -647,7 +647,28 @@ public class Peer implements RMIInterface {
 		if(newSocket != null)
 		{
 			servers.set(serverIndex, newSocket);
-			System.out.println("Connection reestabelished");
+
+			try 
+			{
+				newSocket.startHandshake();
+
+				String peerID = "Peer " + Peer.getId() + " " + peerAddress.getHostAddress() + " " + peerPort
+						+ " "+memory.availableCapacity +"\n", receivedMessage;
+				sendMessageToServer(peerID, newSocket);
+				InputStream istream = newSocket.getInputStream();
+				BufferedReader receiveRead = new BufferedReader(new InputStreamReader(istream));
+
+				if ((receivedMessage = receiveRead.readLine()) != null) // receive from server
+				{
+					System.out.println("Connection status: " + receivedMessage);
+				}
+
+				System.out.println("Connection reestabelished");
+
+			} catch (Exception e) {
+				
+			}
+			
 			return;
 		}
 
