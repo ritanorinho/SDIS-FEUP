@@ -424,7 +424,10 @@ public class Peer implements RMIInterface {
 		{
 			System.out.println("Delete failed");
 			e.printStackTrace();
+			return;
 		}
+
+
 
 		memory.removeFile(fileInfo.getFileId());
 	}
