@@ -134,6 +134,20 @@ public class Memory implements Serializable
 			System.out.println(key);
 	}
 
+	public void printFiles()
+	{
+		for(FileInfo finfo: files)
+			System.out.println(finfo.toString());
+	}
+
+	public void printConnections()
+	{
+		Iterator<Entry<String, Pair<InetAddress, Integer>>> it = conections.entrySet().iterator();
+
+		while(it.hasNext())
+			System.out.println(it.next().getKey());
+	}
+
 	public long getLastUpdated()
 	{
 		return lastUpdated;

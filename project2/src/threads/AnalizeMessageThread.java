@@ -73,7 +73,7 @@ public class AnalizeMessageThread implements Runnable {
 		}
 
 		try {
-			Peer.sendMessageToServer("STORED " +  messageArray[1] + " "+chunkId+" "+messageArray[4]);
+			Peer.sendMessageToServer("STORED " +  messageArray[1] + " "+chunkId+" "+messageArray[4], Peer.getServerSocket());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -153,7 +153,7 @@ public class AnalizeMessageThread implements Runnable {
 
 		try{
 			String msg = "DELETED "+fileId+" "+Peer.getId()+" "+Peer.getMemory().availableCapacity;
-			Peer.sendMessageToServer(msg);
+			Peer.sendMessageToServer(msg, Peer.getServerSocket());
 		} catch(Exception e){}
 
 		System.out.println("Deleted chunks of file: " + fileId);

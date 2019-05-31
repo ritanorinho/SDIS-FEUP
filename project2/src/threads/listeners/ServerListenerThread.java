@@ -15,6 +15,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+
+import app.Peer;
 import app.Server;
 
 public class ServerListenerThread extends Thread {
@@ -200,7 +202,6 @@ public class ServerListenerThread extends Thread {
         default:
             System.out.println("Unknown message: " + splitMessage[0].trim());
         }
-        System.out.println("peer"+peer+Server.getMemory().peersMemory.get(peer));
 
         return "";
     }
@@ -254,12 +255,12 @@ public class ServerListenerThread extends Thread {
         String conectionPorts = "";
         HashMap<String, String> peerPorts = new HashMap<String, String>();
 
-        System.out.println(file);
         for (int i = 0; i < Server.getMemory().serverSavedChunks.size(); i++) {
             String[] split = Server.getMemory().serverSavedChunks.get(i).split("-");
             String fileId = split[0].trim();
             if (fileId.equals(file)) {
                 String peer = split[2].trim();
+
                 if (!peerPorts.containsKey(peer)) {
                     sb.append(Server.getMemory().getPeerPort(peer));
                     sb.append(" ");
@@ -272,6 +273,8 @@ public class ServerListenerThread extends Thread {
 
         if(conectionPorts.equals(""))
             conectionPorts = " ";
+
+        System.out.println(conectionPorts);
 
         return conectionPorts;
     }

@@ -98,7 +98,7 @@ public class Server {
 
 		SaveMemoryTask saveMemory = new SaveMemoryTask("Server/memory", "server");
 		executor = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(250);
-		executor.scheduleAtFixedRate(saveMemory, 1, 15, TimeUnit.SECONDS);
+		executor.scheduleAtFixedRate(saveMemory, 5, 5, TimeUnit.SECONDS);
 
 		executor.execute(new ServerThread(serverSocket, executor));
 		executor.scheduleAtFixedRate(new Runnable() {
@@ -106,7 +106,7 @@ public class Server {
 			public void run() {
 				startSync();
 			}
-		}, 30, 30, TimeUnit.SECONDS);
+		}, 5, 5, TimeUnit.SECONDS);
 	}
 
 	public static SSLServerSocket getServerSocket() {
