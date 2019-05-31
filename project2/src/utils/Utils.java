@@ -10,11 +10,47 @@ import java.net.InetAddress;
 import java.security.MessageDigest;
 import java.util.Arrays;
 import java.util.concurrent.ConcurrentHashMap;
+
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
+
+import app.Peer;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
 public class Utils {
+	
+	public static SSLSocket createSocket(InetAddress address, int port, boolean sendUnavailable) {
+		SSLSocketFactory ssf = (SSLSocketFactory) SSLSocketFactory.getDefault();
+		SSLSocket socket;
+
+		try {
+			socket = (SSLSocket) ssf.createSocket(address, port);
+		} catch (IOException e) 
+		{
+			if(sendUnavailable)
+			{
+				try {
+					Peer.sendMessageToServer("UNAVAILABLE " + address.getHostAddress() + " " + port, Peer.getServerSocket());
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
+			}
+			
+			System.out.println("Failed to create SSLSocket");
+			return null;
+		}
+
+		socket.setEnabledCipherSuites(new String[] { "SSL_RSA_WITH_RC4_128_MD5", "SSL_RSA_WITH_RC4_128_SHA",
+			"TLS_RSA_WITH_AES_128_CBC_SHA", "TLS_DHE_RSA_WITH_AES_128_CBC_SHA", 
+			"TLS_DHE_DSS_WITH_AES_128_CBC_SHA"});
+
+		socket.setEnabledProtocols(new String[] { "TLSv1.2" });
+
+		return socket;
+	}
 	
 	public static String createFileId(Path file) {
 		

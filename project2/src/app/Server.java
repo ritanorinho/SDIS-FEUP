@@ -79,7 +79,7 @@ public class Server {
 			{
 				InetAddress sa = InetAddress.getByName(args[i]);
 				int sp = Integer.parseInt(args[i + 1]);
-				SSLSocket socket = Peer.createSocket(sa, sp);
+				SSLSocket socket = Utils.createSocket(sa, sp, false);
 
 				if(socket == null)
 					System.out.println("Couldn't connect to server, ignoring...");
@@ -157,8 +157,8 @@ public class Server {
 			{
 				try
 				{
-					socket = Peer.createSocket(InetAddress.getByName(entry.getKey().split("-")[0]), 
-						entry.getValue().getKey());
+					socket = Utils.createSocket(InetAddress.getByName(entry.getKey().split("-")[0]), 
+						entry.getValue().getKey(), false);
 
 					if(socket != null)
 						socket.startHandshake();

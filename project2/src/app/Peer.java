@@ -88,30 +88,7 @@ public class Peer implements RMIInterface {
 		executor.execute(new PeerThread(peerServerSocket, executor));
 	}
 
-	public static SSLSocket createSocket(InetAddress address, int port) {
-		SSLSocketFactory ssf = (SSLSocketFactory) SSLSocketFactory.getDefault();
-		SSLSocket socket;
-
-		try {
-			socket = (SSLSocket) ssf.createSocket(address, port);
-		} catch (IOException e) {
-			try {
-				sendMessageToServer("UNAVAILABLE " + address.getHostAddress() + " " + port);
-			} catch (IOException e1) {
-				e1.printStackTrace();
-			}
-			System.out.println("Failed to create SSLSocket");
-			return null;
-		}
-
-		socket.setEnabledCipherSuites(new String[] { "SSL_RSA_WITH_RC4_128_MD5", "SSL_RSA_WITH_RC4_128_SHA",
-			"TLS_RSA_WITH_AES_128_CBC_SHA", "TLS_DHE_RSA_WITH_AES_128_CBC_SHA", 
-			"TLS_DHE_DSS_WITH_AES_128_CBC_SHA"});
-
-		socket.setEnabledProtocols(new String[] { "TLSv1.2" });
-
-		return socket;
-	}
+	
 
 	private SSLServerSocket createServerSocket() {
 		SSLServerSocketFactory ssf = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
@@ -165,7 +142,7 @@ public class Peer implements RMIInterface {
 			InetAddress sa = InetAddress.getByName(args[i]);
 			int sp = Integer.parseInt(args[i + 1]);
 
-			Peer.servers.add(createSocket(sa, sp));
+			Peer.servers.add(Utils.createSocket(sa, sp, true));
 		}
 
 		Peer peer = new Peer();
@@ -259,7 +236,7 @@ public class Peer implements RMIInterface {
 						int port = Integer.parseInt(split[1]);
 						InetAddress address = InetAddress.getByName(split[0]);
 						SSLSocket peerSocket = null;
-						peerSocket = createSocket(address, port);
+						peerSocket = Utils.createSocket(address, port, true);
 
 						System.out.println(port + " " + address);
 						peerSocket.startHandshake();
@@ -353,7 +330,7 @@ public class Peer implements RMIInterface {
 							String[] split = splitMessage[j].split("-");
 							int port = Integer.parseInt(split[1]);
 							InetAddress address = InetAddress.getByName(split[0]);
-							peerSocket = createSocket(address, port);
+							peerSocket = Utils.createSocket(address, port, true);
 							System.out.println(port + " " + address);
 							peerSocket.startHandshake();
 							executor.execute(new SenderSocket(peerSocket, message));
@@ -430,7 +407,7 @@ public class Peer implements RMIInterface {
 					SSLSocket peerSocket = null;
 
 					InetAddress address = InetAddress.getByName(split[0]);
-					peerSocket = createSocket(address, port);
+					peerSocket = Utils.createSocket(address, port, true);
 
 					System.out.println(port + " " + address);
 
@@ -579,7 +556,7 @@ public class Peer implements RMIInterface {
 						InetAddress address = InetAddress.getByName(split[0]);
 						SSLSocket peerSocket = null;
 
-						peerSocket = createSocket(address, port);
+						peerSocket = Utils.createSocket(address, port, true);
 						
 
 						System.out.println(port + " " + address);
