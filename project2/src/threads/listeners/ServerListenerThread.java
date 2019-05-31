@@ -196,7 +196,17 @@ public class ServerListenerThread extends Thread {
             Server.getMemory().updatePeerMemory(peer, newMemory);
             System.out.println("Updated memory of peer " + peer);
             break;
-
+        case "UNAVAILABLE":
+            try {
+                InetAddress address = InetAddress.getByName(splitMessage[1]);
+                port = Integer.parseInt(splitMessage[2]);
+                Server.getMemory().removeConection(address, port);
+            } catch (UnknownHostException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            
+            break;
         default:
             System.out.println("Unknown message: " + splitMessage[0].trim());
         }
@@ -286,9 +296,8 @@ public class ServerListenerThread extends Thread {
     public static String getAvailablePeers(String peer, int replicationDegree, String chunkId, int memory) {
         String sb = "";
         String file = chunkId.split("-")[0];
-
-        for (String key : Server.getMemory().conections.keySet()) {
-            
+        
+        for (String key : Server.getMemory().conections.keySet()) { 
             if (replicationDegree > 0) {
                 if (!isInitiator(key,file) && !key.equals(peer) && !Server.getMemory().serverSavedChunks.contains(chunkId + "-" + peer) && Server.getMemory().peersMemory.get(key) >= memory) {
                     sb += Server.getMemory().conections.get(key).getKey().getHostAddress() + "-"

@@ -114,6 +114,22 @@ public class Memory implements Serializable
 	{
 		conections.put(peerID, new Pair<InetAddress, Integer>(address, port));
 	}
+	public void removeConection(InetAddress address, int port)
+	{	String key=null;
+		Pair pair = new Pair<InetAddress, Integer>(address, port);
+		System.out.println ("to remove " +address.getHostAddress()+" "+port);
+		for (Entry<String, Pair<InetAddress,Integer>> entry : conections.entrySet()) {
+			System.out.println(entry.getValue().getKey().getHostAddress()+" "+entry.getValue().getValue());
+			if (entry.getValue().getKey().getHostAddress().equals(address.getHostAddress()) &&
+				entry.getValue().getValue() == port){
+				key = entry.getKey();
+				break;
+				}
+			}
+		System.out.println("key"+ key);
+		if (key != null)
+		conections.remove(key);
+	}
 
 	public String getPeerPort(String peerID)
 	{
