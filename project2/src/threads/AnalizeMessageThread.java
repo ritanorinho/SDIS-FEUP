@@ -58,9 +58,6 @@ public class AnalizeMessageThread implements Runnable {
 		case "CHUNK":
 			chunk();
 			break;
-		case "RESTOREFILE":
-			restoreFile();
-			break;
 		default:
 		}
 	}
