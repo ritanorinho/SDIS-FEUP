@@ -179,14 +179,15 @@ public class Server {
 				Memory newMemory = (Memory) ois.readObject();
 
 				if (newMemory == null) {
-					System.out.print("Up-to-date: ");
-					memory.printLastUpdatedDate();
+					//System.out.print("Up-to-date: ");
+					//memory.printLastUpdatedDate();
 					continue;
 				}
 
 				Server.setMemory(newMemory);
 
-				System.out.println("Updated memory");
+				System.out.print("Updated memory: ");
+				memory.printLastUpdatedDate();
 			} 
 			catch (Exception e) 
 			{
