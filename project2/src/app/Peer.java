@@ -95,6 +95,11 @@ public class Peer implements RMIInterface {
 		try {
 			socket = (SSLSocket) ssf.createSocket(address, port);
 		} catch (IOException e) {
+			try {
+				sendMessageToServer("UNAVAILABLE " + address.getHostAddress() + " " + port);
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
 			System.out.println("Failed to create SSLSocket");
 			return null;
 		}
@@ -267,6 +272,7 @@ public class Peer implements RMIInterface {
 			}
 		} catch (Exception e) {
 			System.out.println("Backup Failed");
+			return;
 		}
 		String savedMessage = "SAVED "+serverID+" "+fileInfo.getFileId();
 		try {
@@ -572,7 +578,9 @@ public class Peer implements RMIInterface {
 						int port = Integer.parseInt(split[1]);
 						InetAddress address = InetAddress.getByName(split[0]);
 						SSLSocket peerSocket = null;
+
 						peerSocket = createSocket(address, port);
+						
 
 						System.out.println(port + " " + address);
 						peerSocket.startHandshake();
@@ -582,6 +590,7 @@ public class Peer implements RMIInterface {
 				}
 		} catch (Exception e) {
 			System.out.println("Backup Failed");
+
 		}
 
 	}
