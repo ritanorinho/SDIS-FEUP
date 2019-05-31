@@ -213,7 +213,7 @@ public class ServerListenerThread extends Thread {
             System.out.println("Unknown message: " + splitMessage[0].trim());
         }
 
-        return "";
+        return "end";
     }
     public void setInitiatorPeer(String peer, String file){
 
