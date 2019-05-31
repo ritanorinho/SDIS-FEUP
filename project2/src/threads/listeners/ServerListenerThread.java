@@ -50,11 +50,11 @@ public class ServerListenerThread extends Thread {
 
                 if (analize.equals("end"))
                     continue;
-
-                if (!analize.equals("")) {
-                    pwrite.println(analize);
-                    pwrite.flush();
+                if (analize.equals("")) {
+                    analize = " ";                   
                 }
+                pwrite.println(analize);
+                pwrite.flush();
                
             }
 

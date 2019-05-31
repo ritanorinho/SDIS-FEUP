@@ -348,6 +348,7 @@ public class Peer implements RMIInterface {
 			catch (Exception e) {
 				System.out.println("Restore Failed");
 				e.printStackTrace();
+				return;
 			}
 		}
 	}
