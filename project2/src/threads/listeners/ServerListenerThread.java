@@ -279,12 +279,9 @@ public class ServerListenerThread extends Thread {
             }
         }
         conectionPorts = sb.toString();
-        System.out.println("conection ports " + conectionPorts);
 
         if(conectionPorts.equals(""))
             conectionPorts = " ";
-
-        System.out.println(conectionPorts);
 
         return conectionPorts;
     }
