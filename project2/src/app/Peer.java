@@ -640,8 +640,17 @@ public class Peer implements RMIInterface {
 		return servers.get(serverIndex);
 	}
 
-	public static void changeServer() {
+	public static void changeServer() 
+	{
+		SSLSocket newSocket = Utils.createSocket(getServerSocket().getInetAddress(), getServerSocket().getPort(), false);	
 		
+		if(newSocket != null)
+		{
+			servers.set(serverIndex, newSocket);
+			System.out.println("Connection reestabelished");
+			return;
+		}
+
 		System.out.print("Changing server from " + serverIndex);
 
 		if (serverIndex == servers.size() - 1)

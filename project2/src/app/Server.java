@@ -54,6 +54,7 @@ public class Server {
 		}
 
 		memory = Utils.loadMemory("Server/memory");
+		memory.printConnections();
 
 		SSLServerSocketFactory ssf = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
 
@@ -134,10 +135,7 @@ public class Server {
 
 	public static void setMemory(Memory newMemory)
 	{
-		ConcurrentHashMap<String, Pair<InetAddress, Integer>> connections = memory.conections;
-
 		memory = newMemory;
-		memory.conections = connections;
 	}
 
 	public static void startSync()
