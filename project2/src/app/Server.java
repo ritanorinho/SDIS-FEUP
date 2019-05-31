@@ -54,7 +54,6 @@ public class Server {
 		}
 
 		memory = Utils.loadMemory("Server/memory");
-		memory.printConnections();
 
 		SSLServerSocketFactory ssf = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
 

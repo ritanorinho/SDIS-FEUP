@@ -155,7 +155,7 @@ public class Utils {
 			ObjectInputStream oi = new ObjectInputStream(fi);
 
 			memory = (Memory) oi.readObject();
-			memory.conections = new ConcurrentHashMap<String, Pair<InetAddress, Integer>>();
+
 			System.out.println("Loaded memory successfully");
 			oi.close();
 
