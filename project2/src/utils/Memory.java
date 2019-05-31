@@ -57,16 +57,7 @@ public class Memory implements Serializable
 		}
 
 	}
-
-	public boolean hasFileByName(String filename) {
-		for (int i = 0; i < files.size(); i++) {
-			if (files.get(i).getFilename().equals(filename))
-				return true;
-		}
-
-		return false;
-	}
-
+	
 	public void removeChunks(String fileId) {
 		for(int i=0; i<files.size();i++){
 			if (files.get(i).getFileId().equals(fileId))
@@ -116,7 +107,7 @@ public class Memory implements Serializable
 	}
 	public void removeConection(InetAddress address, int port)
 	{	String key=null;
-		Pair pair = new Pair<InetAddress, Integer>(address, port);
+
 		System.out.println ("to remove " +address.getHostAddress()+" "+port);
 		for (Entry<String, Pair<InetAddress,Integer>> entry : conections.entrySet()) {
 			System.out.println(entry.getValue().getKey().getHostAddress()+" "+entry.getValue().getValue());
@@ -134,34 +125,6 @@ public class Memory implements Serializable
 	public String getPeerPort(String peerID)
 	{
 		return conections.get(peerID).getKey().getHostAddress() + "-" + conections.get(peerID).getValue();
-	}
-
-	public String getPeerId(int peerPort, InetAddress peerAddress){
-		for(String key : conections.keySet()){
-			if (conections.get(key).getValue() == peerPort && conections.get(key).getKey().getHostAddress().equals(peerAddress.getHostAddress()))
-			return key;
-		}
-		return "";
-	}
-
-	public void printServerSavedChunks()
-	{
-		for(String key: serverSavedChunks)
-			System.out.println(key);
-	}
-
-	public void printFiles()
-	{
-		for(FileInfo finfo: files)
-			System.out.println(finfo.toString());
-	}
-
-	public void printConnections()
-	{
-		Iterator<Entry<String, Pair<InetAddress, Integer>>> it = conections.entrySet().iterator();
-
-		while(it.hasNext())
-			System.out.println(it.next().getKey());
 	}
 
 	public long getLastUpdated()

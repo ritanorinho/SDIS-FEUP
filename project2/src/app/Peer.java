@@ -25,7 +25,6 @@ import java.io.PrintWriter;
 import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.SSLSocket;
-import javax.net.ssl.SSLSocketFactory;
 
 import threads.sockets.*;
 import threads.RestoreFileThread;
@@ -209,7 +208,6 @@ public class Peer implements RMIInterface {
 					System.out.println(backupMessage);
 					
 				} catch (IOException e) {
-					System.out.println("before change server");
 					changeServer();
 					backup(filename, repDegree);
 					return;
@@ -238,7 +236,6 @@ public class Peer implements RMIInterface {
 						SSLSocket peerSocket = null;
 						peerSocket = Utils.createSocket(address, port, true);
 
-						System.out.println(port + " " + address);
 						peerSocket.startHandshake();
 						executor.execute(new SenderSocket(peerSocket, message));
 						executor.execute(new ReceiverSocket(peerSocket, message, executor));
@@ -331,7 +328,6 @@ public class Peer implements RMIInterface {
 							int port = Integer.parseInt(split[1]);
 							InetAddress address = InetAddress.getByName(split[0]);
 							peerSocket = Utils.createSocket(address, port, true);
-							System.out.println(port + " " + address);
 							peerSocket.startHandshake();
 							executor.execute(new SenderSocket(peerSocket, message));
 							executor.execute(new ReceiverSocket(peerSocket, message, executor));
@@ -409,8 +405,6 @@ public class Peer implements RMIInterface {
 
 					InetAddress address = InetAddress.getByName(split[0]);
 					peerSocket = Utils.createSocket(address, port, true);
-
-					System.out.println(port + " " + address);
 
 					peerSocket.startHandshake();
 
@@ -562,8 +556,6 @@ public class Peer implements RMIInterface {
 
 						peerSocket = Utils.createSocket(address, port, true);
 						
-
-						System.out.println(port + " " + address);
 						peerSocket.startHandshake();
 						executor.execute(new SenderSocket(peerSocket, message));
 						executor.execute(new ReceiverSocket(peerSocket, message, executor));

@@ -26,12 +26,10 @@ public class TestApp {
 		String operation = args[1];
 		
 		int replicationDegree;
-    int spaceDisk;
     Registry registry;
     RMIInterface stub=null;
 
     System.setProperty("java.net.preferIPv4Stack", "true");
-		//System.setProperty ("java.rmi.server.hostname", host);
 
     registry = LocateRegistry.getRegistry(host);
 

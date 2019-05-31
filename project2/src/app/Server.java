@@ -143,8 +143,6 @@ public class Server {
 		Entry<String, Pair<Integer, SSLSocket>> entry;
 		Iterator<Entry<String, Pair<Integer, SSLSocket>>> it = servers.entrySet().iterator();
 
-		System.out.println("SYNC initiated with " + servers.size() + " servers");
-
 		while(it.hasNext())
 		{
 			entry = it.next();

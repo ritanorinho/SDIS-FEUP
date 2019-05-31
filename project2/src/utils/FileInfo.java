@@ -130,31 +130,6 @@ public class FileInfo implements Serializable{
 		}
 	}
 
-	public static void writeToFile(Path path, byte[] data, String flag, int max) throws IOException, InterruptedException, ExecutionException {
-
-		AsynchronousFileChannel fileChannel;
-
-		switch(flag){
-			case "append":
-			fileChannel = AsynchronousFileChannel.open(path, StandardOpenOption.APPEND);
-			System.out.println("append: " + data.length);
-			break;
-			case "write":
-			fileChannel = AsynchronousFileChannel.open(path, StandardOpenOption.WRITE);
-			System.out.println("append: " + data.length);
-			break;
-			default:
-			fileChannel = AsynchronousFileChannel.open(path, StandardOpenOption.WRITE);
-			break;
-		}
-
-		ByteBuffer buffer = ByteBuffer.allocate(max);
-		buffer.put(data);
-		buffer.flip();
-
-		fileChannel.write(buffer, 0).get();
-		fileChannel.close();
-	}
 	
 	public static byte[] readFromFile(Path path) throws IOException, InterruptedException, ExecutionException {
 

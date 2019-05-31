@@ -16,7 +16,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
-import app.Peer;
 import app.Server;
 
 public class ServerListenerThread extends Thread {
@@ -130,14 +129,6 @@ public class ServerListenerThread extends Thread {
 
             peer = splitMessage[2];
             file = splitMessage[1];
-
-            System.out.println("BEGIN SPLIT MESSAGE IN SERVER LISTENER");
-            for (int i = 0; i < splitMessage.length; i++) {
-                System.out.println(splitMessage[i]);
-            }
-            System.out.println("END SPLIT MESSAGE IN SERVER LISTENER");
-            // deleteChunks(peer, file);
-            // Server.getMemory().updateMemory();
             break;
 
         case "STORED":
@@ -204,7 +195,6 @@ public class ServerListenerThread extends Thread {
                 port = Integer.parseInt(splitMessage[2]);
                 Server.getMemory().removeConection(address, port);
             } catch (UnknownHostException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             }
             
@@ -234,18 +224,18 @@ public class ServerListenerThread extends Thread {
         String key = chunkId + "-" + peer;
         Server.getMemory().serverSavedChunks.remove(key);
         int count = 0;
-        System.out.println(chunkId+"\n");
+
         for (int i = 0; i < Server.getMemory().serverSavedChunks.size(); i++) {
             String[] splitMessage = Server.getMemory().serverSavedChunks.get(i).split("-");
             String chunkId1 = splitMessage[0] + "-" + splitMessage[1];
-            System.out.println(chunkId1);
+
             if (chunkId.equals(chunkId1)) {
                 count++;
             }
         }
         int delta = repDegree - count;
-        System.out.println(delta + " " + count + " " + repDegree);
-         return ""+delta;
+
+        return ""+delta;
     }
 
     private void deleteChunks(String peer, String file) {

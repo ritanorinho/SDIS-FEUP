@@ -41,7 +41,6 @@ public class RestoreFileThread implements Runnable {
 		int position = 0;
 		
 		if (sortedChunks.size() < this.numberChunks) {
-			System.out.println(Peer.getMemory().chunksToRestore.size());
 			System.out.println("Could not find all the chunks needed to restore the requested file\n");
 			return false;
 		} else {

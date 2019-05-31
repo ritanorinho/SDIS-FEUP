@@ -15,13 +15,9 @@ public class GetchunkThread implements Runnable {
 	private String chunkId;
 	private double senderVersion;
 	private Socket socket;
-	private String fileId;
-	private String chunkNo;
 
 	public GetchunkThread(String[] msg, Socket socket) {
 		this.messageArray = msg;
-		this.fileId = messageArray[2];
-		this.chunkNo = messageArray[3];
 		this.chunkId = messageArray[2] + "-" + messageArray[3];
 		this.senderVersion = Double.parseDouble(messageArray[1]);
 		this.socket = socket;
