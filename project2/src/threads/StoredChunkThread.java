@@ -45,7 +45,7 @@ public class StoredChunkThread implements Runnable {
 			Chunk.createChunkFile(path, this.data);
 
 			String storedMessage = "STORED "+ Peer.getId() + " " + this.fileId + " " + this.chunkNo +" "+ Peer.getMemory().availableCapacity+"\r\n\r\n";
-			System.out.println("\nSENT " + storedMessage);
+			System.out.println("\nSENT: " + storedMessage);
 
 			try{
 				OutputStream outputStream = socket.getOutputStream();

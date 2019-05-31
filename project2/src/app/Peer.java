@@ -205,7 +205,7 @@ public class Peer implements RMIInterface {
 					sendMessageToServer(backupMessage, getServerSocket());
 					istream = getServerSocket().getInputStream();
 					receiveRead = new BufferedReader(new InputStreamReader(istream));
-					System.out.println(backupMessage);
+					System.out.println("SENT TO SERVER: " + backupMessage);
 					
 				} catch (IOException e) {
 					changeServer();
@@ -222,7 +222,7 @@ public class Peer implements RMIInterface {
 						System.out.println("No peers available");
 						continue;
 					} else {
-						System.out.println("Peers to connect " + receiveMessage);
+						System.out.println("Peers to connect " + receiveMessage + "\n");
 
 					}
 
@@ -285,8 +285,6 @@ public class Peer implements RMIInterface {
 					header = "GETCHUNK " + " " + serverID + " " + fileInfo.getFileId() + " "
 							+ chunks.get(i).getChunkNo() + " " + "\r\n\r\n";
 
-					System.out.println("SENT: " + header);
-
 					byte[] message = header.getBytes();
 					String restoreMessage = "RESTORE " + fileInfo.getFileId() + " " + serverID + "\n";
 					InputStream istream;
@@ -294,7 +292,7 @@ public class Peer implements RMIInterface {
 
 					try {
 						sendMessageToServer(restoreMessage, getServerSocket());
-						System.out.println(restoreMessage);
+						System.out.println("SENT TO SERVER: " + restoreMessage);
 						istream = getServerSocket().getInputStream();
 						receiveRead = new BufferedReader(new InputStreamReader(istream));
 					} catch (IOException e) {
@@ -304,11 +302,9 @@ public class Peer implements RMIInterface {
 					}
 
 					String receiveMessage;
-					System.out.println(restoreMessage);
 
 					if ((receiveMessage = receiveRead.readLine()) != null) {
 
-						System.out.println("RECEIVED FROM SERVER: " + receiveMessage);
 						String[] splitMessage = receiveMessage.split(" ");
 
 						
@@ -319,8 +315,6 @@ public class Peer implements RMIInterface {
 							return;
 						} else {
 							System.out.println("Peers to connect " + receiveMessage);
-
-
 						}
 
 						for (int j = 0; j < splitMessage.length; j++) {
@@ -331,7 +325,7 @@ public class Peer implements RMIInterface {
 							peerSocket.startHandshake();
 							executor.execute(new SenderSocket(peerSocket, message));
 							executor.execute(new ReceiverSocket(peerSocket, message, executor));
-
+							System.out.println("SENT TO PEERS: " + header);
 						}
 					}
 				}
